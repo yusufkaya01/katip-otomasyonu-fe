@@ -1,0 +1,82 @@
+/* style.css for Otomasyon Katibi static website */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f7f7f7;
+  color: #222;
+}
+header {
+  background: #1976d2;
+  color: #fff;
+  padding: 32px 0 24px 0;
+  text-align: center;
+}
+.logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 12px;
+}
+.tagline {
+  font-size: 1.2em;
+  margin-bottom: 18px;
+}
+.cta-btn {
+  display: inline-block;
+  background: #fff;
+  color: #1976d2;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-decoration: none;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+.cta-btn:hover {
+  background: #e3eaff;
+}
+main {
+  max-width: 700px;
+  margin: 32px auto 0 auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 32px 24px 24px 24px;
+}
+h2 {
+  color: #1976d2;
+  margin-top: 0;
+}
+.features-list {
+  list-style: disc inside;
+  margin-bottom: 24px;
+}
+.screenshot {
+  width: 100%;
+  max-width: 480px;
+  display: block;
+  margin: 18px auto 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 1px 6px #0002;
+}
+footer {
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+  margin: 32px 0 12px 0;
+}
+nav {
+  background: #f1f1f1;
+  padding: 12px 0;
+  text-align: center;
+}
+nav a {
+  color: #1976d2;
+  text-decoration: none;
+  margin: 0 18px;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+nav a:hover {
+  text-decoration: underline;
+}
