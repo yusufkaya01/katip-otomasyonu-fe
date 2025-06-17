@@ -1,22 +1,14 @@
-# Deploy React app to AWS Elastic Beanstalk
-env:
-  AWS_REGION: us-east-1 # Change to your region
-  EBS_ENV_NAME: katip-otomasyonu-fe-env # Change to your EBS environment name
-  EBS_APP_NAME: katip-otomasyonu-fe # Change to your EBS application name
+name: Deploy React app to Elastic Beanstalk
 
 on:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
@@ -30,26 +22,23 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Zip build folder
-        run: zip -r build.zip build
+      - name: Add Procfile
+        run: |
+          echo "web: npx serve -s build -l 8080" > Procfile
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+      - name: Install serve
+        run: npm install serve
+
+      - name: Zip source bundle
+        run: zip -r app.zip build Procfile package.json package-lock.json node_modules
 
       - name: Deploy to Elastic Beanstalk
-        run: |
-          aws elasticbeanstalk create-application-version \
-            --application-name $EBS_APP_NAME \
-            --version-label $GITHUB_SHA \
-            --source-bundle S3Bucket=$EBS_APP_NAME,S3Key=build.zip
-          aws elasticbeanstalk update-environment \
-            --environment-name $EBS_ENV_NAME \
-            --version-label $GITHUB_SHA
-        env:
-          AWS_REGION: ${{ env.AWS_REGION }}
-          EBS_ENV_NAME: ${{ env.EBS_ENV_NAME }}
-          EBS_APP_NAME: ${{ env.EBS_APP_NAME }}
+        uses: einaregilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: katip-otomasyonu-fe
+          environment_name: katip-otomasyonu-fe-env
+          region: us-east-1
+          version_label: ${{ github.sha }}
+          deployment_package: app.zip
