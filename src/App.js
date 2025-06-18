@@ -9,6 +9,9 @@ import FAQPage from './pages/FAQPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import PrivacyPage from './pages/PrivacyPage';
+import CopyrightPage from './pages/CopyrightPage';
+import TermsPage from './pages/TermsPage';
+import DataPolicyPage from './pages/DataPolicyPage';
 import './App.css';
 
 function App() {
@@ -24,6 +27,9 @@ function App() {
           <Route path="/hakkimizda" element={<AboutPage />} />
           <Route path="/iletisim" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/copyright" element={<CopyrightPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/data-policy" element={<DataPolicyPage />} />
         </Routes>
       </div>
       <Footer />
