@@ -15,7 +15,8 @@ function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
       <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">
+        <Link className="navbar-brand fw-bold d-flex align-items-center gap-2" to="/">
+          <img src="/icon-128px-trasnparent-white.png" alt="Katip Otomasyonu Logo" style={{ width: 36, height: 36 }} />
           Katip Otomasyonu
         </Link>
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

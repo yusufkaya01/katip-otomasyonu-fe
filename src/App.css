@@ -36,3 +36,26 @@
     transform: rotate(360deg);
   }
 }
+
+@keyframes bounceInSide {
+  0% {
+    opacity: 0;
+    transform: translateX(-60px) scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(10px) scale(1.05);
+  }
+  80% {
+    transform: translateX(-5px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.feature-bounce {
+  opacity: 0;
+  animation: bounceInSide 0.7s cubic-bezier(.68,-0.55,.27,1.55) forwards;
+}
