@@ -37,25 +37,31 @@
   }
 }
 
-@keyframes bounceInSide {
+@keyframes floatIn {
   0% {
     opacity: 0;
-    transform: translateX(-60px) scale(0.8);
+    transform: translateY(40px) scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.05);
   }
   60% {
     opacity: 1;
-    transform: translateX(10px) scale(1.05);
+    transform: translateY(5px) scale(0.98);
   }
   80% {
-    transform: translateX(-5px) scale(0.98);
+    opacity: 1;
+    transform: translateY(0px) scale(1.02);
   }
   100% {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
 .feature-bounce {
   opacity: 0;
-  animation: bounceInSide 0.7s cubic-bezier(.68,-0.55,.27,1.55) forwards;
+  animation: floatIn 5s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+  will-change: transform, opacity;
 }
