@@ -5,22 +5,25 @@ function PrivacyPage() {
     <div>
       <h2 className="mb-4">Gizlilik Sözleşmesi</h2>
       <p>
-        Katip Otomasyonu olarak, kişisel verilerinizin gizliliğine ve güvenliğine büyük önem veriyoruz. Kişisel verileriniz, yalnızca ilgili mevzuat ve yasal yükümlülükler kapsamında, açık rızanız veya kanuni sebepler doğrultusunda işlenmekte ve korunmaktadır.
+        Katip Otomasyonu Chrome uzantısı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından işletilmektedir. Kullanıcıdan yalnızca gerekli minimum veriler (ör. lisans anahtarı, isgkatip oturum anahtarı) toplanır. Lisans doğrulama sırasında sadece lisans anahtarı sunucularımıza gönderilir; isgkatip oturum anahtarı veya başka herhangi bir kişisel bilgi sunucularımıza iletilmez.
       </p>
       <p>
-        Kişisel verileriniz; web sitesi, mobil uygulamalar, e-posta, başvuru formları, çağrı merkezi, uzaktan destek, satış ve pazarlama birimi, çerezler, kartvizit, telefon, yüz yüze görüşmeler ve benzeri vasıtalarla, otomatik veya kısmen otomatik yöntemlerle toplanabilmektedir. Bu veriler, hukuki yükümlülüklerimizin yerine getirilmesi, bir hakkın tesisi, kullanılması veya korunması, veri sorumlusunun meşru menfaatleri ve açık rızanızın bulunması hukuki sebeplerine dayalı olarak işlenmektedir.
+        Kişisel veriler (ad, soyad, T.C. kimlik no, işyeri bilgileri, sözleşme detayları) sadece kullanıcının kendi hesabı üzerinden, isgkatip.csgb.gov.tr ile iletişimde kullanılır ve uzantı tarafından harici olarak saklanmaz. Lisans doğrulama için yalnızca lisans anahtarı, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.'nin kontrolündeki harici bir sunucuya (ör. AWS) gönderilir.
       </p>
       <p>
-        Kişisel verileriniz, danışmanlar, denetim firmaları, hizmet alınan firmalar, işbirliği yapılan firmalar, müşteriler, pay sahipleri, şirket yetkilileri, tedarikçiler, teknopark yönetimi, bankalar ve finans kuruluşları, yargı mercileri ve kamu otoriteleri, yeniden satıcılar ve ilgili diğer üçüncü kişiler ile Kanun ve ilgili mevzuat hükümlerine uygun olarak paylaşılabilmektedir.
+        Hiçbir kişisel veri, üçüncü şahıslarla paylaşılmaz, satılmaz veya ticari amaçla kullanılmaz. Kullanıcı verileri, uzantıdan kaldırıldığında veya uzantı silindiğinde, mevzuat gereği yasal saklama ve denetim yükümlülüklerimiz kapsamında pasif hale getirilir ancak silinmez; ilgili bilgiler yalnızca resmi makamların talebi ve denetimi için saklanır.
       </p>
       <p>
-        Kanun’un 11. maddesi uyarınca, kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse buna ilişkin bilgi talep etme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmişse düzeltilmesini isteme, silinmesini veya yok edilmesini isteme, bu işlemlerin aktarıldığı üçüncü kişilere bildirilmesini isteme, otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme ve kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız halinde zararın giderilmesini talep etme haklarına sahipsiniz.
+        KVKK kapsamında, kullanıcı verilerinin işlenmesi, saklanması ve silinmesi süreçleri açıkça belirtilir. Katip Otomasyonu, kullanıcıdan açık rıza almadan hiçbir kişisel veriyi işlemez veya saklamaz. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. Bu talepler için info@arkaya.com.tr adresine başvurulabilir.
       </p>
       <p>
-        Haklarınızı kullanmak için, taleplerinizi içeren dilekçenizi Katip Otomasyonu’nun Gebze Organize Sanayi Bölgesi, Şahabettin Bilgisu Cad. No:609 Gebze/Kocaeli adresine posta yoluyla veya sistemlerimizde kayıtlı bulunan e-posta adresinizi kullanarak kvkk@katipotomasyonu.com.tr adresine iletebilirsiniz.
+        Katip Otomasyonu'nu ilk kez kullanan veya lisans satın alan müşterilerden; telefon numarası, şirket adı ve OSGB-ID gibi bilgiler alınır ve lisans doğrulama amacıyla güvenli şekilde saklanır. Uygulamayı kullanan veya lisans satın alan herkes, bu bilgilerin alınmasını ve saklanmasını kabul etmiş sayılır.
       </p>
       <p>
-        Detaylı bilgi ve diğer sözleşmeler için lütfen ilgili sayfaları ziyaret ediniz.
+        Veri sorumlusu: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. | info@arkaya.com.tr
+      </p>
+      <p>
+        Haklarınızı kullanmak için, taleplerinizi info@arkaya.com.tr adresine iletebilirsiniz. Detaylı bilgi ve diğer sözleşmeler için lütfen ilgili sayfaları ziyaret ediniz.
       </p>
     </div>
   );
