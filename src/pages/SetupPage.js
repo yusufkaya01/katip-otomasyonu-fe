@@ -2,15 +2,28 @@ import React from 'react';
 
 function SetupPage() {
   return (
-    <div>
-      <h2 className="mb-4">Kurulum ve Kullanım</h2>
-      <ol className="mb-4">
-        <li>Chrome Web Mağazası'ndan Otomasyon Katibi eklentisini yükleyin.</li>
-        <li>Eklentiyi açın ve lisans anahtarınızı girin.</li>
-        <li>İstediğiniz özelliği yan panelden seçin ve kullanmaya başlayın.</li>
+    <div className="container py-5">
+      <h1 className="mb-4 text-center">Kurulum ve Kullanım Talimatları</h1>
+      <ol className="mb-4" style={{ maxWidth: 700, margin: '0 auto', fontSize: '1.1rem' }}>
+        <li>Chrome Web Mağazası’ndan “Katip Otomasyonu” uzantısını bulun ve <b>“Chrome’a Ekle”</b> butonuna tıklayarak yükleyin.</li>
+        <li>Yükleme tamamlandıktan sonra, tarayıcınızın sağ üst köşesindeki uzantılar simgesine (parça şeklindeki ikon) tıklayın. Açılan listede “Katip Otomasyonu” uzantısını bulup yanındaki <b>raptiye simgesine</b> tıklayarak uzantıyı sabitleyebilirsiniz. Böylece uzantıya her zaman kolayca erişebilirsiniz.</li>
+        <li>Uzantı ikonuna tıklayarak “Katip Otomasyonu”nu açın.</li>
+        <li>Açılan ekranda, size verilen geçerli <b>lisans anahtarınızı</b> girin ve <b>“Gönder"</b> butonuna tıklayın.</li>
+        <li>Lisans doğrulama işlemi tamamlandığında, yan paneldeki menüden kullanmak istediğiniz özelliği seçebilirsiniz. Tüm raporlar ve işlemler, İş Güvenliği Uzmanı, İşyeri Hekimi ve Diğer Sağlık Personeli atamaları dahil olmak üzere, ilgili başlıklar altında sunulmaktadır.</li>
+        <li>
+          Uzantıyı kullanabilmek için geçerli bir lisans anahtarınızın olması gerekmektedir. Lisans anahtarınız yoksa, 
+          <button 
+            type="button" 
+            className="btn btn-link p-0 align-baseline" 
+            style={{ textDecoration: 'underline', color: '#c82333', fontWeight: 600, fontSize: '1em' }}
+            onClick={() => window.location.href = '/iletisim'}
+          >
+            burayı tıklayın
+          </button> 
+        </li>
       </ol>
-      <div className="alert alert-warning" role="alert">
-        Eklentiyi kullanabilmek için geçerli bir lisans anahtarı gereklidir.
+      <div className="alert alert-info" style={{ maxWidth: 700, margin: '0 auto' }}>
+        <b>Ek Bilgi:</b> Uzantıyı sabitlemek (raptiye simgesiyle) uzantıya hızlı erişim sağlar ve her zaman tarayıcıda görünür olmasını kolaylaştırır.
       </div>
     </div>
   );
