@@ -20,6 +20,7 @@ function IsletmemPage() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showLicense, setShowLicense] = useState(false);
   const navigate = useNavigate();
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
@@ -43,6 +44,8 @@ function IsletmemPage() {
 
   const fields = [
     { key: 'company_name', label: 'Şirket Ünvanı' },
+    { key: 'city', label: 'Şehir' },
+    { key: 'district', label: 'İlçe' },
     { key: 'tax_number', label: 'Vergi Kimlik No' },
     { key: 'address', label: 'Adres' },
     { key: 'tax_office', label: 'Vergi Dairesi' },
@@ -117,6 +120,29 @@ function IsletmemPage() {
     <div className="container py-5" style={{ maxWidth: 600 }}>
       <h2 className="mb-4">İşletmem</h2>
       <div className="card p-4 shadow-sm">
+        {/* License Key Display */}
+        {user.licenseKey && (
+          <div className="mb-3 d-flex align-items-center">
+            <strong style={{ minWidth: 140 }}>Lisans Anahtarı:</strong>
+            <span className="mx-2" style={{ letterSpacing: '1px', fontFamily: 'monospace' }}>
+              {showLicense ? user.licenseKey : '•'.repeat(user.licenseKey.length)}
+            </span>
+            <button
+              className="btn btn-link p-0 text-danger mx-1"
+              title="Kopyala"
+              onClick={() => navigator.clipboard.writeText(user.licenseKey)}
+            >
+              <i className="bi bi-clipboard"></i>
+            </button>
+            <button
+              className="btn btn-link p-0 text-secondary"
+              title={showLicense ? 'Gizle' : 'Göster'}
+              onClick={() => setShowLicense(v => !v)}
+            >
+              <i className={`bi bi-eye${showLicense ? '-slash' : ''}`}></i>
+            </button>
+          </div>
+        )}
         {fields.map(({ key, label }) => (
           <div key={key} className="mb-3 d-flex align-items-center">
             <strong style={{ minWidth: 140 }}>{label}:</strong>
