@@ -30,7 +30,14 @@ function IsletmemPage() {
       navigate('/giris', { replace: true });
       return;
     }
-    setUser(JSON.parse(userData));
+    const parsed = JSON.parse(userData);
+    // If token is missing, try to get it from a separate key (for backward compatibility)
+    let token = parsed.token;
+    if (!token) {
+      const tokenFromStorage = localStorage.getItem('osgbToken');
+      if (tokenFromStorage) token = tokenFromStorage;
+    }
+    setUser({ ...parsed, token });
     setLoading(false);
   }, [navigate]);
 
@@ -60,6 +67,10 @@ function IsletmemPage() {
       setError('Geçerli bir değer giriniz.');
       return;
     }
+    if (!user.token) {
+      setError('Kimlik doğrulama hatası: Lütfen tekrar giriş yapın.');
+      return;
+    }
     // Prepare PATCH payload (only the edited field)
     const payload = { [editField]: editValue };
     // Required fields for PATCH: must send all required fields except password (unless changing password)
@@ -74,14 +85,16 @@ function IsletmemPage() {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': API_KEY,
-          'Authorization': user.token ? `Bearer ${user.token}` : ''
+          'Authorization': `Bearer ${user.token}`
         },
         body: JSON.stringify(payload)
       });
       if (res.status === 200) {
         const data = await res.json();
-        setUser(data.user);
-        localStorage.setItem('osgbUser', JSON.stringify(data.user));
+        // Preserve token in updated user object
+        const updatedUser = { ...data.user, token: user.token };
+        setUser(updatedUser);
+        localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
         setSuccess('Bilgi başarıyla güncellendi.');
         setEditField(null);
         setConfirming(false);

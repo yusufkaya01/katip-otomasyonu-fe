@@ -25,7 +25,8 @@ function LoginPage() {
       });
       if (res.status === 200) {
         const data = await res.json();
-        localStorage.setItem('osgbUser', JSON.stringify(data.user));
+        // Store all login response fields (user, token, and any others) in localStorage
+        localStorage.setItem('osgbUser', JSON.stringify({ ...data.user, token: data.token, ...Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'user' && k !== 'token')) }));
         window.location.href = '/isletmem';
       } else {
         const data = await res.json();
