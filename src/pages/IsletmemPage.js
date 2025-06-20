@@ -94,8 +94,8 @@ function IsletmemPage() {
       });
       if (res.status === 200) {
         const data = await res.json();
-        // Preserve token in updated user object
-        const updatedUser = { ...data.user, token: user.token };
+        // Preserve token and licenseKey in updated user object
+        const updatedUser = { ...data.user, token: user.token, licenseKey: user.licenseKey };
         setUser(updatedUser);
         localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
         setSuccess('Bilgi başarıyla güncellendi.');
