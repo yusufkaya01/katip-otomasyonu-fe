@@ -95,7 +95,9 @@ function RegisterPage() {
       phone: `+90${form.phone}`,
       email: form.email.trim(),
       osgb_id: `OSGB-${form.osgb_id}`,
-      password: form.password
+      password: form.password,
+      city: selectedCity,
+      district: selectedDistrict
     };
 
     try {
