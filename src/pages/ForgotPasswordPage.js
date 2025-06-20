@@ -12,19 +12,23 @@ function ForgotPasswordPage() {
     setError('');
     setSuccess(false);
     try {
-      // Replace with your backend endpoint for forgot password
-      const res = await fetch('/api/osgb/forgot-password', {
+      // Use correct backend endpoint and add x-api-key header
+      const res = await fetch('https://customes.katipotomasyonu.com/api/osgb/forgot-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'yL!oo7tB)JvOXwUADAzrZ+=uP^l5oR=^'
+        },
+        body: JSON.stringify({ email })
       });
-      if (res.ok) {
+      if (res.status === 200) {
         setSuccess(true);
       } else {
-        setError('Bir hata oluştu. Lütfen e-posta adresinizi kontrol edin.');
+        const data = await res.json();
+        setError(data.error || 'Bir hata oluştu.');
       }
-    } catch {
-      setError('Sunucuya ulaşılamıyor.');
+    } catch (err) {
+      setError('Bir hata oluştu.');
     }
     setLoading(false);
   };
