@@ -12,6 +12,10 @@ import PrivacyPage from './pages/PrivacyPage';
 import CopyrightPage from './pages/CopyrightPage';
 import TermsPage from './pages/TermsPage';
 import DataPolicyPage from './pages/DataPolicyPage';
+import IsletmemPage from './pages/IsletmemPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import './App.css';
 
 function App() {
@@ -30,6 +34,10 @@ function App() {
           <Route path="/copyright" element={<CopyrightPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/data-policy" element={<DataPolicyPage />} />
+          <Route path="/isletmem" element={<IsletmemPage />} />
+          <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
+          <Route path="/giris" element={<LoginPage />} />
+          <Route path="/kayit" element={<RegisterPage />} />
         </Routes>
       </div>
       <Footer />
