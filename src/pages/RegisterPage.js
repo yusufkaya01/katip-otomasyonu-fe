@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { fetchTaxOffices } from '../api/taxOffices';
 
 function RegisterPage() {
   const [form, setForm] = useState({
@@ -17,8 +18,45 @@ function RegisterPage() {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [taxData, setTaxData] = useState([]);
+  const [selectedCity, setSelectedCity] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [districts, setDistricts] = useState([]);
+  const [taxOffices, setTaxOffices] = useState([]);
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
+
+  useEffect(() => {
+    fetchTaxOffices(API_KEY)
+      .then(data => setTaxData(data.cities || []))
+      .catch(() => setTaxData([]));
+  }, [API_KEY]);
+
+  useEffect(() => {
+    if (selectedCity) {
+      const city = taxData.find(c => c.name === selectedCity);
+      setDistricts(city ? city.districts : []);
+      setSelectedDistrict('');
+      setTaxOffices([]);
+      setForm(f => ({ ...f, tax_office: '' }));
+    } else {
+      setDistricts([]);
+      setTaxOffices([]);
+      setForm(f => ({ ...f, tax_office: '' }));
+    }
+  }, [selectedCity, taxData]);
+
+  useEffect(() => {
+    if (selectedDistrict) {
+      const city = taxData.find(c => c.name === selectedCity);
+      const district = city?.districts.find(d => d.name === selectedDistrict);
+      setTaxOffices(district ? district.taxOffices : []);
+      setForm(f => ({ ...f, tax_office: '' }));
+    } else {
+      setTaxOffices([]);
+      setForm(f => ({ ...f, tax_office: '' }));
+    }
+  }, [selectedDistrict, selectedCity, taxData]);
 
   const handleChange = (e) => {
     if (e.target.name === 'phone') {
@@ -29,6 +67,8 @@ function RegisterPage() {
     } else if (e.target.name === 'osgb_id') {
       let value = e.target.value.replace(/\D/g, '');
       setForm({ ...form, osgb_id: value });
+    } else if (e.target.name === 'tax_office') {
+      setForm({ ...form, tax_office: e.target.value });
     } else {
       setForm({ ...form, [e.target.name]: e.target.value });
     }
@@ -90,25 +130,81 @@ function RegisterPage() {
 
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: 500, margin: '0 auto' }}>
-      <div className="col-12">
-        <div className="mb-3">
-          <label htmlFor="company_name" className="form-label">Şirket Ünvanı</label>
-          <input
-            type="text"
-            className="form-control"
-            id="company_name"
-            name="company_name"
-            value={form.company_name}
-            onChange={handleChange}
-            required
-            maxLength={100}
-          />
-          <div className="p-2 mt-1 rounded bg-warning bg-opacity-25 text-dark small">
-            Lütfen vergi levhanızdaki şirket ünvanını eksiksiz yazınız.
+      <div className="row g-3">
+        <div className="col-12">
+          <div className="mb-3">
+            <label htmlFor="company_name" className="form-label">Şirket Ünvanı</label>
+            <input
+              type="text"
+              className="form-control"
+              id="company_name"
+              name="company_name"
+              value={form.company_name}
+              onChange={handleChange}
+              required
+              maxLength={100}
+            />
+            <div className="p-2 mt-1 rounded bg-warning bg-opacity-25 text-dark small">
+              Lütfen vergi levhanızdaki şirket ünvanını eksiksiz yazınız.
+            </div>
           </div>
         </div>
-      </div>
-      <div className="row g-3">
+        <div className="col-6">
+          <div className="mb-3">
+            <label htmlFor="city" className="form-label">Şehir</label>
+            <select
+              className="form-select"
+              id="city"
+              name="city"
+              value={selectedCity}
+              onChange={e => setSelectedCity(e.target.value)}
+              required
+            >
+              <option value="">Şehir seçiniz</option>
+              {taxData.map(city => (
+                <option key={city.name} value={city.name}>{city.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="col-6">
+          <div className="mb-3">
+            <label htmlFor="district" className="form-label">İlçe</label>
+            <select
+              className="form-select"
+              id="district"
+              name="district"
+              value={selectedDistrict}
+              onChange={e => setSelectedDistrict(e.target.value)}
+              required
+              disabled={!selectedCity}
+            >
+              <option value="">İlçe seçiniz</option>
+              {districts.map(d => (
+                <option key={d.name} value={d.name}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="col-6">
+          <div className="mb-3">
+            <label htmlFor="tax_office" className="form-label">Vergi Dairesi</label>
+            <select
+              className="form-select"
+              id="tax_office"
+              name="tax_office"
+              value={form.tax_office}
+              onChange={handleChange}
+              required
+              disabled={!selectedDistrict}
+            >
+              <option value="">Vergi Dairesi seçiniz</option>
+              {taxOffices.map(office => (
+                <option key={office} value={office}>{office}</option>
+              ))}
+            </select>
+          </div>
+        </div>
         <div className="col-6">
           <div className="mb-3">
             <label htmlFor="tax_number" className="form-label">Vergi Kimlik No</label>
@@ -119,7 +215,6 @@ function RegisterPage() {
               name="tax_number"
               value={form.tax_number}
               onChange={e => {
-                // Only allow digits, max 10
                 let value = e.target.value.replace(/\D/g, '');
                 if (value.length > 10) value = value.slice(0, 10);
                 setForm({ ...form, tax_number: value });
@@ -134,12 +229,6 @@ function RegisterPage() {
             {form.tax_number.length > 0 && form.tax_number.length < 10 && (
               <div className="form-text text-danger">Vergi Kimlik No 10 haneli olmalıdır.</div>
             )}
-          </div>
-        </div>
-        <div className="col-6">
-          <div className="mb-3">
-            <label htmlFor="tax_office" className="form-label">Vergi Dairesi</label>
-            <input type="text" className="form-control" id="tax_office" name="tax_office" value={form.tax_office} onChange={handleChange} required maxLength={50} />
           </div>
         </div>
         <div className="col-6">
