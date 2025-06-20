@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function LoadingSpinner() {
   return (
@@ -14,7 +15,14 @@ function LoadingSpinner() {
 function IsletmemPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [editField, setEditField] = useState(null); // which field is being edited
+  const [editValue, setEditValue] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+
+  const API_KEY = process.env.REACT_APP_USER_API_KEY;
 
   useEffect(() => {
     const userData = localStorage.getItem('osgbUser');
@@ -26,6 +34,66 @@ function IsletmemPage() {
     setLoading(false);
   }, [navigate]);
 
+  const fields = [
+    { key: 'company_name', label: 'Şirket Ünvanı' },
+    { key: 'tax_number', label: 'Vergi Kimlik No' },
+    { key: 'address', label: 'Adres' },
+    { key: 'tax_office', label: 'Vergi Dairesi' },
+    { key: 'osgb_id', label: 'OSGB Yetki Belgesi No' },
+    { key: 'phone', label: 'Telefon' },
+    { key: 'email', label: 'E-posta' },
+    { key: 'password', label: 'Şifre' },
+  ];
+
+  const handleEditClick = (key) => {
+    setEditField(key);
+    setEditValue(user[key] || '');
+    setConfirming(true);
+    setError('');
+    setSuccess('');
+  };
+
+  const handleConfirm = async () => {
+    setError('');
+    setSuccess('');
+    if (!editValue || (editField === 'password' && editValue.length < 8)) {
+      setError('Geçerli bir değer giriniz.');
+      return;
+    }
+    // Prepare PATCH payload (only the edited field)
+    const payload = { [editField]: editValue };
+    // Required fields for PATCH: must send all required fields except password (unless changing password)
+    const required = ['company_name', 'tax_number', 'address', 'tax_office', 'osgb_id', 'phone', 'email'];
+    required.forEach(f => {
+      if (f !== editField) payload[f] = user[f];
+    });
+    if (editField !== 'password') delete payload.password;
+    try {
+      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/update-osgb-info', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'Authorization': user.token ? `Bearer ${user.token}` : ''
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.status === 200) {
+        const data = await res.json();
+        setUser(data.user);
+        localStorage.setItem('osgbUser', JSON.stringify(data.user));
+        setSuccess('Bilgi başarıyla güncellendi.');
+        setEditField(null);
+        setConfirming(false);
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Güncelleme sırasında bir hata oluştu.');
+      }
+    } catch (err) {
+      setError('Sunucuya bağlanılamadı.');
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -36,11 +104,33 @@ function IsletmemPage() {
     <div className="container py-5" style={{ maxWidth: 600 }}>
       <h2 className="mb-4">İşletmem</h2>
       <div className="card p-4 shadow-sm">
-        <h5 className="mb-3">{user.company_name}</h5>
-        <p><strong>Adres:</strong> {user.address}</p>
-        <p><strong>Telefon:</strong> {user.phone}</p>
-        <p><strong>E-posta:</strong> {user.email}</p>
-        {/* Add more fields as needed */}
+        {fields.map(({ key, label }) => (
+          <div key={key} className="mb-3 d-flex align-items-center">
+            <strong style={{ minWidth: 140 }}>{label}:</strong>
+            {editField === key && confirming ? (
+              <>
+                <input
+                  type={key === 'password' ? 'password' : 'text'}
+                  className="form-control mx-2"
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  style={{ maxWidth: 250 }}
+                />
+                <button className="btn btn-success btn-sm mx-1" onClick={handleConfirm}>Evet</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => { setEditField(null); setConfirming(false); }}>Hayır</button>
+              </>
+            ) : (
+              <>
+                <span className="mx-2">{key === 'password' ? '********' : user[key]}</span>
+                <button className="btn btn-link p-0 text-danger" onClick={() => handleEditClick(key)} title="Düzenle">
+                  <i className="bi bi-pencil"></i>
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+        {error && <div className="alert alert-danger py-2">{error}</div>}
+        {success && <div className="alert alert-success py-2">{success}</div>}
       </div>
     </div>
   );
