@@ -1,0 +1,148 @@
+Otomasyon Katibi Backend - OSGB User API Integration Guide
+============================================================
+
+# 1. Overview
+This document describes the requirements and usage of the OSGB user registration, login, and update APIs for frontend (FE) developers.
+
+All endpoints require an API key in the `x-api-key` header. All fields are required unless otherwise stated. CORS is enabled for https://www.katipotomasyonu.com.
+
+---
+
+## 2. API Endpoints
+
+### 2.1. Register OSGB User
+- **Endpoint:** `POST /api/osgb/register`
+- **Headers:**
+  - `x-api-key: <USER_API_KEY>` (required)
+  - `Content-Type: application/json`
+- **Body Example:**
+```json
+{
+  "company_name": "Örnek OSGB Ltd. Şti.",
+  "tax_number": "1234567890",
+  "address": "İstanbul, Türkiye",
+  "tax_office": "Kadıköy",
+  "osgb_id": "OSGB-2025-001",
+  "phone": "+905551112233",
+  "email": "osgb@example.com",
+  "password": "StrongP@ssw0rd"
+}
+```
+- **Response (201 Created):**
+```json
+{
+  "message": "Registration successful",
+  "user": {
+    "id": 1,
+    "company_name": "Örnek OSGB Ltd. Şti.",
+    "tax_number": "1234567890",
+    "address": "İstanbul, Türkiye",
+    "tax_office": "Kadıköy",
+    "osgb_id": "OSGB-2025-001",
+    "phone": "+905551112233",
+    "email": "osgb@example.com",
+    "is_active": 1,
+    "email_verified": 0,
+    "created_at": "2025-06-20T12:00:00.000Z",
+    "updated_at": "2025-06-20T12:00:00.000Z",
+    "password": "StrongP@ssw0rd"
+  }
+}
+```
+- **Validation Errors (400):**
+```json
+{
+  "error": "VALIDATION_ERROR",
+  "details": [
+    { "msg": "company_name is required", "param": "company_name", ... }
+  ]
+}
+```
+- **Other Errors:**
+  - Duplicate email or osgb_id: `{ "error": "EMAIL_EXISTS" }` or `{ "error": "OSGB_ID_EXISTS" }`
+  - API key missing/invalid: 401 Unauthorized
+
+---
+
+### 2.2. Login OSGB User
+- **Endpoint:** `POST /api/osgb/login`
+- **Headers:**
+  - `x-api-key: <USER_API_KEY>` (required)
+  - `Content-Type: application/json`
+- **Body Example:**
+```json
+{
+  "email": "osgb@example.com",
+  "password": "StrongP@ssw0rd"
+}
+```
+- **Response (200 OK):**
+```json
+{
+  "message": "Login successful",
+  "token": "<JWT_TOKEN>",
+  "user": {
+    "id": 1,
+    "company_name": "Örnek OSGB Ltd. Şti.",
+    "tax_number": "1234567890",
+    "address": "İstanbul, Türkiye",
+    "tax_office": "Kadıköy",
+    "osgb_id": "OSGB-2025-001",
+    "phone": "+905551112233",
+    "email": "osgb@example.com",
+    "is_active": 1,
+    "email_verified": 0,
+    "created_at": "2025-06-20T12:00:00.000Z",
+    "updated_at": "2025-06-20T12:00:00.000Z"
+  }
+}
+```
+- **Validation or Auth Errors (400/401):**
+```json
+{
+  "error": "INVALID_CREDENTIALS"
+}
+```
+
+---
+
+### 2.3. Update OSGB User Info
+- **Endpoint:** `PATCH /api/osgb/update-osgb-info`
+- **Headers:**
+  - `x-api-key: <USER_API_KEY>` (required)
+  - `Authorization: Bearer <JWT_TOKEN>` (required)
+  - `Content-Type: application/json`
+- **Body Example:**
+```json
+{
+  "company_name": "Yeni OSGB Adı",
+  "address": "Yeni Adres",
+  "phone": "+905551112244",
+  "password": "NewP@ssw0rd123" // optional, only if changing password
+}
+```
+- **Response (200 OK):**
+```json
+{
+  "message": "Update successful",
+  "user": {
+    ... // updated user fields
+    "password": "NewP@ssw0rd123" // only if password changed
+  }
+}
+```
+- **Validation/Auth Errors:**
+  - 400: Validation error
+  - 401: Invalid/missing token or API key
+
+---
+
+## 3. General Notes
+- All fields are required for registration and login.
+- Passwords must be 8-16 characters.
+- All responses are JSON.
+- CORS is enabled for https://www.katipotomasyonu.com.
+- Use the provided API key for all requests.
+- JWT token is required for update endpoint.
+
+For any questions, contact the backend team.
