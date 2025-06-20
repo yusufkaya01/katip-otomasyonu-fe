@@ -21,6 +21,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          REACT_APP_USER_API_KEY: ${{ secrets.REACT_APP_USER_API_KEY }}
 
       - name: Add Procfile
         run: |
