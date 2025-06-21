@@ -139,10 +139,9 @@ function RegisterPage() {
             // Translate backend error messages to Turkish
             let msg = data.message;
             if (data.error === 'INVALID_CITY') {
-              // Example: "City does not match the official record. Expected: ISPARTA"
               msg = `Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.`;
             } else if (data.error === 'INVALID_DISTRICT') {
-              msg = `Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.}`;
+              msg = `Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.`;
             } else if (data.error === 'INVALID_COMPANY_NAME') {
               msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
             } else if (data.error === 'INVALID_OSGB_ID') {
@@ -178,26 +177,16 @@ function RegisterPage() {
   const closeAgreementModal = () => setAgreementModal({ open: false, type: null });
   const approveAgreement = () => {
     if (agreementModal.type) {
-      setAgreements(a => ({ ...a, [agreementModal.type]: true }));
+      setAgreements(a => {
+        const updated = { ...a, [agreementModal.type]: true };
+        // Do NOT setShowAgreementWarning here; only set it on Kayıt Ol button click
+        return updated;
+      });
       closeAgreementModal();
     }
   };
 
   const canSubmit = agreements.terms && agreements.privacy && agreements.kvkk && !loading;
-
-  const handleAgreementCheckbox = (type) => {
-    if (["terms", "privacy", "kvkk"].includes(type)) {
-      // Allow toggling (check/uncheck)
-      setAgreements((a) => {
-        const updated = { ...a, [type]: !a[type] };
-        // Show warning if any mandatory is unchecked
-        setShowAgreementWarning(!(updated.terms && updated.privacy && updated.kvkk));
-        return updated;
-      });
-    } else {
-      setAgreements((a) => ({ ...a, [type]: !a[type] }));
-    }
-  };
 
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: 500, margin: '0 auto' }}>
@@ -382,32 +371,88 @@ function RegisterPage() {
       </div>
       {error && <div className="alert alert-danger py-2">{error}</div>}
       <div className="mt-4 mb-2">
+        {/* Kullanım Koşulları */}
         <div className="form-check mb-2">
-          <input className="form-check-input" type="checkbox" id="terms" checked={agreements.terms} onChange={() => handleAgreementCheckbox('terms')} required readOnly />
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="terms"
+            checked={agreements.terms}
+            readOnly
+            onClick={e => {
+              if (!agreements.terms) {
+                e.preventDefault();
+                openAgreementModal('terms');
+              } else {
+                // Allow unchecking directly
+                setAgreements(a => ({ ...a, terms: false }));
+              }
+            }}
+            aria-required="true"
+          />
           <label className="form-check-label" htmlFor="terms">
             <span className="fw-bold">Kullanım Koşulları</span> (
               <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('terms')}>Sözleşmeyi Oku</button>
             ) <span className="text-danger">*</span>
           </label>
         </div>
+        {/* Gizlilik Sözleşmesi */}
         <div className="form-check mb-2">
-          <input className="form-check-input" type="checkbox" id="privacy" checked={agreements.privacy} onChange={() => handleAgreementCheckbox('privacy')} required readOnly />
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="privacy"
+            checked={agreements.privacy}
+            readOnly
+            onClick={e => {
+              if (!agreements.privacy) {
+                e.preventDefault();
+                openAgreementModal('privacy');
+              } else {
+                setAgreements(a => ({ ...a, privacy: false }));
+              }
+            }}
+            aria-required="true"
+          />
           <label className="form-check-label" htmlFor="privacy">
             <span className="fw-bold">Gizlilik Sözleşmesi</span> (
               <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('privacy')}>Sözleşmeyi Oku</button>
             ) <span className="text-danger">*</span>
           </label>
         </div>
+        {/* KVKK Açık Rıza */}
         <div className="form-check mb-2">
-          <input className="form-check-input" type="checkbox" id="kvkk" checked={agreements.kvkk} onChange={() => handleAgreementCheckbox('kvkk')} required readOnly />
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="kvkk"
+            checked={agreements.kvkk}
+            readOnly
+            onClick={e => {
+              if (!agreements.kvkk) {
+                e.preventDefault();
+                openAgreementModal('kvkk');
+              } else {
+                setAgreements(a => ({ ...a, kvkk: false }));
+              }
+            }}
+            aria-required="true"
+          />
           <label className="form-check-label" htmlFor="kvkk">
             <span className="fw-bold">Açık Rıza Beyan (KVKK)</span> (
               <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('kvkk')}>Sözleşmeyi Oku</button>
             ) <span className="text-danger">*</span>
           </label>
         </div>
+        {/* Ticari Elektronik İleti Onayı (optional) */}
         <div className="form-check mb-2">
-          <input className="form-check-input" type="checkbox" id="commercial" checked={agreements.commercial} onChange={() => handleAgreementCheckbox('commercial')} />
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="commercial"
+            checked={agreements.commercial}
+            onChange={() => setAgreements(a => ({ ...a, commercial: !a.commercial }))}
+          />
           <label className="form-check-label" htmlFor="commercial">
             <span className="fw-bold">Ticari Elektronik İleti Onayı</span> (
               <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('commercial')}>Metni Oku</button>
@@ -448,8 +493,13 @@ function RegisterPage() {
         </div>
       )}
       {error && <div className="alert alert-danger py-2">{error}</div>}
-      <button type="submit" className="btn btn-danger w-100 mt-2" disabled={!canSubmit} onClick={() => {
-        if (!(agreements.terms && agreements.privacy && agreements.kvkk)) setShowAgreementWarning(true);
+      <button type="submit" className="btn btn-danger w-100 mt-2" disabled={!canSubmit} onClick={e => {
+        if (!(agreements.terms && agreements.privacy && agreements.kvkk)) {
+          e.preventDefault();
+          setShowAgreementWarning(true);
+        } else {
+          setShowAgreementWarning(false);
+        }
       }}>
         {loading ? 'Kayıt Olunuyor...' : 'Kayıt Ol'}
       </button>
