@@ -1,0 +1,38 @@
+# OSGB Registration Validation Update (June 2025)
+
+## What Changed?
+The backend now validates OSGB registration fields against the official OSGB list (osgb-lists.xlsx) during registration. This ensures only officially recognized OSGBs can register.
+
+## What Does the Frontend Need to Know?
+- **API request body:** No changes. Continue sending:
+  - company_name
+  - tax_number
+  - address
+  - tax_office
+  - osgb_id
+  - phone
+  - email
+  - password
+  - city
+  - district
+
+- **New error messages:**
+  - If a field does not match the official list, the backend returns a 400 error with a specific message:
+    - `INVALID_OSGB_ID`: OSGB ID not found in the official list.
+    - `INVALID_COMPANY_NAME`: Company name does not match the official record.
+    - `INVALID_CITY`: City does not match the official record. (Message includes the expected value)
+    - `INVALID_DISTRICT`: District does not match the official record. (Message includes the expected value)
+
+- **Example error response:**
+```json
+{
+  "error": "INVALID_CITY",
+  "message": "City does not match the official record. Expected: Ankara"
+}
+```
+
+## Action Required
+- FE should display these error messages to the user during registration if received.
+- No changes needed to the registration form or request body.
+
+For questions, contact the backend team.

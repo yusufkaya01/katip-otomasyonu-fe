@@ -117,9 +117,23 @@ function RegisterPage() {
         if (data && data.details && Array.isArray(data.details)) {
           setError(data.details.map(d => d.msg).join(' '));
         } else if (data && data.error) {
-          setError(data.error === 'EMAIL_EXISTS' ? 'Bu e-posta ile zaten kayıtlı bir kullanıcı var.' :
-            data.error === 'OSGB_ID_EXISTS' ? 'Bu OSGB Yetki Belgesi No ile zaten kayıtlı bir kullanıcı var.' :
-            'Kayıt sırasında bir hata oluştu.');
+          // Show backend validation errors for official record mismatches
+          if (
+            [
+              'INVALID_OSGB_ID',
+              'INVALID_COMPANY_NAME',
+              'INVALID_CITY',
+              'INVALID_DISTRICT'
+            ].includes(data.error) && data.message
+          ) {
+            setError(data.message);
+          } else if (data.error === 'EMAIL_EXISTS') {
+            setError('Bu e-posta ile zaten kayıtlı bir kullanıcı var.');
+          } else if (data.error === 'OSGB_ID_EXISTS') {
+            setError('Bu OSGB Yetki Belgesi No ile zaten kayıtlı bir kullanıcı var.');
+          } else {
+            setError('Kayıt sırasında bir hata oluştu.');
+          }
         } else {
           setError('Kayıt sırasında bir hata oluştu.');
         }
