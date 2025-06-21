@@ -76,13 +76,10 @@ function IsletmemPage() {
     }
   }, [selectedDistrict, selectedCity, taxData]);
 
+  // Move city, district, tax_office, tax_number to the end and remove them from fields
   const fields = [
     { key: 'company_name', label: 'Şirket Ünvanı' },
-    { key: 'city', label: 'Şehir' },
-    { key: 'district', label: 'İlçe' },
-    { key: 'tax_number', label: 'Vergi Kimlik No' },
     { key: 'address', label: 'Adres' },
-    { key: 'tax_office', label: 'Vergi Dairesi' },
     { key: 'osgb_id', label: 'OSGB Yetki Belgesi No' },
     { key: 'phone', label: 'Telefon' },
     { key: 'email', label: 'E-posta' },
@@ -90,15 +87,22 @@ function IsletmemPage() {
   ];
 
   const handleEditClick = (key) => {
-    setEditField(key);
-    if (key === 'city') {
+    if (key === 'tax_group') {
       setSelectedCity(user.city || '');
-    } else if (key === 'district') {
       setSelectedDistrict(user.district || '');
-    } else if (key === 'tax_office') {
       setEditValue(user.tax_office || '');
+      setEditField('tax_group');
     } else {
-      setEditValue(user[key] || '');
+      setEditField(key);
+      if (key === 'city') {
+        setSelectedCity(user.city || '');
+      } else if (key === 'district') {
+        setSelectedDistrict(user.district || '');
+      } else if (key === 'tax_office') {
+        setEditValue(user.tax_office || '');
+      } else {
+        setEditValue(user[key] || '');
+      }
     }
     setConfirming(true);
     setError('');
@@ -118,7 +122,14 @@ function IsletmemPage() {
     }
     // Prepare PATCH payload (only the edited field)
     let payload;
-    if (editField === 'city') {
+    if (editField === 'tax_group') {
+      payload = {
+        city: selectedCity,
+        district: selectedDistrict,
+        tax_office: editValue,
+        tax_number: user.tax_number // You may want to use a separate state for tax_number if you want to allow editing it
+      };
+    } else if (editField === 'city') {
       payload = { city: selectedCity };
     } else if (editField === 'district') {
       payload = { district: selectedDistrict };
@@ -130,7 +141,7 @@ function IsletmemPage() {
     // Required fields for PATCH: must send all required fields except password (unless changing password)
     const required = ['company_name', 'tax_number', 'address', 'tax_office', 'osgb_id', 'phone', 'email', 'city', 'district'];
     required.forEach(f => {
-      if (f !== editField && !(f === 'city' && editField === 'district') && !(f === 'district' && editField === 'city')) payload[f] = user[f];
+      if (!(editField === 'tax_group' && ['city','district','tax_office','tax_number'].includes(f)) && f !== editField) payload[f] = user[f];
     });
     if (editField !== 'password') delete payload.password;
     try {
@@ -265,46 +276,97 @@ function IsletmemPage() {
             )}
           </div>
         ))}
-        <div className="mb-3">
-          <strong style={{ minWidth: 140 }}>Şehir:</strong>
-          <select
-            className="form-select"
-            value={selectedCity}
-            onChange={e => setSelectedCity(e.target.value)}
+        {/* Grouped editable fields: Şehir, İlçe, Vergi Dairesi, Vergi Kimlik No */}
+        <div className="mb-3 p-3 rounded border border-2 border-danger position-relative" style={{borderStyle:'dashed', minHeight: 80}}>
+          <div className="d-flex align-items-center mb-2">
+            <strong style={{ minWidth: 140 }}>Şehir:</strong>
+            <span className="mx-2">{user.city}</span>
+          </div>
+          <div className="d-flex align-items-center mb-2">
+            <strong style={{ minWidth: 140 }}>İlçe:</strong>
+            <span className="mx-2">{user.district}</span>
+          </div>
+          <div className="d-flex align-items-center mb-2">
+            <strong style={{ minWidth: 140 }}>Vergi Dairesi:</strong>
+            <span className="mx-2">{user.tax_office}</span>
+          </div>
+          <div className="d-flex align-items-center mb-2">
+            <strong style={{ minWidth: 140 }}>Vergi Kimlik No:</strong>
+            <span className="mx-2">{user.tax_number}</span>
+          </div>
+          {/* Pencil icon for group edit */}
+          <button
+            className="btn btn-link p-0 text-danger position-absolute"
+            style={{ top: 8, right: 8 }}
+            onClick={() => handleEditClick('tax_group')}
+            title="Düzenle"
           >
-            <option value="">Şehir Seçin</option>
-            {taxData.map(city => (
-              <option key={city.name} value={city.name}>{city.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-3">
-          <strong style={{ minWidth: 140 }}>İlçe:</strong>
-          <select
-            className="form-select"
-            value={selectedDistrict}
-            onChange={e => setSelectedDistrict(e.target.value)}
-            disabled={!selectedCity}
-          >
-            <option value="">İlçe Seçin</option>
-            {districts.map(district => (
-              <option key={district.name} value={district.name}>{district.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-3">
-          <strong style={{ minWidth: 140 }}>Vergi Dairesi:</strong>
-          <select
-            className="form-select"
-            value={user.tax_office}
-            onChange={e => handleEditClick('tax_office', e.target.value)}
-            disabled={!selectedDistrict}
-          >
-            <option value="">Vergi Dairesi Seçin</option>
-            {taxOffices.map(office => (
-              <option key={office.name} value={office.name}>{office.name}</option>
-            ))}
-          </select>
+            <i className="bi bi-pencil"></i>
+          </button>
+          {/* Group edit mode */}
+          {editField === 'tax_group' && confirming && (
+            <div className="mt-3">
+              <div className="row g-2">
+                <div className="col-md-6">
+                  <label className="form-label">Şehir</label>
+                  <select
+                    className="form-select"
+                    value={selectedCity || user.city || ''}
+                    onChange={e => setSelectedCity(e.target.value)}
+                  >
+                    <option value="">Şehir seçiniz</option>
+                    {taxData.map(city => (
+                      <option key={city.name} value={city.name}>{city.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">İlçe</label>
+                  <select
+                    className="form-select"
+                    value={selectedDistrict || user.district || ''}
+                    onChange={e => setSelectedDistrict(e.target.value)}
+                    disabled={!selectedCity && !user.city}
+                  >
+                    <option value="">İlçe seçiniz</option>
+                    {districts.map(d => (
+                      <option key={d.name} value={d.name}>{d.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Vergi Dairesi</label>
+                  <select
+                    className="form-select"
+                    value={editValue || user.tax_office || ''}
+                    onChange={e => setEditValue(e.target.value)}
+                    disabled={!selectedDistrict && !user.district}
+                  >
+                    <option value="">Vergi Dairesi seçiniz</option>
+                    {taxOffices.map(office => (
+                      <option key={office} value={office}>{office}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Vergi Kimlik No</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={user.tax_number}
+                    onChange={e => setEditValue(e.target.value)}
+                    maxLength={10}
+                    minLength={10}
+                    pattern="[0-9]{10}"
+                  />
+                </div>
+              </div>
+              <div className="mt-2">
+                <button className="btn btn-success btn-sm mx-1" onClick={handleConfirm}>Evet</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => { setEditField(null); setConfirming(false); }}>Hayır</button>
+              </div>
+            </div>
+          )}
         </div>
         {error && <div className="alert alert-danger py-2">{error}</div>}
         {success && <div className="alert alert-success py-2">{success}</div>}
