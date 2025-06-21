@@ -132,11 +132,11 @@ function RegisterPage() {
               // Example: "City does not match the official record. Expected: ISPARTA"
               const match = msg.match(/Expected: (.+)$/);
               const expected = match ? match[1] : '';
-              msg = `Seçilen şehir resmi kayıtlardaki ile eşleşmiyor. Beklenen: ${expected}`;
+              msg = `Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.`;
             } else if (data.error === 'INVALID_DISTRICT') {
               const match = msg.match(/Expected: (.+)$/);
               const expected = match ? match[1] : '';
-              msg = `Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor. Beklenen: ${expected}`;
+              msg = `Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.}`;
             } else if (data.error === 'INVALID_COMPANY_NAME') {
               msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
             } else if (data.error === 'INVALID_OSGB_ID') {
