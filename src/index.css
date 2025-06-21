@@ -33,3 +33,24 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.filigran-bg {
+  min-height: 100vh;
+  position: relative;
+}
+
+.filigran-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+.filigran-bg::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url('../public/filigran.png') no-repeat center center;
+  background-size: 600px auto;
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 0;
+}

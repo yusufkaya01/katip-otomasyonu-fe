@@ -14,10 +14,8 @@ function HomePage() {
   const closeModal = () => setModalOpen(false);
 
   return (
-    <div>
+    <div className="filigran-bg">
       <section className="text-center mb-5">
-        <img src="/icon-128px-trasnparent.png" alt="Katip Otomasyonu Logo" style={{ width: 96, height: 96 }} className="mb-3" />
-        <h1 className="mb-3">Katip Otomasyonu</h1>
         <h2 className="mb-4">Katip Otomasyonu Nedir?</h2>
         <p className="lead mb-4">
           Katip Otomasyonu, isgkatip platformunda sözleşme güncellemelerini ve yönetimini otomatikleştiren, güvenli ve hızlı bir Chrome eklentisidir. Tüm işlemlerinizde zaman kazanın ve hatasız yönetim sağlayın.

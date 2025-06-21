@@ -22,23 +22,25 @@ function App() {
   return (
     <Router>
       <Navbar />
-      <div className="container my-5">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/ozellikler" element={<FeaturesPage />} />
-          <Route path="/kurulum" element={<SetupPage />} />
-          <Route path="/sss" element={<FAQPage />} />
-          <Route path="/hakkimizda" element={<AboutPage />} />
-          <Route path="/iletisim" element={<ContactPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/copyright" element={<CopyrightPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/data-policy" element={<DataPolicyPage />} />
-          <Route path="/isletmem" element={<IsletmemPage />} />
-          <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
-          <Route path="/giris" element={<LoginPage />} />
-          <Route path="/kayit" element={<RegisterPage />} />
-        </Routes>
+      <div className="filigran-bg">
+        <div className="container my-5">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/ozellikler" element={<FeaturesPage />} />
+            <Route path="/kurulum" element={<SetupPage />} />
+            <Route path="/sss" element={<FAQPage />} />
+            <Route path="/hakkimizda" element={<AboutPage />} />
+            <Route path="/iletisim" element={<ContactPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/copyright" element={<CopyrightPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/data-policy" element={<DataPolicyPage />} />
+            <Route path="/isletmem" element={<IsletmemPage />} />
+            <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
+            <Route path="/giris" element={<LoginPage />} />
+            <Route path="/kayit" element={<RegisterPage />} />
+          </Routes>
+        </div>
       </div>
       <Footer />
     </Router>
