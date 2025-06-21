@@ -32,6 +32,7 @@ function RegisterPage() {
     kvkk: false, // KVKK Açık Rıza
     commercial: false // Ticari Elektronik İleti Onayı (optional)
   });
+  const [showAgreementWarning, setShowAgreementWarning] = useState(false);
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
 
@@ -139,12 +140,8 @@ function RegisterPage() {
             let msg = data.message;
             if (data.error === 'INVALID_CITY') {
               // Example: "City does not match the official record. Expected: ISPARTA"
-              const match = msg.match(/Expected: (.+)$/);
-              const expected = match ? match[1] : '';
               msg = `Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.`;
             } else if (data.error === 'INVALID_DISTRICT') {
-              const match = msg.match(/Expected: (.+)$/);
-              const expected = match ? match[1] : '';
               msg = `Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.}`;
             } else if (data.error === 'INVALID_COMPANY_NAME') {
               msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
@@ -189,11 +186,16 @@ function RegisterPage() {
   const canSubmit = agreements.terms && agreements.privacy && agreements.kvkk && !loading;
 
   const handleAgreementCheckbox = (type) => {
-    if (['terms', 'privacy', 'kvkk'].includes(type)) {
-      // Don't allow direct check
-      if (!agreements[type]) openAgreementModal(type);
+    if (["terms", "privacy", "kvkk"].includes(type)) {
+      // Allow toggling (check/uncheck)
+      setAgreements((a) => {
+        const updated = { ...a, [type]: !a[type] };
+        // Show warning if any mandatory is unchecked
+        setShowAgreementWarning(!(updated.terms && updated.privacy && updated.kvkk));
+        return updated;
+      });
     } else {
-      setAgreements(a => ({ ...a, [type]: !a[type] }));
+      setAgreements((a) => ({ ...a, [type]: !a[type] }));
     }
   };
 
@@ -383,27 +385,40 @@ function RegisterPage() {
         <div className="form-check mb-2">
           <input className="form-check-input" type="checkbox" id="terms" checked={agreements.terms} onChange={() => handleAgreementCheckbox('terms')} required readOnly />
           <label className="form-check-label" htmlFor="terms">
-            <span className="fw-bold">Kullanım Koşulları</span> (<a href="#" onClick={e => {e.preventDefault(); openAgreementModal('terms');}}>Sözleşmeyi Oku</a>) <span className="text-danger">*</span>
+            <span className="fw-bold">Kullanım Koşulları</span> (
+              <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('terms')}>Sözleşmeyi Oku</button>
+            ) <span className="text-danger">*</span>
           </label>
         </div>
         <div className="form-check mb-2">
           <input className="form-check-input" type="checkbox" id="privacy" checked={agreements.privacy} onChange={() => handleAgreementCheckbox('privacy')} required readOnly />
           <label className="form-check-label" htmlFor="privacy">
-            <span className="fw-bold">Gizlilik Sözleşmesi</span> (<a href="#" onClick={e => {e.preventDefault(); openAgreementModal('privacy');}}>Sözleşmeyi Oku</a>) <span className="text-danger">*</span>
+            <span className="fw-bold">Gizlilik Sözleşmesi</span> (
+              <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('privacy')}>Sözleşmeyi Oku</button>
+            ) <span className="text-danger">*</span>
           </label>
         </div>
         <div className="form-check mb-2">
           <input className="form-check-input" type="checkbox" id="kvkk" checked={agreements.kvkk} onChange={() => handleAgreementCheckbox('kvkk')} required readOnly />
           <label className="form-check-label" htmlFor="kvkk">
-            <span className="fw-bold">Açık Rıza Beyan (KVKK)</span> (<a href="#" onClick={e => {e.preventDefault(); openAgreementModal('kvkk');}}>Sözleşmeyi Oku</a>) <span className="text-danger">*</span>
+            <span className="fw-bold">Açık Rıza Beyan (KVKK)</span> (
+              <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('kvkk')}>Sözleşmeyi Oku</button>
+            ) <span className="text-danger">*</span>
           </label>
         </div>
         <div className="form-check mb-2">
           <input className="form-check-input" type="checkbox" id="commercial" checked={agreements.commercial} onChange={() => handleAgreementCheckbox('commercial')} />
           <label className="form-check-label" htmlFor="commercial">
-            <span className="fw-bold">Ticari Elektronik İleti Onayı</span> (<a href="#" onClick={e => {e.preventDefault(); openAgreementModal('commercial');}}>Metni Oku</a>) <span className="text-secondary">(isteğe bağlı)</span>
+            <span className="fw-bold">Ticari Elektronik İleti Onayı</span> (
+              <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('commercial')}>Metni Oku</button>
+            ) <span className="text-secondary">(isteğe bağlı)</span>
           </label>
         </div>
+        {showAgreementWarning && (
+          <div className="alert alert-warning py-2 mt-2">
+            Kayıt olabilmek için tüm zorunlu sözleşmeleri okuduğunuzu ve onayladığınızı belirtmelisiniz.
+          </div>
+        )}
       </div>
       {/* Agreement Modal */}
       {agreementModal.open && (
@@ -433,7 +448,9 @@ function RegisterPage() {
         </div>
       )}
       {error && <div className="alert alert-danger py-2">{error}</div>}
-      <button type="submit" className="btn btn-danger w-100 mt-2" disabled={!canSubmit}>
+      <button type="submit" className="btn btn-danger w-100 mt-2" disabled={!canSubmit} onClick={() => {
+        if (!(agreements.terms && agreements.privacy && agreements.kvkk)) setShowAgreementWarning(true);
+      }}>
         {loading ? 'Kayıt Olunuyor...' : 'Kayıt Ol'}
       </button>
     </form>
