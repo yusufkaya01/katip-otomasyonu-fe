@@ -126,7 +126,23 @@ function RegisterPage() {
               'INVALID_DISTRICT'
             ].includes(data.error) && data.message
           ) {
-            setError(data.message);
+            // Translate backend error messages to Turkish
+            let msg = data.message;
+            if (data.error === 'INVALID_CITY') {
+              // Example: "City does not match the official record. Expected: ISPARTA"
+              const match = msg.match(/Expected: (.+)$/);
+              const expected = match ? match[1] : '';
+              msg = `Seçilen şehir resmi kayıtlardaki ile eşleşmiyor. Beklenen: ${expected}`;
+            } else if (data.error === 'INVALID_DISTRICT') {
+              const match = msg.match(/Expected: (.+)$/);
+              const expected = match ? match[1] : '';
+              msg = `Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor. Beklenen: ${expected}`;
+            } else if (data.error === 'INVALID_COMPANY_NAME') {
+              msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
+            } else if (data.error === 'INVALID_OSGB_ID') {
+              msg = 'OSGB Yetki Belgesi No resmi kayıtlarda bulunamadı.';
+            }
+            setError(msg);
           } else if (data.error === 'EMAIL_EXISTS') {
             setError('Bu e-posta ile zaten kayıtlı bir kullanıcı var.');
           } else if (data.error === 'OSGB_ID_EXISTS') {
