@@ -27,6 +27,12 @@ function Navbar() {
     navigate('/');
   };
 
+  // Helper to truncate company name
+  function getShortCompanyName(name) {
+    if (!name) return '';
+    return name.length > 10 ? name.slice(0, 10) + '..' : name;
+  }
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
       <div className="container">
@@ -68,7 +74,7 @@ function Navbar() {
                   <button onClick={handleLogout} className="btn btn-outline-light btn-sm fw-bold">Çıkış Yap</button>
                 </li>
                 <li className="nav-item text-white small ms-2">
-                  Hoşgeldiniz, {user.company_name}
+                  Hoşgeldiniz, {getShortCompanyName(user.company_name)}
                 </li>
               </>
             )}
