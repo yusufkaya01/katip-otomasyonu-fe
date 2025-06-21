@@ -165,7 +165,29 @@ function IsletmemPage() {
         setConfirming(false);
       } else {
         const data = await res.json();
-        setError(data.error || 'Güncelleme sırasında bir hata oluştu.');
+        // Handle new validation errors for osgb_id, company_name, city, district
+        if (
+          [
+            'INVALID_OSGB_ID',
+            'INVALID_COMPANY_NAME',
+            'INVALID_CITY',
+            'INVALID_DISTRICT'
+          ].includes(data.error) && data.message
+        ) {
+          let msg = data.message;
+          if (data.error === 'INVALID_CITY') {
+            msg = 'Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.';
+          } else if (data.error === 'INVALID_DISTRICT') {
+            msg = 'Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.';
+          } else if (data.error === 'INVALID_COMPANY_NAME') {
+            msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
+          } else if (data.error === 'INVALID_OSGB_ID') {
+            msg = 'OSGB Yetki Belgesi No resmi kayıtlarda bulunamadı.';
+          }
+          setError(msg);
+        } else {
+          setError(data.error || 'Güncelleme sırasında bir hata oluştu.');
+        }
       }
     } catch (err) {
       setError('Sunucuya bağlanılamadı.');
