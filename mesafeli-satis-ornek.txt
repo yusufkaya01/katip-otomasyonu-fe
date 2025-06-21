@@ -1,0 +1,83 @@
+(ÖRNEK) Mesafeli Satış Sözleşmesi
+1. TARAFLAR
+İşbu Sözleşme aşağıdaki taraflar arasında aşağıda belirtilen hüküm ve şartlar çerçevesinde imzalanmıştır.
+ALICI:
+AD-SOYAD: 
+ADRES:
+SATICI:
+AD-SOYAD: 
+ADRES:
+İş bu sözleşmeyi kabul etmekle ALICI, sözleşme konusu siparişi onayladığı takdirde sipariş konusu bedeli ve varsa kargo ücreti, vergi gibi belirtilen ek ücretleri ödeme yükümlülüğü altına gireceğini ve bu konuda bilgilendirildiğini peşinen kabul eder.
+2. TANIMLAR
+İşbu sözleşmenin uygulanmasında ve yorumlanmasında aşağıda yazılı terimler karşılarındaki yazılı açıklamaları ifade edeceklerdir.
+• BAKAN: Gümrük ve Ticaret Bakanı’nı,
+• BAKANLIK: Gümrük ve Ticaret Bakanlığı’nı,
+• KANUN: 6502 sayılı Tüketicinin Korunması Hakkında Kanun’u,
+• YÖNETMELİK: Mesafeli Sözleşmeler Yönetmeliği’ni,
+• HİZMET: Bir ücret veya menfaat karşılığında yapılan ya da yapılması taahhüt edilen mal sağlama dışındaki her türlü tüketici işlemini,
+• SATICI: Ticari veya mesleki faaliyetleri kapsamında tüketiciye mal sunan veya mal sunan adına veya hesabına hareket eden şirketi,
+• ALICI: Bir mal veya hizmeti ticari veya mesleki olmayan amaçlarla edinen, kullanan veya yararlanan gerçek ya da tüzel kişiyi,
+• SİTE: SATICI’ya ait internet sitesini,
+• SİPARİŞ VEREN: Bir mal veya hizmeti SATICI’ya ait internet sitesi üzerinden talep eden gerçek ya da tüzel kişiyi,
+• TARAFLAR: SATICI ve ALICI’yı,
+• SÖZLEŞME: SATICI ve ALICI arasında akdedilen işbu sözleşmeyi,
+• MAL: Alışverişe konu olan taşınır eşyayı ve elektronik ortamda kullanılmak üzere hazırlanan yazılım, ses, görüntü ve benzeri gayri maddi malları,
+3. KONU
+İşbu Sözleşme, ALICI’nın, SATICI’ya ait internet sitesi üzerinden elektronik ortamda siparişini verdiği aşağıda nitelikleri ve satış fiyatı belirtilen ürünün satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmelere Dair Yönetmelik hükümleri gereğince tarafların hak ve yükümlülüklerini düzenler.
+Listelenen ve sitede ilan edilen fiyatlar satış fiyatıdır. İlan edilen fiyatlar ve vaatler güncelleme yapılana ve değiştirilene kadar geçerlidir. Süreli olarak ilan edilen fiyatlar ise belirtilen süre sonuna kadar geçerlidir.
+4. SATICI BİLGİLERİ
+Ünvanı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
+Adres: Merkez / ISPARTA
+Telefon: +905555555555  
+Eposta: info@arkaya.com
+5. ALICI BİLGİLERİ
+Teslim edilecek kişi: 
+Teslimat Adresi: 
+Telefon: 
+Eposta/kullanıcı adı:
+6. SİPARİŞ VEREN KİŞİ BİLGİLERİ
+Ad/Soyad/Unvan: 
+Adres: 
+Telefon: 
+Eposta/kullanıcı adı:
+7. SÖZLEŞME KONUSU ÜRÜN/ÜRÜNLER BİLGİLERİ
+1. Malın/Ürün/Ürünlerin/Hizmetin temel özelliklerini (türü, miktarı, marka/modeli, rengi, adedi) SATICI’ya ait internet sitesinde yayınlanmaktadır. Satıcı tarafından kampanya düzenlenmiş ise ilgili ürünün temel özelliklerini kampanya süresince inceleyebilirsiniz. Kampanya tarihine kadar geçerlidir.
+7.2. Fiyatlar
+Listelenen ve sitede ilan edilen fiyatlar satış fiyatıdır. İlan edilen fiyatlar ve vaatler güncelleme yapılana ve değiştirilene kadar geçerlidir. Süreli olarak ilan edilen fiyatlar ise belirtilen süre sonuna kadar geçerlidir.
+7.3. Vergiler ve Ödemeler
+Sözleşme konusu mal ya da hizmetin tüm vergiler dâhil satış fiyatı aşağıda gösterilmiştir.
+Ürün Açıklaması
+Adet
+Birim Fiyatı
+Ara Toplam (KDV Dahil)
+Ürün 1
+1
+100.00 TL
+100.00 TL
+Kargo Tutarı: 20.00 TL
+Toplam: 120.00 TL
+8. FATURA BİLGİLERİ
+Ad/Soyad/Unvan: 
+Adres: 
+Telefon: 
+Eposta/kullanıcı adı: 
+Fatura teslim: Fatura sipariş teslimatı sırasında fatura adresine sipariş ile birlikte teslim edilecektir.
+9. GENEL HÜKÜMLER
+9.1. Bilgilendirme ve Kabul
+ALICI, SATICI’ya ait internet sitesinde sözleşme konusu ürünün temel nitelikleri, satış fiyatı ve ödeme şekli ile teslimata ilişkin ön bilgileri okuyup, bilgi sahibi olduğunu, elektronik ortamda gerekli teyidi verdiğini kabul, beyan ve taahhüt eder.
+9.2. Teslim Süresi
+Sözleşme konusu her bir ürün, 30 günlük yasal süreyi aşmamak kaydı ile ALICI’nın yerleşim yeri uzaklığına bağlı olarak internet sitesindeki ön bilgiler kısmında belirtilen süre zarfında teslim edilir.
+10. CAYMA HAKKI
+ALICI, mesafeli sözleşmenin mal satışına ilişkin olması durumunda, ürünün kendisine veya gösterdiği adresteki kişi/kuruluşa teslim tarihinden itibaren 14 gün içerisinde, SATICI’ya bildirmek şartıyla hiçbir gerekçe göstermeksizin malı reddederek sözleşmeden cayma hakkını kullanabilir.
+11. CAYMA HAKKI KULLANILAMAYACAK ÜRÜNLER
+ALICI’nın isteği veya açıkça kişisel ihtiyaçları doğrultusunda hazırlanan, iç giyim alt parçaları, makyaj malzemeleri, tek kullanımlık ürünler gibi ürünler cayma hakkı kapsamı dışında kalmaktadır.
+12. TEMERRÜT HALİ VE HUKUKİ SONUÇLARI
+ALICI, ödeme işlemlerini kredi kartı ile yaptığı durumda temerrüde düştüğü takdirde, kart sahibi banka ile arasındaki kredi kartı sözleşmesi çerçevesinde faiz ödeyeceğini ve bankaya karşı sorumlu olacağını kabul, beyan ve taahhüt eder.
+13. YETKİLİ MAHKEME
+İşbu sözleşmeden doğan uyuşmazlıklarda şikayet ve itirazlar, tüketicinin yerleşim yerinin bulunduğu veya tüketici işleminin yapıldığı yerdeki tüketici sorunları hakem heyetine veya tüketici mahkemesine yapılacaktır.
+14. YÜRÜRLÜK
+ALICI, Site üzerinden verdiği siparişe ait ödemeyi gerçekleştirdiğinde işbu sözleşmenin tüm şartlarını kabul etmiş sayılır.
+ 
+
+(IMPORTANT: infos about the buyer will be get from the registration form, instead of Ad-Soyad we will write there Şirket Ünvanı, Also we will add Vergi Dairesi and Vergi kim no)
+

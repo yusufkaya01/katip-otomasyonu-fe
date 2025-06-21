@@ -24,6 +24,15 @@ function RegisterPage() {
   const [districts, setDistricts] = useState([]);
   const [taxOffices, setTaxOffices] = useState([]);
 
+  // Agreement modal state
+  const [agreementModal, setAgreementModal] = useState({ open: false, type: null });
+  const [agreements, setAgreements] = useState({
+    terms: false, // Kullanım Koşulları
+    privacy: false, // Gizlilik Sözleşmesi
+    kvkk: false, // KVKK Açık Rıza
+    commercial: false // Ticari Elektronik İleti Onayı (optional)
+  });
+
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
 
   useEffect(() => {
@@ -158,6 +167,34 @@ function RegisterPage() {
       setError('Sunucuya bağlanılamadı. Lütfen tekrar deneyin.');
     }
     setLoading(false);
+  };
+
+  // Agreement texts (fully readable in modal)
+  const agreementTexts = {
+    terms: `Kullanım Koşulları\n\nKatip Otomasyonu, yalnızca geçerli bir lisans anahtarı ile kullanılabilir. Kullanıcı, uzantıyı ve web sitesini yalnızca yasal amaçlarla ve isgkatip.csgb.gov.tr platformunda kullanmayı kabul eder. Uzantı ve web sitesi, isgkatip.csgb.gov.tr'nin kullanım koşullarına ve Türk mevzuatına aykırı şekilde kullanılamaz.\n\nKullanıcı, uzantının ve web sitesinin işlevlerini kötüye kullanmayacağını, başkalarının verilerine izinsiz erişmeyeceğini ve uzantıyı sadece kendi kurumunun işlemleri için kullanacağını taahhüt eder. Geliştirici (Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.), uzantının yanlış veya izinsiz kullanımından doğacak zararlardan sorumlu değildir.\n\nLisans anahtarının paylaşılması, çoğaltılması veya izinsiz kullanımı yasaktır. Tespit halinde lisans iptal edilir. Uzantı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından güncellenebilir veya sonlandırılabilir.\n\nUygulamayı kullanan veya lisans satın alan kullanıcılar, ilk kayıt sırasında talep edilen telefon numarası, şirket adı ve OSGB-ID bilgilerinin lisans doğrulama ve müşteri kaydı amacıyla saklanmasını kabul etmiş sayılır.\n\nDetaylı bilgi için info@arkaya.com.tr adresine başvurabilirsiniz.`,
+    privacy: `Gizlilik Sözleşmesi\n\nKatip Otomasyonu Chrome uzantısı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından işletilmektedir. Kullanıcıdan yalnızca gerekli minimum veriler (ör. lisans anahtarı, isgkatip oturum anahtarı) toplanır. Lisans doğrulama sırasında sadece lisans anahtarı sunucularımıza gönderilir; isgkatip oturum anahtarı veya başka herhangi bir kişisel bilgi sunucularımıza iletilmez.\n\nKişisel veriler (ad, soyad, T.C. kimlik no, işyeri bilgileri, sözleşme detayları) sadece kullanıcının kendi hesabı üzerinden, isgkatip.csgb.gov.tr ile iletişimde kullanılır ve uzantı tarafından harici olarak saklanmaz. Lisans doğrulama için yalnızca lisans anahtarı, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.'nin kontrolündeki harici bir sunucuya (ör. AWS) gönderilir.\n\nHiçbir kişisel veri, üçüncü şahıslarla paylaşılmaz, satılmaz veya ticari amaçla kullanılmaz. Kullanıcı verileri, uzantıdan kaldırıldığında veya uzantı silindiğinde, mevzuat gereği yasal saklama ve denetim yükümlülüklerimiz kapsamında pasif hale getirilir ancak silinmez; ilgili bilgiler yalnızca resmi makamların talebi ve denetimi için saklanır.\n\nKVKK kapsamında, kullanıcı verilerinin işlenmesi, saklanması ve silinmesi süreçleri açıkça belirtilir. Katip Otomasyonu, kullanıcıdan açık rıza almadan hiçbir kişisel veriyi işlemez veya saklamaz. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. Bu talepler için info@arkaya.com.tr adresine başvurulabilir.\n\nKatip Otomasyonu'nu ilk kez kullanan veya lisans satın alan müşterilerden; telefon numarası, şirket adı ve OSGB-ID gibi bilgiler alınır ve lisans doğrulama amacıyla güvenli şekilde saklanır. Uygulamayı kullanan veya lisans satın alan herkes, bu bilgilerin alınmasını ve saklanmasını kabul etmiş sayılır.\n\nVeri sorumlusu: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. | info@arkaya.com.tr\n\nHaklarınızı kullanmak için, taleplerinizi info@arkaya.com.tr adresine iletebilirsiniz. Detaylı bilgi ve diğer sözleşmeler için lütfen ilgili sayfaları ziyaret ediniz.`,
+    kvkk: `Açık Rıza Beyan (KVKK)\n\nKatip Otomasyonu, 6698 sayılı Kişisel Verilerin Korunması Kanunu'na (KVKK) tam uyumlu olarak geliştirilmiştir. Kişisel veriler, yalnızca uzantının ve web sitesinin işlevlerini yerine getirmek için ve kullanıcının açık rızası ile işlenir. Kişisel veriler, uzantı tarafından harici bir sunucuda saklanmaz, sadece geçici olarak kullanılır.\n\nLisans doğrulama sırasında iletilen lisans anahtarı, lisans kontrolü amacıyla işlenir ve Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. kontrolündeki harici bir sunucuda (ör. AWS) saklanır. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. info@arkaya.com.tr adresine başvurarak bu hakkını kullanabilir. Kişisel veriler, üçüncü şahıslarla paylaşılmaz. Veri güvenliği için gerekli tüm teknik ve idari tedbirler alınır.\n\nVeri sorumlusu: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. | info@arkaya.com.tr\n\nKayıt ve lisanslama sürecinde alınan telefon numarası, şirket adı ve OSGB-ID bilgileri, yalnızca lisans doğrulama ve müşteri kaydı amacıyla işlenir ve saklanır.\n\nHaklarınız ve başvuru yöntemleriniz için lütfen Gizlilik Sözleşmesi sayfasını inceleyiniz.`,
+    commercial: `Ticari Elektronik İleti Onayı\n\nKampanya, duyuru ve bilgilendirme amaçlı ticari elektronik iletiler (e-posta, SMS vb.) almak istiyorsanız bu kutucuğu işaretleyebilirsiniz. Onay vermeniz halinde, iletişim bilgileriniz yalnızca Katip Otomasyonu ve Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından kampanya ve bilgilendirme amaçlı kullanılacaktır. Onayınızı dilediğiniz zaman geri alabilirsiniz.\n\nDetaylı bilgi için info@arkaya.com.tr adresine başvurabilirsiniz.`
+  };
+
+  const openAgreementModal = (type) => setAgreementModal({ open: true, type });
+  const closeAgreementModal = () => setAgreementModal({ open: false, type: null });
+  const approveAgreement = () => {
+    if (agreementModal.type) {
+      setAgreements(a => ({ ...a, [agreementModal.type]: true }));
+      closeAgreementModal();
+    }
+  };
+
+  const canSubmit = agreements.terms && agreements.privacy && agreements.kvkk && !loading;
+
+  const handleAgreementCheckbox = (type) => {
+    if (['terms', 'privacy', 'kvkk'].includes(type)) {
+      // Don't allow direct check
+      if (!agreements[type]) openAgreementModal(type);
+    } else {
+      setAgreements(a => ({ ...a, [type]: !a[type] }));
+    }
   };
 
   return (
@@ -342,7 +379,61 @@ function RegisterPage() {
         </div>
       </div>
       {error && <div className="alert alert-danger py-2">{error}</div>}
-      <button type="submit" className="btn btn-danger w-100 mt-2" disabled={loading}>
+      <div className="mt-4 mb-2">
+        <div className="form-check mb-2">
+          <input className="form-check-input" type="checkbox" id="terms" checked={agreements.terms} onChange={() => handleAgreementCheckbox('terms')} required readOnly />
+          <label className="form-check-label" htmlFor="terms">
+            <span className="fw-bold">Kullanım Koşulları</span> (<a href="#" onClick={e => {e.preventDefault(); openAgreementModal('terms');}}>Sözleşmeyi Oku</a>) <span className="text-danger">*</span>
+          </label>
+        </div>
+        <div className="form-check mb-2">
+          <input className="form-check-input" type="checkbox" id="privacy" checked={agreements.privacy} onChange={() => handleAgreementCheckbox('privacy')} required readOnly />
+          <label className="form-check-label" htmlFor="privacy">
+            <span className="fw-bold">Gizlilik Sözleşmesi</span> (<a href="#" onClick={e => {e.preventDefault(); openAgreementModal('privacy');}}>Sözleşmeyi Oku</a>) <span className="text-danger">*</span>
+          </label>
+        </div>
+        <div className="form-check mb-2">
+          <input className="form-check-input" type="checkbox" id="kvkk" checked={agreements.kvkk} onChange={() => handleAgreementCheckbox('kvkk')} required readOnly />
+          <label className="form-check-label" htmlFor="kvkk">
+            <span className="fw-bold">Açık Rıza Beyan (KVKK)</span> (<a href="#" onClick={e => {e.preventDefault(); openAgreementModal('kvkk');}}>Sözleşmeyi Oku</a>) <span className="text-danger">*</span>
+          </label>
+        </div>
+        <div className="form-check mb-2">
+          <input className="form-check-input" type="checkbox" id="commercial" checked={agreements.commercial} onChange={() => handleAgreementCheckbox('commercial')} />
+          <label className="form-check-label" htmlFor="commercial">
+            <span className="fw-bold">Ticari Elektronik İleti Onayı</span> (<a href="#" onClick={e => {e.preventDefault(); openAgreementModal('commercial');}}>Metni Oku</a>) <span className="text-secondary">(isteğe bağlı)</span>
+          </label>
+        </div>
+      </div>
+      {/* Agreement Modal */}
+      {agreementModal.open && (
+        <div className="modal fade show" style={{display:'block', background:'rgba(0,0,0,0.5)'}} tabIndex="-1">
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {agreementModal.type === 'terms' && 'Kullanım Koşulları'}
+                  {agreementModal.type === 'privacy' && 'Gizlilik Sözleşmesi'}
+                  {agreementModal.type === 'kvkk' && 'Açık Rıza Beyan (KVKK)'}
+                  {agreementModal.type === 'commercial' && 'Ticari Elektronik İleti Onayı'}
+                </h5>
+                <button type="button" className="btn-close" onClick={closeAgreementModal}></button>
+              </div>
+              <div className="modal-body" style={{maxHeight: '60vh', overflowY: 'auto'}}>
+                <div style={{whiteSpace:'pre-line'}}>{agreementTexts[agreementModal.type]}</div>
+              </div>
+              <div className="modal-footer">
+                {agreementModal.type !== 'commercial' ? (
+                  <button type="button" className="btn btn-danger" onClick={approveAgreement}>Okudum, onaylıyorum</button>
+                ) : null}
+                <button type="button" className="btn btn-secondary" onClick={closeAgreementModal}>Kapat</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {error && <div className="alert alert-danger py-2">{error}</div>}
+      <button type="submit" className="btn btn-danger w-100 mt-2" disabled={!canSubmit}>
         {loading ? 'Kayıt Olunuyor...' : 'Kayıt Ol'}
       </button>
     </form>
