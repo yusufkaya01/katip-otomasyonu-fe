@@ -16,6 +16,7 @@ function LoadingSpinner() {
 function IsletmemPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [emailVerified, setEmailVerified] = useState(null);
   const [editField, setEditField] = useState(null); // which field is being edited
   const [editValue, setEditValue] = useState('');
   const [confirming, setConfirming] = useState(false);
@@ -45,6 +46,7 @@ function IsletmemPage() {
       if (tokenFromStorage) token = tokenFromStorage;
     }
     setUser({ ...parsed, token });
+    setEmailVerified(parsed.email_verified);
     setLoading(false);
   }, [navigate]);
 
@@ -392,6 +394,16 @@ function IsletmemPage() {
         </div>
         {error && <div className="alert alert-danger py-2">{error}</div>}
         {success && <div className="alert alert-success py-2">{success}</div>}
+        {emailVerified === 0 && (
+          <div className="alert alert-warning mt-3">
+            E-posta adresiniz henüz doğrulanmadı. Lütfen e-postanızı kontrol edin ve doğrulama linkine tıklayın.
+          </div>
+        )}
+        {emailVerified === 1 && (
+          <div className="alert alert-success mt-3">
+            E-posta adresiniz doğrulandı.
+          </div>
+        )}
       </div>
     </div>
   );

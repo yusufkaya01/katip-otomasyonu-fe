@@ -5,25 +5,22 @@ function PrivacyPage() {
     <div>
       <h2 className="mb-4">Gizlilik Sözleşmesi</h2>
       <p>
-        Katip Otomasyonu Chrome uzantısı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından işletilmektedir. Kullanıcıdan yalnızca gerekli minimum veriler (ör. lisans anahtarı, isgkatip oturum anahtarı) toplanır. Lisans doğrulama sırasında sadece lisans anahtarı sunucularımıza gönderilir; isgkatip oturum anahtarı veya başka herhangi bir kişisel bilgi sunucularımıza iletilmez.
+        Katip Otomasyonu web sitesi ve Chrome uzantısı, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından işletilmektedir. Kayıt (üye olma) işlemi sırasında sizden şirket adı, e-posta, telefon, OSGB-ID, adres, vergi numarası ve benzeri bilgiler yalnızca lisans doğrulama ve müşteri kaydı amacıyla alınır ve güvenli şekilde saklanır. Bu bilgiler hiçbir şekilde üçüncü şahıslarla paylaşılmaz, satılmaz veya ticari amaçla kullanılmaz.
       </p>
       <p>
-        Kişisel veriler (ad, soyad, T.C. kimlik no, işyeri bilgileri, sözleşme detayları) sadece kullanıcının kendi hesabı üzerinden, isgkatip.csgb.gov.tr ile iletişimde kullanılır ve uzantı tarafından harici olarak saklanmaz. Lisans doğrulama için yalnızca lisans anahtarı, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.'nin kontrolündeki harici bir sunucuya (ör. AWS) gönderilir.
+        Uzantı (Chrome eklentisi) ile web sitesi (katipotomasyonu.com) birbirinden bağımsız çalışır. Uzantı üzerinden yalnızca lisans anahtarınız doğrulama amacıyla sunucularımıza iletilir. İSG Katip web sitesinden veya uzantıdan, lisans anahtarı dışında herhangi bir ek bilgi veya veri sunucularımıza gönderilmez. Uzantı, İSG Katip platformunda işlem yaparken, kişisel verilerinizi harici olarak saklamaz ve yalnızca geçici olarak kullanır.
       </p>
       <p>
-        Hiçbir kişisel veri, üçüncü şahıslarla paylaşılmaz, satılmaz veya ticari amaçla kullanılmaz. Kullanıcı verileri, uzantıdan kaldırıldığında veya uzantı silindiğinde, mevzuat gereği yasal saklama ve denetim yükümlülüklerimiz kapsamında pasif hale getirilir ancak silinmez; ilgili bilgiler yalnızca resmi makamların talebi ve denetimi için saklanır.
+        Kayıt ve lisanslama sürecinde alınan bilgiler (şirket adı, e-posta, telefon, OSGB-ID, adres, vergi numarası vb.) yalnızca lisans doğrulama ve müşteri kaydı amacıyla işlenir ve saklanır. Bu bilgiler, yasal yükümlülükler dışında hiçbir şekilde üçüncü şahıslarla paylaşılmaz.
       </p>
       <p>
-        KVKK kapsamında, kullanıcı verilerinin işlenmesi, saklanması ve silinmesi süreçleri açıkça belirtilir. Katip Otomasyonu, kullanıcıdan açık rıza almadan hiçbir kişisel veriyi işlemez veya saklamaz. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. Bu talepler için info@arkaya.com.tr adresine başvurulabilir.
+        Katip Otomasyonu, 6698 sayılı Kişisel Verilerin Korunması Kanunu'na (KVKK) tam uyumlu olarak geliştirilmiştir. Kişisel verileriniz, yalnızca açık rızanız ile işlenir ve saklanır. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. info@arkaya.com.tr adresine başvurarak bu hakkını kullanabilir.
       </p>
       <p>
-        Katip Otomasyonu'nu ilk kez kullanan veya lisans satın alan müşterilerden; telefon numarası, şirket adı ve OSGB-ID gibi bilgiler alınır ve lisans doğrulama amacıyla güvenli şekilde saklanır. Uygulamayı kullanan veya lisans satın alan herkes, bu bilgilerin alınmasını ve saklanmasını kabul etmiş sayılır.
+        Uzantı ve web sitesi üzerinden alınan hiçbir kişisel veri, üçüncü şahıslarla paylaşılmaz, satılmaz veya ticari amaçla kullanılmaz. Tüm verilerinizin güvenliği için gerekli teknik ve idari tedbirler alınır.
       </p>
       <p>
-        Veri sorumlusu: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. | info@arkaya.com.tr
-      </p>
-      <p>
-        Haklarınızı kullanmak için, taleplerinizi info@arkaya.com.tr adresine iletebilirsiniz. Detaylı bilgi ve diğer sözleşmeler için lütfen ilgili sayfaları ziyaret ediniz.
+        Detaylı bilgi ve başvuru için: info@arkaya.com.tr
       </p>
     </div>
   );

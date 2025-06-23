@@ -5,7 +5,7 @@ function CopyrightPage() {
     <div>
       <h2 className="mb-4">Telif Hakkı</h2>
       <p>
-        Katip Otomasyonu uzantısının ve web sitesinin tüm kodları, görselleri, dokümantasyonu ve marka hakları Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.'ye aittir. Kodun, görsellerin ve dokümantasyonun izinsiz kopyalanması, dağıtılması veya değiştirilmesi yasaktır.
+        Katip Otomasyonu uzantısının ve web sitesinin tüm kodları, görselleri, dokümantasyonu ve marka hakları Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.'ye aittir. Kodların, görsellerin ve dokümantasyonun izinsiz kopyalanması, dağıtılması veya değiştirilmesi yasaktır.
       </p>
       <p>
         Üçüncü parti kütüphaneler ilgili lisansları ile kullanılır ve bu lisanslara uyulur. Kullanıcılar, uzantıyı ve web sitesini yalnızca kendi kurumları için kullanabilir, ticari olarak satamaz, çoğaltamaz veya dağıtamaz. Katip Otomasyonu'nun marka ve telif hakları Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.'nin izni olmadan kullanılamaz.

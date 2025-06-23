@@ -14,7 +14,7 @@ function TermsPage() {
         Lisans anahtarının paylaşılması, çoğaltılması veya izinsiz kullanımı yasaktır. Tespit halinde lisans iptal edilir. Uzantı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından güncellenebilir veya sonlandırılabilir.
       </p>
       <p>
-        Uygulamayı kullanan veya lisans satın alan kullanıcılar, ilk kayıt sırasında talep edilen telefon numarası, şirket adı ve OSGB-ID bilgilerinin lisans doğrulama ve müşteri kaydı amacıyla saklanmasını kabul etmiş sayılır.
+        Uygulamayı kullanan veya lisans satın alan kullanıcılar, ilk kayıt sırasında talep edilen şirket adı, e-posta adresi, telefon numarası, OSGB Yetki Belgesi No, adres, vergi kimlik numarası, vergi dairesi, şehir ve ilçe bilgilerinin lisans doğrulama ve müşteri kaydı amacıyla saklanmasını kabul etmiş sayılır.
       </p>
       <p>
         Detaylı bilgi için info@arkaya.com.tr adresine başvurabilirsiniz.
