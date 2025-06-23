@@ -16,6 +16,7 @@ import IsletmemPage from './pages/IsletmemPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import PricingPage from './pages/PricingPage';
 import './App.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
         <div className="container my-5">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/fiyat" element={<PricingPage />} />
             <Route path="/ozellikler" element={<FeaturesPage />} />
             <Route path="/kurulum" element={<SetupPage />} />
             <Route path="/sss" element={<FAQPage />} />

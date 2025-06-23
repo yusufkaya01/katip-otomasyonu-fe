@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const navItems = [
   { path: '/', label: 'Ana Sayfa' },
+  { path: '/fiyat', label: 'Fiyat Listesi' },
   { path: '/ozellikler', label: 'Özellikler' },
   { path: '/kurulum', label: 'Kurulum' },
   { path: '/sss', label: 'SSS' },
