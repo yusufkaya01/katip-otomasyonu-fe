@@ -202,7 +202,7 @@ function IsletmemPage() {
     setResendLoading(true);
     setResendMessage('');
     try {
-      const res = await fetch('https://customes.katipotomasyonu.com/api/osgb/resend-verification', {
+      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/resend-verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
