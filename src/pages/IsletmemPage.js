@@ -41,16 +41,44 @@ function IsletmemPage() {
       return;
     }
     const parsed = JSON.parse(userData);
-    // If token is missing, try to get it from a separate key (for backward compatibility)
     let token = parsed.token;
     if (!token) {
       const tokenFromStorage = localStorage.getItem('osgbToken');
       if (tokenFromStorage) token = tokenFromStorage;
     }
-    setUser({ ...parsed, token });
-    setEmailVerified(parsed.email_verified);
-    setLoading(false);
-  }, [navigate]);
+    // Fetch latest user info from backend
+    if (token) {
+      fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
+        method: 'GET',
+        headers: {
+          'x-api-key': API_KEY,
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Kullanıcı oturumu geçersiz veya süresi dolmuş.');
+          return res.json();
+        })
+        .then(data => {
+          const updatedUser = { ...parsed, ...data.user, token };
+          setUser(updatedUser);
+          setEmailVerified(data.user.email_verified);
+          localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
+          setLoading(false);
+        })
+        .catch(() => {
+          setUser(null);
+          setLoading(false);
+          localStorage.removeItem('osgbUser');
+          navigate('/giris', { replace: true });
+        });
+    } else {
+      setUser(null);
+      setLoading(false);
+      localStorage.removeItem('osgbUser');
+      navigate('/giris', { replace: true });
+    }
+  }, [navigate, API_KEY]);
 
   useEffect(() => {
     fetchTaxOffices(API_KEY)
