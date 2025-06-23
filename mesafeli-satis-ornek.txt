@@ -40,22 +40,6 @@ Ad/Soyad/Unvan:
 Adres: 
 Telefon: 
 Eposta/kullanıcı adı:
-7. SÖZLEŞME KONUSU ÜRÜN/ÜRÜNLER BİLGİLERİ
-1. Malın/Ürün/Ürünlerin/Hizmetin temel özelliklerini (türü, miktarı, marka/modeli, rengi, adedi) SATICI’ya ait internet sitesinde yayınlanmaktadır. Satıcı tarafından kampanya düzenlenmiş ise ilgili ürünün temel özelliklerini kampanya süresince inceleyebilirsiniz. Kampanya tarihine kadar geçerlidir.
-7.2. Fiyatlar
-Listelenen ve sitede ilan edilen fiyatlar satış fiyatıdır. İlan edilen fiyatlar ve vaatler güncelleme yapılana ve değiştirilene kadar geçerlidir. Süreli olarak ilan edilen fiyatlar ise belirtilen süre sonuna kadar geçerlidir.
-7.3. Vergiler ve Ödemeler
-Sözleşme konusu mal ya da hizmetin tüm vergiler dâhil satış fiyatı aşağıda gösterilmiştir.
-Ürün Açıklaması
-Adet
-Birim Fiyatı
-Ara Toplam (KDV Dahil)
-Ürün 1
-1
-100.00 TL
-100.00 TL
-Kargo Tutarı: 20.00 TL
-Toplam: 120.00 TL
 8. FATURA BİLGİLERİ
 Ad/Soyad/Unvan: 
 Adres: 
@@ -77,7 +61,7 @@ ALICI, ödeme işlemlerini kredi kartı ile yaptığı durumda temerrüde düşt
 İşbu sözleşmeden doğan uyuşmazlıklarda şikayet ve itirazlar, tüketicinin yerleşim yerinin bulunduğu veya tüketici işleminin yapıldığı yerdeki tüketici sorunları hakem heyetine veya tüketici mahkemesine yapılacaktır.
 14. YÜRÜRLÜK
 ALICI, Site üzerinden verdiği siparişe ait ödemeyi gerçekleştirdiğinde işbu sözleşmenin tüm şartlarını kabul etmiş sayılır.
- 
+
 
 (IMPORTANT: infos about the buyer will be get from the registration form, instead of Ad-Soyad we will write there Şirket Ünvanı, Also we will add Vergi Dairesi and Vergi kim no)
 

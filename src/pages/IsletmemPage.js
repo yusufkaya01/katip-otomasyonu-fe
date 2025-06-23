@@ -30,6 +30,13 @@ function IsletmemPage() {
   const [taxOffices, setTaxOffices] = useState([]);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
+  const [mssEnabled, setMssEnabled] = useState(false);
+  const [mssLoading, setMssLoading] = useState(false);
+  const [mssModalOpen, setMssModalOpen] = useState(false);
+  const [mssAgreementHtml, setMssAgreementHtml] = useState('');
+  const [mssError, setMssError] = useState('');
+  const [mssSuccess, setMssSuccess] = useState('');
+  const [mssConfirm, setMssConfirm] = useState(false);
   const navigate = useNavigate();
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
@@ -254,6 +261,92 @@ function IsletmemPage() {
     setResendLoading(false);
   };
 
+  useEffect(() => {
+    if (user && typeof user.distance_sales_agreement_enabled !== 'undefined') {
+      setMssEnabled(!!user.distance_sales_agreement_enabled);
+    }
+  }, [user]);
+
+  const fetchMssAgreement = async () => {
+    setMssLoading(true);
+    setMssAgreementHtml('');
+    setMssError('');
+    try {
+      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/distance-sales-agreement', {
+        method: 'GET',
+        headers: {
+          'x-api-key': API_KEY,
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMssAgreementHtml(data.agreementHtml || '');
+        setMssModalOpen(true);
+      } else {
+        setMssError('Sözleşme içeriği alınamadı.');
+      }
+    } catch {
+      setMssError('Sunucuya ulaşılamıyor.');
+    }
+    setMssLoading(false);
+  };
+
+  const handleMssEnable = async () => {
+    setMssLoading(true);
+    setMssError('');
+    setMssSuccess('');
+    try {
+      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/distance-sales-agreement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ enabled: true })
+      });
+      if (res.ok) {
+        setMssEnabled(true);
+        setMssSuccess('Mesafeli Satış Sözleşmesi onaylandı ve e-posta adresinize gönderildi.');
+        setUser({ ...user, distance_sales_agreement_enabled: true });
+        setMssModalOpen(false);
+      } else {
+        setMssError('Sözleşme onaylanamadı.');
+      }
+    } catch {
+      setMssError('Sunucuya ulaşılamıyor.');
+    }
+    setMssLoading(false);
+  };
+
+  const handleMssDisable = async () => {
+    setMssLoading(true);
+    setMssError('');
+    setMssSuccess('');
+    try {
+      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/distance-sales-agreement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({ enabled: false })
+      });
+      if (res.ok) {
+        setMssEnabled(false);
+        setUser({ ...user, distance_sales_agreement_enabled: false });
+        setMssSuccess('Mesafeli Satış Sözleşmesi devre dışı bırakıldı.');
+      } else {
+        setMssError('Sözleşme devre dışı bırakılamadı.');
+      }
+    } catch {
+      setMssError('Sunucuya ulaşılamıyor.');
+    }
+    setMssLoading(false);
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -474,6 +567,59 @@ function IsletmemPage() {
           </div>
         )}
       </div>
+      {/* MSS Toggle Section */}
+      <div className="card p-4 shadow-sm mt-4">
+        <div className="d-flex align-items-center mb-2">
+          <strong style={{ minWidth: 200 }}>Mesafeli Satış Sözleşmesi:</strong>
+          <span className={`badge ${mssEnabled ? 'bg-success' : 'bg-secondary'}`}>{mssEnabled ? 'Onaylandı' : 'Onaylanmadı'}</span>
+        </div>
+        <div className="mb-2">
+          {mssEnabled ? (
+            <button className="btn btn-outline-danger btn-sm" onClick={handleMssDisable} disabled={mssLoading}>
+              {mssLoading ? 'İşleniyor...' : 'Sözleşmeyi İptal Et'}
+            </button>
+          ) : (
+            <button className="btn btn-outline-success btn-sm" onClick={fetchMssAgreement} disabled={mssLoading}>
+              {mssLoading ? 'Yükleniyor...' : 'Sözleşmeyi Onayla'}
+            </button>
+          )}
+        </div>
+        {!mssEnabled && (
+          <div className="alert alert-warning mt-2">
+            Mesafeli Satış Sözleşmesi'ni iptal ettiğiniz takdirde satın alma, paket yenileme vb işlemlerinizi yapamazsınız. Bu gibi işlemleri yapabilmek için lütfen MSS'i onaylayınız.
+          </div>
+        )}
+        {mssError && <div className="alert alert-danger py-2 mt-2">{mssError}</div>}
+        {mssSuccess && <div className="alert alert-success py-2 mt-2">{mssSuccess}</div>}
+      </div>
+      {/* MSS Modal */}
+      {mssModalOpen && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Mesafeli Satış Sözleşmesi</h5>
+                <button type="button" className="btn-close" onClick={() => setMssModalOpen(false)}></button>
+              </div>
+              <div className="modal-body" style={{ maxHeight: 400, overflowY: 'auto' }}>
+                <div dangerouslySetInnerHTML={{ __html: mssAgreementHtml }} />
+                <div className="form-check mt-3">
+                  <input className="form-check-input" type="checkbox" id="mssConfirm" checked={mssConfirm} onChange={e => setMssConfirm(e.target.checked)} />
+                  <label className="form-check-label" htmlFor="mssConfirm">
+                    Sözleşme içeriğini okudum ve onaylıyorum.
+                  </label>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setMssModalOpen(false)}>Vazgeç</button>
+                <button className="btn btn-success" onClick={handleMssEnable} disabled={!mssConfirm || mssLoading}>
+                  {mssLoading ? 'Onaylanıyor...' : 'Onayla ve E-posta Gönder'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
