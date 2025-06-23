@@ -28,6 +28,8 @@ function IsletmemPage() {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [districts, setDistricts] = useState([]);
   const [taxOffices, setTaxOffices] = useState([]);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   const navigate = useNavigate();
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
@@ -194,6 +196,34 @@ function IsletmemPage() {
     } catch (err) {
       setError('Sunucuya bağlanılamadı.');
     }
+  };
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    setResendMessage('');
+    try {
+      const res = await fetch('https://customes.katipotomasyonu.com/api/osgb/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY
+        },
+        body: JSON.stringify({ email: user.email })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setResendMessage('Doğrulama e-postası tekrar gönderildi. Lütfen e-posta kutunuzu kontrol edin.');
+      } else if (data.error === 'ALREADY_VERIFIED') {
+        setResendMessage('E-posta adresiniz zaten doğrulanmış.');
+      } else if (data.error === 'USER_NOT_FOUND') {
+        setResendMessage('Kullanıcı bulunamadı.');
+      } else {
+        setResendMessage('Bir hata oluştu. Lütfen tekrar deneyin.');
+      }
+    } catch (err) {
+      setResendMessage('Sunucuya ulaşılamıyor. Lütfen tekrar deneyin.');
+    }
+    setResendLoading(false);
   };
 
   if (loading) {
@@ -395,12 +425,23 @@ function IsletmemPage() {
         {error && <div className="alert alert-danger py-2">{error}</div>}
         {success && <div className="alert alert-success py-2">{success}</div>}
         {emailVerified === 0 && (
-          <div className="alert alert-warning mt-3">
-            E-posta adresiniz henüz doğrulanmadı. Lütfen e-postanızı kontrol edin ve doğrulama linkine tıklayın.
+          <div className="alert alert-warning d-flex align-items-center" role="alert">
+            <div>
+              E-posta adresiniz henüz doğrulanmadı. Lütfen e-postanızı kontrol edin ve doğrulama linkine tıklayın.
+              <br />
+              <button
+                className="btn btn-outline-danger btn-sm mt-2"
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+              >
+                {resendLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder'}
+              </button>
+              {resendMessage && <div className="mt-2 small">{resendMessage}</div>}
+            </div>
           </div>
         )}
         {emailVerified === 1 && (
-          <div className="alert alert-success mt-3">
+          <div className="alert alert-success" role="alert">
             E-posta adresiniz doğrulandı.
           </div>
         )}
