@@ -38,6 +38,11 @@ function IsletmemPage() {
   const [mssSuccess, setMssSuccess] = useState('');
   const [mssConfirm, setMssConfirm] = useState(false);
   const [mssModalMode, setMssModalMode] = useState('confirm'); // 'confirm' or 'view'
+  const [showDisableModal, setShowDisableModal] = useState(false);
+  const [disableConfirmText, setDisableConfirmText] = useState('');
+  const [disableError, setDisableError] = useState('');
+  const [showMssDisableModal, setShowMssDisableModal] = useState(false);
+  const [mssDisableInput, setMssDisableInput] = useState('');
   const navigate = useNavigate();
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
@@ -350,6 +355,22 @@ function IsletmemPage() {
     setMssLoading(false);
   };
 
+  const handleDisableClick = () => {
+    setDisableConfirmText('');
+    setDisableError('');
+    setShowDisableModal(true);
+  };
+
+  const handleConfirmDisable = async () => {
+    if (disableConfirmText !== 'onaylıyorum') {
+      setDisableError('Lütfen kutuya doğru şekilde "onaylıyorum" yazınız.');
+      return;
+    }
+    setShowDisableModal(false);
+    setDisableError('');
+    await handleMssDisable();
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -579,7 +600,11 @@ function IsletmemPage() {
         <div className="mb-2 d-flex gap-2">
           {mssEnabled ? (
             <>
-              <button className="btn btn-outline-danger btn-sm" onClick={handleMssDisable} disabled={mssLoading}>
+              <button
+                className="btn btn-outline-danger btn-sm"
+                onClick={() => setShowMssDisableModal(true)}
+                disabled={mssLoading}
+              >
                 {mssLoading ? 'İşleniyor...' : 'Sözleşmeyi İptal Et'}
               </button>
               <button className="btn btn-outline-primary btn-sm" onClick={() => fetchMssAgreement('view')} disabled={mssLoading}>
@@ -629,6 +654,47 @@ function IsletmemPage() {
                     {mssLoading ? 'Onaylanıyor...' : 'Onayla ve E-posta Gönder'}
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* MSS Disable Confirmation Modal */}
+      {showMssDisableModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Sözleşmeyi İptal Et</h5>
+                <button type="button" className="btn-close" onClick={() => { setShowMssDisableModal(false); setMssDisableInput(''); }}></button>
+              </div>
+              <div className="modal-body">
+                <div className="alert alert-warning">
+                  Mesafeli Satış Sözleşmesi'ni iptal ettiğiniz takdirde satın alma, paket yenileme vb işlemlerinizi yapamazsınız.<br />
+                  İşlemi onaylıyorsanız aşağıdaki kutuya <b>onaylıyorum</b> yazınız, büyük/küçük harf kullanımına dikkat ediniz.
+                </div>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="onaylıyorum"
+                  value={mssDisableInput}
+                  onChange={e => setMssDisableInput(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => { setShowMssDisableModal(false); setMssDisableInput(''); }}>Vazgeç</button>
+                <button
+                  className="btn btn-danger"
+                  disabled={mssDisableInput !== 'onaylıyorum' || mssLoading}
+                  onClick={async () => {
+                    await handleMssDisable();
+                    setShowMssDisableModal(false);
+                    setMssDisableInput('');
+                  }}
+                >
+                  {mssLoading ? 'İşleniyor...' : 'İptal Et'}
+                </button>
               </div>
             </div>
           </div>
