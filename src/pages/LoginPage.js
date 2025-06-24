@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/isletmem', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,9 +35,8 @@ function LoginPage() {
       });
       if (res.status === 200) {
         const data = await res.json();
-        // Store all login response fields (user, token, and any others) in context
-        login({ ...data.user, token: data.token, ...Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'user' && k !== 'token')) });
-        window.location.href = '/isletmem';
+        login({ ...data.user, token: data.token });
+        navigate('/isletmem', { replace: true });
       } else {
         const data = await res.json();
         setError(data.error === 'INVALID_CREDENTIALS' ? 'E-posta veya şifre hatalı.' : 'Giriş sırasında bir hata oluştu.');
