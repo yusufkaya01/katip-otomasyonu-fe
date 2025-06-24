@@ -197,14 +197,37 @@ function IsletmemPage() {
         body: JSON.stringify(payload)
       });
       if (res.status === 200) {
-        const data = await res.json();
-        // Preserve token and licenseKey in updated user object
-        const updatedUser = { ...data.user, token: user.token, licenseKey: user.licenseKey };
-        setUser(updatedUser);
-        localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
-        setSuccess('Bilgi başarıyla güncellendi.');
-        setEditField(null);
-        setConfirming(false);
+        // After successful update, fetch latest profile from backend
+        const fetchLatestProfile = async () => {
+          try {
+            const profileRes = await fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
+              method: 'GET',
+              headers: {
+                'x-api-key': API_KEY,
+                'Authorization': `Bearer ${user.token}`
+              }
+            });
+            if (profileRes.ok) {
+              const profileData = await profileRes.json();
+              const updatedUser = { ...user, ...profileData.user, token: user.token, licenseKey: user.licenseKey };
+              setUser(updatedUser);
+              setEmailVerified(profileData.user.email_verified);
+              localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
+              setSuccess('Bilgi başarıyla güncellendi.');
+              setEditField(null);
+              setConfirming(false);
+            } else {
+              setSuccess('Bilgi güncellendi ancak profil tekrar alınamadı.');
+              setEditField(null);
+              setConfirming(false);
+            }
+          } catch {
+            setSuccess('Bilgi güncellendi ancak profil tekrar alınamadı.');
+            setEditField(null);
+            setConfirming(false);
+          }
+        };
+        fetchLatestProfile();
       } else {
         const data = await res.json();
         // Handle new validation errors for osgb_id, company_name, city, district
