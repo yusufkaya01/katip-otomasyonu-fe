@@ -216,8 +216,19 @@ function IsletmemPage() {
               setSuccess('Bilgi başarıyla güncellendi.');
               setEditField(null);
               setConfirming(false);
+            } else if (profileRes.status === 401 || profileRes.status === 403) {
+              // Only log out if unauthorized
+              setUser(null);
+              setLoading(false);
+              localStorage.removeItem('osgbUser');
+              navigate('/giris', { replace: true });
             } else {
-              setSuccess('Bilgi güncellendi ancak profil tekrar alınamadı.');
+              // If profile fetch fails for other reasons, update user with new email and set email_verified: 0
+              const updatedUser = { ...user, email: editValue, email_verified: 0 };
+              setUser(updatedUser);
+              setEmailVerified(0);
+              localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
+              setSuccess('Bilgi güncellendi. E-posta adresinizi doğrulamanız gerekmektedir.');
               setEditField(null);
               setConfirming(false);
             }
