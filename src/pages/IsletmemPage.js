@@ -608,7 +608,8 @@ function IsletmemPage() {
               </div>
               <div className="modal-body" style={{ maxHeight: 400, overflowY: 'auto' }}>
                 <div dangerouslySetInnerHTML={{ __html: mssAgreementHtml }} />
-                {mssModalOpen !== 'view' && (
+                {/* Only show confirmation checkbox and enable button if not in 'view' mode */}
+                {typeof mssModalOpen === 'string' && mssModalOpen === 'view' ? null : (
                   <div className="form-check mt-3">
                     <input className="form-check-input" type="checkbox" id="mssConfirm" checked={mssConfirm} onChange={e => setMssConfirm(e.target.checked)} />
                     <label className="form-check-label" htmlFor="mssConfirm">
@@ -619,7 +620,8 @@ function IsletmemPage() {
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setMssModalOpen(false)}>Kapat</button>
-                {mssModalOpen !== 'view' && (
+                {/* Only show enable button if not in 'view' mode */}
+                {typeof mssModalOpen === 'string' && mssModalOpen === 'view' ? null : (
                   <button className="btn btn-success" onClick={handleMssEnable} disabled={!mssConfirm || mssLoading}>
                     {mssLoading ? 'Onaylanıyor...' : 'Onayla ve E-posta Gönder'}
                   </button>
