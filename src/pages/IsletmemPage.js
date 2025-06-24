@@ -587,7 +587,7 @@ function IsletmemPage() {
               </button>
             </>
           ) : (
-            <button className="btn btn-outline-success btn-sm" onClick={fetchMssAgreement} disabled={mssLoading}>
+            <button className="btn btn-outline-success btn-sm" onClick={() => fetchMssAgreement('confirm')} disabled={mssLoading}>
               {mssLoading ? 'Yükleniyor...' : 'Sözleşmeyi Onayla'}
             </button>
           )}
