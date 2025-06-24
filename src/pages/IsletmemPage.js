@@ -38,9 +38,6 @@ function IsletmemPage() {
   const [mssSuccess, setMssSuccess] = useState('');
   const [mssConfirm, setMssConfirm] = useState(false);
   const [mssModalMode, setMssModalMode] = useState('confirm'); // 'confirm' or 'view'
-  const [showDisableModal, setShowDisableModal] = useState(false);
-  const [disableConfirmText, setDisableConfirmText] = useState('');
-  const [disableError, setDisableError] = useState('');
   const [showMssDisableModal, setShowMssDisableModal] = useState(false);
   const [mssDisableInput, setMssDisableInput] = useState('');
   const navigate = useNavigate();
@@ -353,22 +350,6 @@ function IsletmemPage() {
       setMssError('Sunucuya ulaşılamıyor.');
     }
     setMssLoading(false);
-  };
-
-  const handleDisableClick = () => {
-    setDisableConfirmText('');
-    setDisableError('');
-    setShowDisableModal(true);
-  };
-
-  const handleConfirmDisable = async () => {
-    if (disableConfirmText !== 'onaylıyorum') {
-      setDisableError('Lütfen kutuya doğru şekilde "onaylıyorum" yazınız.');
-      return;
-    }
-    setShowDisableModal(false);
-    setDisableError('');
-    await handleMssDisable();
   };
 
   if (loading) {
