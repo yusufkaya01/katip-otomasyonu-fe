@@ -358,6 +358,13 @@ function IsletmemPage() {
     <div className="container py-5" style={{ maxWidth: 600 }}>
       <h2 className="mb-4">İşletmem</h2>
       <div className="card p-4 shadow-sm">
+        {/* Customer ID Display */}
+        {user.customer_id && (
+          <div className="mb-2 d-flex align-items-center">
+            <strong style={{ minWidth: 140 }}>Müşteri Numarası:</strong>
+            <span className="mx-2" style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>{user.customer_id}</span>
+          </div>
+        )}
         {/* License Key Display */}
         {user.licenseKey && (
           <>

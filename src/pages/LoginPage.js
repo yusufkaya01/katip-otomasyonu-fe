@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const [form, setForm] = useState({ identifier: '', password: '' }); // 'identifier' can be email or customer_id
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { login, user } = useAuth();
@@ -25,13 +25,26 @@ function LoginPage() {
     setLoading(true);
     setError('');
     try {
+      // Determine if identifier is email or customer_id
+      const isEmail = form.identifier.includes('@');
+      const isCustomerId = /^\d+$/.test(form.identifier);
+      let body;
+      if (isEmail) {
+        body = { email: form.identifier, password: form.password };
+      } else if (isCustomerId) {
+        body = { customer_id: Number(form.identifier), password: form.password };
+      } else {
+        setError('Geçerli bir e-posta adresi veya müşteri numarası giriniz.');
+        setLoading(false);
+        return;
+      }
       const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': process.env.REACT_APP_USER_API_KEY
         },
-        body: JSON.stringify({ email: form.email, password: form.password })
+        body: JSON.stringify(body)
       });
       if (res.status === 200) {
         const data = await res.json();
@@ -39,7 +52,7 @@ function LoginPage() {
         navigate('/isletmem', { replace: true });
       } else {
         const data = await res.json();
-        setError(data.error === 'INVALID_CREDENTIALS' ? 'E-posta veya şifre hatalı.' : 'Giriş sırasında bir hata oluştu.');
+        setError(data.error === 'INVALID_CREDENTIALS' ? 'E-posta/Müşteri No veya şifre hatalı.' : 'Giriş sırasında bir hata oluştu.');
       }
     } catch (err) {
       setError('Sunucuya bağlanılamadı. Lütfen tekrar deneyin.');
@@ -53,12 +66,15 @@ function LoginPage() {
         <form onSubmit={handleSubmit} style={{ minWidth: 320, maxWidth: 400, width: '100%', margin: 0 }}>
           <h2 className="mb-4">Giriş Yap</h2>
           <div className="mb-3">
-            <label htmlFor="email" className="form-label">E-posta</label>
-            <input type="email" className="form-control" id="email" name="email" value={form.email} onChange={handleChange} required />
+            <label htmlFor="identifier" className="form-label">E-posta veya Müşteri Numarası</label>
+            <input type="text" className="form-control" id="identifier" name="identifier" value={form.identifier} onChange={handleChange} required autoComplete="username" />
+            <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
+              Giriş için e-posta adresinizi <b>veya</b> müşteri numaranızı kullanabilirsiniz.
+            </div>
           </div>
           <div className="mb-3">
             <label htmlFor="password" className="form-label">Şifre</label>
-            <input type="password" className="form-control" id="password" name="password" value={form.password} onChange={handleChange} required minLength={8} maxLength={16} />
+            <input type="password" className="form-control" id="password" name="password" value={form.password} onChange={handleChange} required minLength={8} maxLength={16} autoComplete="current-password" />
           </div>
           {error && <div className="alert alert-danger py-2">{error}</div>}
           <button type="submit" className="btn btn-danger w-100" disabled={loading}>
