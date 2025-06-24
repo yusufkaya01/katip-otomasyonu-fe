@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { fetchTaxOffices } from '../api/taxOffices';
@@ -42,6 +42,7 @@ function IsletmemPage() {
   const [mssDisableInput, setMssDisableInput] = useState('');
   const navigate = useNavigate();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
+  const didFetchRef = useRef(false); // <-- add this ref
 
   useEffect(() => {
     if (loading) return; // Wait for auth restoration
@@ -49,6 +50,8 @@ function IsletmemPage() {
       navigate('/giris', { replace: true });
       return;
     }
+    if (didFetchRef.current) return; // Prevent multiple fetches
+    didFetchRef.current = true;
     // Fetch latest user info from backend (only once after login/session restore)
     fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
       method: 'GET',
@@ -70,7 +73,7 @@ function IsletmemPage() {
         logout();
         navigate('/giris', { replace: true });
       });
-  }, [navigate, API_KEY, user?.token, logout, loading]);
+  }, [navigate, API_KEY, user, updateUser, logout, loading]);
 
   useEffect(() => {
     fetchTaxOffices(API_KEY)
