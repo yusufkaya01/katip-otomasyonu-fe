@@ -4,6 +4,7 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   // On mount, restore user from localStorage
   useEffect(() => {
@@ -15,6 +16,7 @@ export function AuthProvider({ children }) {
         setUser(null);
       }
     }
+    setLoading(false); // Set loading to false after restoration
   }, []);
 
   // When user changes, update localStorage
@@ -42,7 +44,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

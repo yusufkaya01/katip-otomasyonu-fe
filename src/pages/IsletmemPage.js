@@ -15,8 +15,7 @@ function LoadingSpinner() {
 }
 
 function IsletmemPage() {
-  const { user, updateUser, logout } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const { user, updateUser, logout, loading } = useAuth(); // get loading from context
   const [emailVerified, setEmailVerified] = useState(null);
   const [editField, setEditField] = useState(null); // which field is being edited
   const [editValue, setEditValue] = useState('');
@@ -45,6 +44,7 @@ function IsletmemPage() {
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
 
   useEffect(() => {
+    if (loading) return; // Wait for auth restoration
     if (!user || !user.token) {
       navigate('/giris', { replace: true });
       return;
@@ -65,14 +65,12 @@ function IsletmemPage() {
         const updatedUser = { ...user, ...data.user, token: user.token };
         updateUser(updatedUser);
         setEmailVerified(data.user.email_verified);
-        setLoading(false);
       })
       .catch(() => {
         logout();
-        setLoading(false);
         navigate('/giris', { replace: true });
       });
-  }, [navigate, API_KEY, user, updateUser, logout]);
+  }, [navigate, API_KEY, user, updateUser, logout, loading]);
 
   useEffect(() => {
     fetchTaxOffices(API_KEY)
