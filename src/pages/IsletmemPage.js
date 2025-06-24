@@ -688,9 +688,11 @@ function IsletmemPage() {
                   className="btn btn-danger"
                   disabled={mssDisableInput !== 'onaylıyorum' || mssLoading}
                   onClick={async () => {
-                    await handleMssDisable();
-                    setShowMssDisableModal(false);
-                    setMssDisableInput('');
+                    if (mssDisableInput === 'onaylıyorum') {
+                      await handleMssDisable();
+                      setShowMssDisableModal(false);
+                      setMssDisableInput('');
+                    }
                   }}
                 >
                   {mssLoading ? 'İşleniyor...' : 'İptal Et'}
