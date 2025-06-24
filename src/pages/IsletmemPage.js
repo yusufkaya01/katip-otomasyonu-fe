@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { fetchTaxOffices } from '../api/taxOffices';
+import { useAuth } from '../context/AuthContext';
 
 function LoadingSpinner() {
   return (
@@ -14,7 +15,7 @@ function LoadingSpinner() {
 }
 
 function IsletmemPage() {
-  const [user, setUser] = useState(null);
+  const { user, updateUser, logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [emailVerified, setEmailVerified] = useState(null);
   const [editField, setEditField] = useState(null); // which field is being edited
@@ -41,54 +42,37 @@ function IsletmemPage() {
   const [showMssDisableModal, setShowMssDisableModal] = useState(false);
   const [mssDisableInput, setMssDisableInput] = useState('');
   const navigate = useNavigate();
-
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
 
   useEffect(() => {
-    const userData = localStorage.getItem('osgbUser');
-    if (!userData) {
+    if (!user || !user.token) {
       navigate('/giris', { replace: true });
       return;
     }
-    const parsed = JSON.parse(userData);
-    let token = parsed.token;
-    if (!token) {
-      const tokenFromStorage = localStorage.getItem('osgbToken');
-      if (tokenFromStorage) token = tokenFromStorage;
-    }
     // Fetch latest user info from backend
-    if (token) {
-      fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
-        method: 'GET',
-        headers: {
-          'x-api-key': API_KEY,
-          'Authorization': `Bearer ${token}`
-        }
+    fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
+      method: 'GET',
+      headers: {
+        'x-api-key': API_KEY,
+        'Authorization': `Bearer ${user.token}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Kullanıcı oturumu geçersiz veya süresi dolmuş.');
+        return res.json();
       })
-        .then(res => {
-          if (!res.ok) throw new Error('Kullanıcı oturumu geçersiz veya süresi dolmuş.');
-          return res.json();
-        })
-        .then(data => {
-          const updatedUser = { ...parsed, ...data.user, token };
-          setUser(updatedUser);
-          setEmailVerified(data.user.email_verified);
-          localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
-          setLoading(false);
-        })
-        .catch(() => {
-          setUser(null);
-          setLoading(false);
-          localStorage.removeItem('osgbUser');
-          navigate('/giris', { replace: true });
-        });
-    } else {
-      setUser(null);
-      setLoading(false);
-      localStorage.removeItem('osgbUser');
-      navigate('/giris', { replace: true });
-    }
-  }, [navigate, API_KEY]);
+      .then(data => {
+        const updatedUser = { ...user, ...data.user, token: user.token };
+        updateUser(updatedUser);
+        setEmailVerified(data.user.email_verified);
+        setLoading(false);
+      })
+      .catch(() => {
+        logout();
+        setLoading(false);
+        navigate('/giris', { replace: true });
+      });
+  }, [navigate, API_KEY, user, updateUser, logout]);
 
   useEffect(() => {
     fetchTaxOffices(API_KEY)
@@ -198,47 +182,26 @@ function IsletmemPage() {
       });
       if (res.status === 200) {
         // After successful update, fetch latest profile from backend
-        const fetchLatestProfile = async () => {
-          try {
-            const profileRes = await fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
-              method: 'GET',
-              headers: {
-                'x-api-key': API_KEY,
-                'Authorization': `Bearer ${user.token}`
-              }
-            });
-            if (profileRes.ok) {
-              const profileData = await profileRes.json();
-              const updatedUser = { ...user, ...profileData.user, token: user.token, licenseKey: user.licenseKey };
-              setUser(updatedUser);
-              setEmailVerified(profileData.user.email_verified);
-              localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
-              setSuccess('Bilgi başarıyla güncellendi.');
-              setEditField(null);
-              setConfirming(false);
-            } else if (profileRes.status === 401 || profileRes.status === 403) {
-              // Only log out if unauthorized
-              setUser(null);
-              setLoading(false);
-              localStorage.removeItem('osgbUser');
-              navigate('/giris', { replace: true });
-            } else {
-              // If profile fetch fails for other reasons, update user with new email and set email_verified: 0
-              const updatedUser = { ...user, email: editValue, email_verified: 0 };
-              setUser(updatedUser);
-              setEmailVerified(0);
-              localStorage.setItem('osgbUser', JSON.stringify(updatedUser));
-              setSuccess('Bilgi güncellendi. E-posta adresinizi doğrulamanız gerekmektedir.');
-              setEditField(null);
-              setConfirming(false);
-            }
-          } catch {
-            setSuccess('Bilgi güncellendi ancak profil tekrar alınamadı.');
-            setEditField(null);
-            setConfirming(false);
+        const profileRes = await fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
+          method: 'GET',
+          headers: {
+            'x-api-key': API_KEY,
+            'Authorization': `Bearer ${user.token}`
           }
-        };
-        fetchLatestProfile();
+        });
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          const updatedUser = { ...user, ...profileData.user, token: user.token };
+          updateUser(updatedUser);
+          setUser(updatedUser);
+          setEmailVerified(profileData.user.email_verified);
+          setSuccess('Bilgileriniz başarıyla güncellendi.');
+          setConfirming(false);
+        } else {
+          setError('Profil güncellendi ancak tekrar giriş yapmanız gerekiyor.');
+          logout();
+          navigate('/giris', { replace: true });
+        }
       } else {
         const data = await res.json();
         // Handle new validation errors for osgb_id, company_name, city, district

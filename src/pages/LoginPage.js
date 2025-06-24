@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import AuthLayout from '../components/AuthLayout';
+import { useAuth } from '../context/AuthContext';
 
 function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -25,8 +27,8 @@ function LoginPage() {
       });
       if (res.status === 200) {
         const data = await res.json();
-        // Store all login response fields (user, token, and any others) in localStorage
-        localStorage.setItem('osgbUser', JSON.stringify({ ...data.user, token: data.token, ...Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'user' && k !== 'token')) }));
+        // Store all login response fields (user, token, and any others) in context
+        login({ ...data.user, token: data.token, ...Object.fromEntries(Object.entries(data).filter(([k]) => k !== 'user' && k !== 'token')) });
         window.location.href = '/isletmem';
       } else {
         const data = await res.json();
