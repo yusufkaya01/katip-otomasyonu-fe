@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { path: '/', label: 'Ana Sayfa' },
@@ -14,25 +15,18 @@ const navItems = [
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const userData = localStorage.getItem('osgbUser');
-    if (userData) setUser(JSON.parse(userData));
-    else setUser(null);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('osgbUser');
-    setUser(null);
-    navigate('/');
-  };
+  const { user, logout } = useAuth();
 
   // Helper to truncate company name
   function getShortCompanyName(name) {
     if (!name) return '';
     return name.length > 10 ? name.slice(0, 10) + '..' : name;
   }
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
