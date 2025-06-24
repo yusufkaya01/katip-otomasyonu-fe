@@ -8,9 +8,12 @@ function ForgotPasswordPage() {
   const [error, setError] = useState('');
   const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
   const [resetError, setResetError] = useState('');
   const [resetLoading, setResetLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const location = useLocation();
 
   // Parse token from URL
@@ -78,24 +81,58 @@ function ForgotPasswordPage() {
       <div className="container py-5" style={{ maxWidth: 400 }}>
         <h2 className="mb-4">Şifre Sıfırla</h2>
         {resetSuccess ? (
-          <div className="alert alert-success">Şifreniz başarıyla güncellendi. Artık yeni şifrenizle giriş yapabilirsiniz.</div>
+          <div className="alert alert-success">Şifreniz başarıyla sıfırlandı. <Link to="/login">Giriş yap</Link></div>
         ) : (
           <form onSubmit={handleReset}>
             <div className="mb-3">
-              <label htmlFor="token" className="form-label">E-posta ile gelen Kod</label>
-              <input type="text" className="form-control" id="token" value={token} onChange={e => setToken(e.target.value)} required />
-              <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
-                Şifre sıfırlama e-postasındaki kodu buraya giriniz.
+              <label htmlFor="newPassword" className="form-label">Yeni Şifre</label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-control"
+                  id="newPassword"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  minLength={8}
+                  maxLength={16}
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  tabIndex={-1}
+                  onClick={() => setShowPassword(v => !v)}
+                  aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                >
+                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                </button>
               </div>
             </div>
             <div className="mb-3">
-              <label htmlFor="newPassword" className="form-label">Yeni Şifre</label>
-              <input type="password" className="form-control" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={8} maxLength={16} />
-              <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
-                Şifreniz 8-16 karakter arasında olmalıdır.
+              <label htmlFor="confirmPassword" className="form-label">Yeni Şifre (Tekrar)</label>
+              <div className="input-group">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  className="form-control"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  minLength={8}
+                  maxLength={16}
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  tabIndex={-1}
+                  onClick={() => setShowConfirmPassword(v => !v)}
+                  aria-label={showConfirmPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                >
+                  <i className={`bi ${showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                </button>
               </div>
             </div>
-            {resetError && <div className="alert alert-danger py-2">{resetError}</div>}
+            {resetError && <div className="alert alert-danger">{resetError}</div>}
             <button type="submit" className="btn btn-danger w-100" disabled={resetLoading}>
               {resetLoading ? 'Sıfırlanıyor...' : 'Şifreyi Sıfırla'}
             </button>
