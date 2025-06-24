@@ -371,36 +371,37 @@ function IsletmemPage() {
           <div className="mb-2 d-flex align-items-center">
             <strong style={{ minWidth: 140 }}>Müşteri Numarası:</strong>
             <span className="mx-2" style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>{user.customer_id}</span>
+            <button
+              className="btn btn-link p-0 text-danger mx-1"
+              title="Kopyala"
+              onClick={() => navigator.clipboard.writeText(user.customer_id)}
+            >
+              <i className="bi bi-clipboard"></i>
+            </button>
           </div>
         )}
         {/* License Key Display */}
         {user.licenseKey && (
-          <>
-            <div className="mb-1 d-flex align-items-center">
-              <strong style={{ minWidth: 140 }}>Lisans Anahtarı:</strong>
-              <span className="mx-2" style={{ letterSpacing: '1px', fontFamily: 'monospace' }}>
-                {showLicense ? user.licenseKey : '•'.repeat(user.licenseKey.length)}
-              </span>
-              <button
-                className="btn btn-link p-0 text-danger mx-1"
-                title="Kopyala"
-                onClick={() => navigator.clipboard.writeText(user.licenseKey)}
-              >
-                <i className="bi bi-clipboard"></i>
-              </button>
-              <button
-                className="btn btn-link p-0 text-secondary"
-                title={showLicense ? 'Gizle' : 'Göster'}
-                onClick={() => setShowLicense(v => !v)}
-              >
-                <i className={`bi bi-eye${showLicense ? '-slash' : ''}`}></i>
-              </button>
-            </div>
-            <div className="mb-3 p-2 rounded bg-primary bg-opacity-10 text-primary small">
-              Bu lisans anahtarı Katip Otomasyonu eklentisini kullanabilmek için gereklidir.<br />
-              <span className="fw-bold">Bu anahtarı doğru kopyaladığınızdan emin olmalısınız, aksi durumda eklenti çalışmaz ve lisans geçersiz hatası alırsınız.</span>
-            </div>
-          </>
+          <div className="mb-2 d-flex align-items-center">
+            <strong style={{ minWidth: 140 }}>Lisans Anahtarı:</strong>
+            <span className="mx-2" style={{ letterSpacing: '1px', fontFamily: 'monospace' }}>
+              {showLicense ? user.licenseKey : '•'.repeat(user.licenseKey.length)}
+            </span>
+            <button
+              className="btn btn-link p-0 text-danger mx-1"
+              title="Kopyala"
+              onClick={() => navigator.clipboard.writeText(user.licenseKey)}
+            >
+              <i className="bi bi-clipboard"></i>
+            </button>
+            <button
+              className="btn btn-link p-0 text-secondary"
+              title={showLicense ? 'Gizle' : 'Göster'}
+              onClick={() => setShowLicense(v => !v)}
+            >
+              <i className={`bi bi-eye${showLicense ? '-slash' : ''}`}></i>
+            </button>
+          </div>
         )}
         {fields.map(({ key, label }) => (
           <div key={key} className="mb-3 d-flex align-items-center">
