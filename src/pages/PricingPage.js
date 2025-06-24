@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 const TIERS = Array.from({ length: 9 }, (_, i) => {
   const tier = i + 1;
   const limit = tier < 9 ? (tier * 500).toString() : 'Sınırsız';
-  const monthly = `${1000 * tier}₺`;
-  const yearly = `${1000 * tier * 3}₺`;
-  return { tier, limit, monthly, yearly };
+  const monthly = 1000 * tier;
+  // New yearly: 65% of (monthly * 6)
+  const yearly = Math.round(monthly * 6 * 0.6) + '₺';
+  return { tier, limit, monthly: monthly + '₺', yearly };
 });
 
 function InfoIcon({ text, bold }) {
@@ -50,12 +51,7 @@ function PricingPage() {
   return (
     <div className="container py-5">
       <h2 className="mb-4 text-center">Fiyat Listesi</h2>
-      <div className="alert alert-info text-center mb-4">
-        <b>Demo:</b> Tüm paketler için ilk 3 gün ücretsizdir.<br />
-        <b>Aylık:</b> Aylık lisans, seçilen pakete göre fiyatlandırılır.<br />
-        <b>Yıl Sonu:</b> Yıllık lisans, 31 Aralık 2025 tarihine kadar geçerlidir.
-      </div>
-      <div className="table-responsive">
+      <div className="table-responsive mb-3">
         <table className="table table-bordered table-striped align-middle text-center bg-white">
           <thead className="table-danger">
             <tr>
@@ -65,9 +61,23 @@ function PricingPage() {
                 <InfoIcon bold text={"isg katip'te 'Devam Eden Toplam Sözleşme Sayısı' baz alınır"} />
               </th>
               <th>Aylık Fiyat</th>
-              <th>
+              <th style={{ position: 'relative' }}>
                 Yıllık Fiyatı
                 <InfoIcon text={"31 Aralık 2025 tarihine kadar kullanım sunar: Yeni yılda İSG-Katip sisteminde yapılacak değişikliklere göre sistemimiz güncellenecek olup, yeni yıl için yeniden lisans almanız gerekecektir."} />
+                <div style={{
+                  fontSize: 13,
+                  color: '#fd7e14',
+                  fontWeight: 600,
+                  marginTop: 2,
+                  letterSpacing: 0.2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4
+                }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#fd7e14" viewBox="0 0 16 16" style={{marginRight: 2}}><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 8 1.5a6.5 6.5 0 0 1 0 13zm0-10a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4.5zm1 7.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75V7.75c0-.414.336-.75.75-.75s.75.336.75.75v4z"/></svg>
+                  Yıllık ödemede %40 indirim
+                </div>
               </th>
             </tr>
           </thead>

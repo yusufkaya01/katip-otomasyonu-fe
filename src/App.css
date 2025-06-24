@@ -85,3 +85,23 @@
   animation: featureHighlight 4s linear infinite;
   animation-delay: 6s;
 }
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 16px 0 #fd7e14; }
+  50% { box-shadow: 0 0 32px 8px #fd7e14; }
+  100% { box-shadow: 0 0 16px 0 #fd7e14; }
+}
+
+.discount-animated-box {
+  animation: pulseGlow 2s infinite;
+}
+
+@keyframes badgeBounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-8px) scale(1.08); }
+  60% { transform: translateY(2px) scale(0.98); }
+}
+
+.badge-animated-discount {
+  animation: badgeBounce 1.2s infinite;
+}

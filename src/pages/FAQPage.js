@@ -101,6 +101,18 @@ function FAQPage() {
             </div>
           </div>
         </div>
+        <div className="accordion-item">
+          <h2 className="accordion-header" id="heading9">
+            <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+              Ürün ile ilgili fatura alabilir miyim?
+            </button>
+          </h2>
+          <div id="collapse9" className="accordion-collapse collapse" aria-labelledby="heading9" data-bs-parent="#faqAccordion">
+            <div className="accordion-body">
+              Tüm müşterilerimize satın alımlarından sonra fatura kesmekteyiz, kayıt esnasında fatura bilgilerinizi doğru yazdığınızdan emin olunuz. Kayıt sırasında hatalı bir bilgi girdiyseniz 'İşletmem' sayfasından bilgilerinizi güncelleyebilirsiniz.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
