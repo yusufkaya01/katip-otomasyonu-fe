@@ -573,11 +573,16 @@ function IsletmemPage() {
           <strong style={{ minWidth: 200 }}>Mesafeli Satış Sözleşmesi:</strong>
           <span className={`badge ${mssEnabled ? 'bg-success' : 'bg-secondary'}`}>{mssEnabled ? 'Onaylandı' : 'Onaylanmadı'}</span>
         </div>
-        <div className="mb-2">
+        <div className="mb-2 d-flex gap-2">
           {mssEnabled ? (
-            <button className="btn btn-outline-danger btn-sm" onClick={handleMssDisable} disabled={mssLoading}>
-              {mssLoading ? 'İşleniyor...' : 'Sözleşmeyi İptal Et'}
-            </button>
+            <>
+              <button className="btn btn-outline-danger btn-sm" onClick={handleMssDisable} disabled={mssLoading}>
+                {mssLoading ? 'İşleniyor...' : 'Sözleşmeyi İptal Et'}
+              </button>
+              <button className="btn btn-outline-primary btn-sm" onClick={() => fetchMssAgreement('view')} disabled={mssLoading}>
+                Sözleşmeyi Görüntüle
+              </button>
+            </>
           ) : (
             <button className="btn btn-outline-success btn-sm" onClick={fetchMssAgreement} disabled={mssLoading}>
               {mssLoading ? 'Yükleniyor...' : 'Sözleşmeyi Onayla'}
@@ -592,7 +597,7 @@ function IsletmemPage() {
         {mssError && <div className="alert alert-danger py-2 mt-2">{mssError}</div>}
         {mssSuccess && <div className="alert alert-success py-2 mt-2">{mssSuccess}</div>}
       </div>
-      {/* MSS Modal */}
+      {/* MSS Modal (for view or confirm) */}
       {mssModalOpen && (
         <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg">
@@ -603,18 +608,22 @@ function IsletmemPage() {
               </div>
               <div className="modal-body" style={{ maxHeight: 400, overflowY: 'auto' }}>
                 <div dangerouslySetInnerHTML={{ __html: mssAgreementHtml }} />
-                <div className="form-check mt-3">
-                  <input className="form-check-input" type="checkbox" id="mssConfirm" checked={mssConfirm} onChange={e => setMssConfirm(e.target.checked)} />
-                  <label className="form-check-label" htmlFor="mssConfirm">
-                    Sözleşme içeriğini okudum ve onaylıyorum.
-                  </label>
-                </div>
+                {mssModalOpen !== 'view' && (
+                  <div className="form-check mt-3">
+                    <input className="form-check-input" type="checkbox" id="mssConfirm" checked={mssConfirm} onChange={e => setMssConfirm(e.target.checked)} />
+                    <label className="form-check-label" htmlFor="mssConfirm">
+                      Sözleşme içeriğini okudum ve onaylıyorum.
+                    </label>
+                  </div>
+                )}
               </div>
               <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setMssModalOpen(false)}>Vazgeç</button>
-                <button className="btn btn-success" onClick={handleMssEnable} disabled={!mssConfirm || mssLoading}>
-                  {mssLoading ? 'Onaylanıyor...' : 'Onayla ve E-posta Gönder'}
-                </button>
+                <button className="btn btn-secondary" onClick={() => setMssModalOpen(false)}>Kapat</button>
+                {mssModalOpen !== 'view' && (
+                  <button className="btn btn-success" onClick={handleMssEnable} disabled={!mssConfirm || mssLoading}>
+                    {mssLoading ? 'Onaylanıyor...' : 'Onayla ve E-posta Gönder'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
