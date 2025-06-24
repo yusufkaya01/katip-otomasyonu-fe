@@ -81,7 +81,7 @@ function ForgotPasswordPage() {
       <div className="container py-5" style={{ maxWidth: 400 }}>
         <h2 className="mb-4">Şifre Sıfırla</h2>
         {resetSuccess ? (
-          <div className="alert alert-success">Şifreniz başarıyla sıfırlandı. <Link to="/login">Giriş yap</Link></div>
+          <div className="alert alert-success">Şifreniz başarıyla sıfırlandı. <Link to="/giris">Giriş yap</Link></div>
         ) : (
           <form onSubmit={handleReset}>
             <div className="mb-3">
