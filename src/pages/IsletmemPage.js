@@ -193,7 +193,6 @@ function IsletmemPage() {
           const profileData = await profileRes.json();
           const updatedUser = { ...user, ...profileData.user, token: user.token };
           updateUser(updatedUser);
-          setUser(updatedUser);
           setEmailVerified(profileData.user.email_verified);
           setSuccess('Bilgileriniz başarıyla güncellendi.');
           setConfirming(false);
@@ -310,8 +309,7 @@ function IsletmemPage() {
       });
       if (res.ok) {
         setMssEnabled(true);
-        setMssSuccess('Mesafeli Satış Sözleşmesi onaylandı ve e-posta adresinize gönderildi.');
-        setUser({ ...user, distance_sales_agreement_enabled: true });
+        updateUser({ ...user, distance_sales_agreement_enabled: true });
         setMssModalOpen(false);
       } else {
         setMssError('Sözleşme onaylanamadı.');
@@ -338,7 +336,7 @@ function IsletmemPage() {
       });
       if (res.ok) {
         setMssEnabled(false);
-        setUser({ ...user, distance_sales_agreement_enabled: false });
+        updateUser({ ...user, distance_sales_agreement_enabled: false });
         setMssSuccess('Mesafeli Satış Sözleşmesi devre dışı bırakıldı.');
       } else {
         setMssError('Sözleşme devre dışı bırakılamadı.');
