@@ -43,6 +43,9 @@ function IsletmemPage() {
   const navigate = useNavigate();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
   const didFetchRef = useRef(false); // <-- add this ref
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     if (loading) return; // Wait for auth restoration
@@ -141,6 +144,11 @@ function IsletmemPage() {
     setSuccess('');
     if (!editValue || (editField === 'password' && editValue.length < 8)) {
       setError('Geçerli bir değer giriniz.');
+      return;
+    }
+    // Password confirmation check (FE only)
+    if (editField === 'password' && editValue !== confirmPassword) {
+      setError('Şifreler eşleşmiyor.');
       return;
     }
     if (!user.token) {
@@ -399,44 +407,51 @@ function IsletmemPage() {
             <strong style={{ minWidth: 140 }}>{label}:</strong>
             {editField === key && confirming ? (
               <>
-                {key === 'city' ? (
-                  <select
-                    className="form-select mx-2"
-                    style={{ maxWidth: 250 }}
-                    value={selectedCity || user.city || ''}
-                    onChange={e => setSelectedCity(e.target.value)}
-                  >
-                    <option value="">Şehir seçiniz</option>
-                    {taxData.map(city => (
-                      <option key={city.name} value={city.name}>{city.name}</option>
-                    ))}
-                  </select>
-                ) : key === 'district' ? (
-                  <select
-                    className="form-select mx-2"
-                    style={{ maxWidth: 250 }}
-                    value={selectedDistrict || user.district || ''}
-                    onChange={e => setSelectedDistrict(e.target.value)}
-                    disabled={!selectedCity && !user.city}
-                  >
-                    <option value="">İlçe seçiniz</option>
-                    {districts.map(d => (
-                      <option key={d.name} value={d.name}>{d.name}</option>
-                    ))}
-                  </select>
-                ) : key === 'tax_office' ? (
-                  <select
-                    className="form-select mx-2"
-                    style={{ maxWidth: 250 }}
-                    value={editValue || user.tax_office || ''}
-                    onChange={e => setEditValue(e.target.value)}
-                    disabled={!selectedDistrict && !user.district}
-                  >
-                    <option value="">Vergi Dairesi seçiniz</option>
-                    {taxOffices.map(office => (
-                      <option key={office} value={office}>{office}</option>
-                    ))}
-                  </select>
+                {key === 'password' ? (
+                  <div style={{ width: 250 }}>
+                    <div className="input-group">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        className="form-control"
+                        value={editValue}
+                        onChange={e => setEditValue(e.target.value)}
+                        minLength={8}
+                        maxLength={16}
+                        required
+                        placeholder="Yeni Şifre"
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        tabIndex={-1}
+                        onClick={() => setShowPassword(v => !v)}
+                        aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                      >
+                        <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                      </button>
+                    </div>
+                    <div className="input-group mt-2">
+                      <input
+                        type={showPasswordConfirm ? 'text' : 'password'}
+                        className="form-control"
+                        placeholder="Yeni Şifre (Tekrar)"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        minLength={8}
+                        maxLength={16}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        tabIndex={-1}
+                        onClick={() => setShowPasswordConfirm(v => !v)}
+                        aria-label={showPasswordConfirm ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                      >
+                        <i className={`bi ${showPasswordConfirm ? 'bi-eye-slash' : 'bi-eye'}`}></i>
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <input
                     type={key === 'password' ? 'password' : 'text'}
@@ -447,12 +462,12 @@ function IsletmemPage() {
                   />
                 )}
                 <button className="btn btn-success btn-sm mx-1" onClick={handleConfirm}>Evet</button>
-                <button className="btn btn-secondary btn-sm" onClick={() => { setEditField(null); setConfirming(false); }}>Hayır</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => { setEditField(null); setConfirming(false); setConfirmPassword(''); }}>Hayır</button>
               </>
             ) : (
               <>
                 <span className="mx-2">{key === 'password' ? '********' : user[key]}</span>
-                <button className="btn btn-link p-0 text-danger" onClick={() => handleEditClick(key)} title="Düzenle">
+                <button className="btn btn-link p-0 text-danger" onClick={() => { handleEditClick(key); setConfirmPassword(''); }} title="Düzenle">
                   <i className="bi bi-pencil"></i>
                 </button>
               </>
