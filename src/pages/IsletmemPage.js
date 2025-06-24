@@ -49,7 +49,7 @@ function IsletmemPage() {
       navigate('/giris', { replace: true });
       return;
     }
-    // Fetch latest user info from backend
+    // Fetch latest user info from backend (only once after login/session restore)
     fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
       method: 'GET',
       headers: {
@@ -70,7 +70,7 @@ function IsletmemPage() {
         logout();
         navigate('/giris', { replace: true });
       });
-  }, [navigate, API_KEY, user, updateUser, logout, loading]);
+  }, [navigate, API_KEY, user?.token, logout, loading]);
 
   useEffect(() => {
     fetchTaxOffices(API_KEY)
