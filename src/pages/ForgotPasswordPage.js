@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -12,12 +13,11 @@ function ForgotPasswordPage() {
     setError('');
     setSuccess(false);
     try {
-      // Use correct backend endpoint and add x-api-key header
-      const res = await fetch('https://customes.katipotomasyonu.com/api/osgb/forgot-password', {
+      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'yL!oo7tB)JvOXwUADAzrZ+=uP^l5oR=^'
+          'x-api-key': process.env.REACT_APP_USER_API_KEY
         },
         body: JSON.stringify({ email })
       });
@@ -37,7 +37,12 @@ function ForgotPasswordPage() {
     <div className="container py-5" style={{ maxWidth: 400 }}>
       <h2 className="mb-4">Şifremi Unuttum</h2>
       {success ? (
-        <div className="alert alert-success">Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.</div>
+        <>
+          <div className="alert alert-success">Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.</div>
+          <div className="text-center mt-3">
+            <Link to="/sifre-sifirla" className="btn btn-outline-danger">Kodu Girdikten Sonra Şifreyi Sıfırla</Link>
+          </div>
+        </>
       ) : (
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
@@ -48,6 +53,9 @@ function ForgotPasswordPage() {
           <button type="submit" className="btn btn-danger w-100" disabled={loading}>
             {loading ? 'Gönderiliyor...' : 'Gönder'}
           </button>
+          <div className="text-center mt-3">
+            <Link to="/sifre-sifirla" className="small text-danger">Elinizde kod var mı? Şifreyi sıfırla</Link>
+          </div>
         </form>
       )}
     </div>

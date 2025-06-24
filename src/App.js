@@ -18,6 +18,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PricingPage from './pages/PricingPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import './App.css';
 
 function LoadingSpinner() {
@@ -54,6 +55,7 @@ function AppRoutes() {
             <Route path="/sifremi-unuttum" element={<ForgotPasswordPage />} />
             <Route path="/giris" element={<LoginPage />} />
             <Route path="/kayit" element={<RegisterPage />} />
+            <Route path="/sifre-sifirla" element={<ResetPasswordPage />} />
           </Routes>
         </div>
       </div>
