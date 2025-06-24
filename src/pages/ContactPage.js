@@ -2,6 +2,33 @@ import React, { useState } from 'react';
 
 function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const form = e.target;
+    const data = new FormData(form);
+    try {
+      const res = await fetch('https://formspree.io/f/xwpbnejl', {
+        method: 'POST',
+        body: data,
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        setError('Mesaj gönderilemedi. Lütfen tekrar deneyin.');
+      }
+    } catch {
+      setError('Sunucuya ulaşılamıyor. Lütfen tekrar deneyin.');
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="container py-5">
@@ -14,11 +41,7 @@ function ContactPage() {
                 Mesajınız başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.
               </div>
             ) : (
-              <form
-                action="https://formspree.io/f/xwpbnejl"
-                method="POST"
-                onSubmit={() => setSubmitted(true)}
-              >
+              <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="name" className="form-label">Adınız Soyadınız</label>
                   <input type="text" className="form-control" id="name" name="name" required style={{ background: '#fff' }} />
@@ -35,7 +58,10 @@ function ContactPage() {
                   <label htmlFor="message" className="form-label">Mesajınız</label>
                   <textarea className="form-control" id="message" name="message" rows="5" required style={{ background: '#fff' }}></textarea>
                 </div>
-                <button type="submit" className="btn btn-danger w-100">Gönder</button>
+                {error && <div className="alert alert-danger py-2">{error}</div>}
+                <button type="submit" className="btn btn-danger w-100" disabled={loading}>
+                  {loading ? 'Gönderiliyor...' : 'Gönder'}
+                </button>
               </form>
             )}
           </div>
