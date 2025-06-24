@@ -37,6 +37,7 @@ function IsletmemPage() {
   const [mssError, setMssError] = useState('');
   const [mssSuccess, setMssSuccess] = useState('');
   const [mssConfirm, setMssConfirm] = useState(false);
+  const [mssModalMode, setMssModalMode] = useState('confirm'); // 'confirm' or 'view'
   const navigate = useNavigate();
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
@@ -267,7 +268,8 @@ function IsletmemPage() {
     }
   }, [user]);
 
-  const fetchMssAgreement = async () => {
+  // Add a state to distinguish modal mode
+  const fetchMssAgreement = async (mode = 'confirm') => {
     setMssLoading(true);
     setMssAgreementHtml('');
     setMssError('');
@@ -282,6 +284,7 @@ function IsletmemPage() {
       if (res.ok) {
         const data = await res.json();
         setMssAgreementHtml(data.agreementHtml || '');
+        setMssModalMode(mode);
         setMssModalOpen(true);
       } else {
         setMssError('Sözleşme içeriği alınamadı.');
@@ -608,8 +611,8 @@ function IsletmemPage() {
               </div>
               <div className="modal-body" style={{ maxHeight: 400, overflowY: 'auto' }}>
                 <div dangerouslySetInnerHTML={{ __html: mssAgreementHtml }} />
-                {/* Only show confirmation checkbox and enable button if not in 'view' mode */}
-                {typeof mssModalOpen === 'string' && mssModalOpen === 'view' ? null : (
+                {/* Only show confirmation checkbox and enable button if in 'confirm' mode */}
+                {mssModalMode === 'confirm' && (
                   <div className="form-check mt-3">
                     <input className="form-check-input" type="checkbox" id="mssConfirm" checked={mssConfirm} onChange={e => setMssConfirm(e.target.checked)} />
                     <label className="form-check-label" htmlFor="mssConfirm">
@@ -620,8 +623,8 @@ function IsletmemPage() {
               </div>
               <div className="modal-footer">
                 <button className="btn btn-secondary" onClick={() => setMssModalOpen(false)}>Kapat</button>
-                {/* Only show enable button if not in 'view' mode */}
-                {typeof mssModalOpen === 'string' && mssModalOpen === 'view' ? null : (
+                {/* Only show enable button if in 'confirm' mode */}
+                {mssModalMode === 'confirm' && (
                   <button className="btn btn-success" onClick={handleMssEnable} disabled={!mssConfirm || mssLoading}>
                     {mssLoading ? 'Onaylanıyor...' : 'Onayla ve E-posta Gönder'}
                   </button>
