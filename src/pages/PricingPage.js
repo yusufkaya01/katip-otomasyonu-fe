@@ -62,7 +62,7 @@ function PricingPage() {
               </th>
               <th>Aylık Fiyat</th>
               <th style={{ position: 'relative' }}>
-                Yıllık Fiyatı
+                Yıllık Fiyat <span style={{ fontWeight: 400, fontSize: 13 }}>(31 Aralık 2025 tarihine kadar)</span>
                 <InfoIcon text={"31 Aralık 2025 tarihine kadar kullanım sunar: Yeni yılda İSG-Katip sisteminde yapılacak değişikliklere göre sistemimiz güncellenecek olup, yeni yıl için yeniden lisans almanız gerekecektir."} />
                 <div style={{
                   fontSize: 13,
@@ -87,7 +87,12 @@ function PricingPage() {
                 <td>{tier.tier}</td>
                 <td>{tier.limit}</td>
                 <td>{tier.monthly}</td>
-                <td>{tier.yearly}</td>
+                <td>
+                  <span style={{ textDecoration: 'line-through', color: '#678', marginRight: 8 }}>
+                    {parseInt(tier.monthly) * 6}₺
+                  </span>
+                  <span style={{ color: '#fd7e14', fontWeight: 600 }}>{tier.yearly}</span>
+                </td>
               </tr>
             ))}
           </tbody>

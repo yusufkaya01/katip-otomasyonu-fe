@@ -20,11 +20,12 @@ function HomePage() {
         <p className="lead mb-4">
           Katip Otomasyonu, isgkatip platformunda sözleşme güncellemelerini ve yönetimini otomatikleştiren, güvenli ve hızlı bir Chrome eklentisidir. Tüm işlemlerinizde zaman kazanın ve hatasız yönetim sağlayın.
         </p>
-        <ul className="list-group mb-4 mx-auto feature-list-animated" style={{ maxWidth: 400 }}>
-          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>isgkatip ile tam uyumlu</li>
-          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Kullanıcı dostu yan panel arayüzü</li>
-          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Gelişmiş lisans ve güvenlik kontrolleri</li>
-          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Verileriniz güvende, sadece lisans anahtarınız doğrulanır</li>
+        <ul className="list-group mb-4 mx-auto feature-list-animated" style={{ maxWidth: 600 }}>
+          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>3 gün ücretsiz deneyin!</li>
+          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Tek tuşla güncellenmesi gereken sözleşmeleri güncelleyin</li>
+          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tuşla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>
+          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Kalan personel dakikalarınızı anında görüntüleyin ve Excel formatında indirin</li>
+          <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Firmalarınızın atama ve onay durumlarını Excel formatında rapor oluşturarak renklendirilmiş şekilde takip edin</li>
         </ul>
       </section>
       <section>
