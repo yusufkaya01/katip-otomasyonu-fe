@@ -190,6 +190,10 @@ function RegisterPage() {
 
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: 500, margin: '0 auto' }}>
+      <div className="alert alert-warning d-flex align-items-center mb-4" style={{background:'#fffbe6', color:'#664d03', borderColor:'#ffe066'}}>
+        <i className="bi bi-exclamation-triangle-fill" style={{fontSize: '2rem', color: '#fd7e14', marginRight: 12}}></i>
+        Lütfen faturalama için vergi levhanızdaki şirket ünvanını eksiksiz yazdığınızdan ve vergi dairenizi doğru seçtiğinizden emin olunuz.
+      </div>
       <div className="row g-3">
         <div className="col-12">
           <div className="mb-3">
@@ -204,9 +208,6 @@ function RegisterPage() {
               required
               maxLength={100}
             />
-            <div className="p-2 mt-1 rounded bg-warning bg-opacity-25 text-dark small">
-              Lütfen vergi levhanızdaki şirket ünvanını eksiksiz yazınız.
-            </div>
           </div>
         </div>
         <div className="col-6">
@@ -301,16 +302,7 @@ function RegisterPage() {
             <div className="form-text">Sadece rakam giriniz. Örn: 123456</div>
           </div>
         </div>
-        <div className="col-6">
-          <div className="mb-3">
-            <label htmlFor="phone" className="form-label">Telefon Numarası</label>
-            <div className="input-group">
-              <span className="input-group-text">+90</span>
-              <input type="tel" className="form-control" id="phone" name="phone" value={form.phone} onChange={handleChange} required maxLength={10} minLength={10} pattern="[0-9]{10}" placeholder="5XXXXXXXXX" />
-            </div>
-            <div className="form-text">Başında 0 olmadan, 10 haneli giriniz. Örn: 5XXXXXXXXX</div>
-          </div>
-        </div>
+        {/* New order: email, password, password_confirm, phone, address */}
         <div className="col-6">
           <div className="mb-3">
             <label htmlFor="email" className="form-label">E-posta</label>
@@ -360,6 +352,16 @@ function RegisterPage() {
             {form.password_confirm.length > 0 && form.password !== form.password_confirm && (
               <div className="form-text text-danger">Şifreler eşleşmiyor.</div>
             )}
+          </div>
+        </div>
+        <div className="col-6">
+          <div className="mb-3">
+            <label htmlFor="phone" className="form-label">Telefon Numarası</label>
+            <div className="input-group">
+              <span className="input-group-text">+90</span>
+              <input type="tel" className="form-control" id="phone" name="phone" value={form.phone} onChange={handleChange} required maxLength={10} minLength={10} pattern="[0-9]{10}" placeholder="5XXXXXXXXX" />
+            </div>
+            <div className="form-text">Başında 0 olmadan, 10 haneli giriniz. Örn: 5XXXXXXXXX</div>
           </div>
         </div>
         <div className="col-12">

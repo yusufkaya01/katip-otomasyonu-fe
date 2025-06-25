@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 function HomePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImg, setModalImg] = useState(null);
   const [modalAlt, setModalAlt] = useState('');
   const [hovered, setHovered] = useState('');
+  const navigate = useNavigate();
 
   const openModal = (src, alt) => {
     setModalImg(src);
@@ -14,13 +17,39 @@ function HomePage() {
   const closeModal = () => setModalOpen(false);
 
   return (
-    <div className="filigran-bg">
-      <section className="text-center mb-5">
+    <div className="filigran-bg position-relative">
+      {/* GIF fixed to right center, 30% smaller than before, now clickable */}
+      <img
+        src="/gifs/demo-promotion.gif"
+        alt="3 Gün Ücretsiz Deneyin Demo"
+        style={{
+          position: 'fixed',
+          top: '50%',
+          right: 0,
+          transform: 'translateY(-50%)',
+          maxWidth: 448, // 640 * 0.7
+          width: '28vw', // 40vw * 0.7
+          minWidth: 168, // 240 * 0.7
+          height: 'auto',
+          margin: 0,
+          zIndex: 100,
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+          background: 'transparent',
+          boxShadow: 'none',
+        }}
+        onClick={() => navigate('/kayit')}
+      />
+      {/* Centered intro section with h2 restored */}
+      <section className="text-center mb-5" style={{ marginTop: '2.5rem' }}>
         <h2 className="mb-4">Katip Otomasyonu Nedir?</h2>
         <p className="lead mb-4">
           Katip Otomasyonu, isgkatip platformunda sözleşme güncellemelerini ve yönetimini otomatikleştiren, güvenli ve hızlı bir Chrome eklentisidir. Tüm işlemlerinizde zaman kazanın ve hatasız yönetim sağlayın.
         </p>
-        <ul className="list-group mb-4 mx-auto feature-list-animated" style={{ maxWidth: 600 }}>
+      </section>
+      {/* Centered slogans */}
+      <section className="d-flex justify-content-center align-items-center flex-column mb-5">
+        <ul className="list-group mb-0 mx-auto feature-list-animated" style={{ maxWidth: 400, textAlign: 'center' }}>
           <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>3 gün ücretsiz deneyin!</li>
           <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Tek tuşla güncellenmesi gereken sözleşmeleri güncelleyin</li>
           <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tuşla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>

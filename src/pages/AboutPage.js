@@ -10,7 +10,7 @@ function AboutPage() {
       <p>
         Amacımız, İSG-Katip kullanıcılarının iş süreçlerini kolaylaştırmak, zamandan tasarruf etmelerini sağlamak ve mevzuata tam uyumlu, güvenli, hızlı ve kullanıcı dostu yazılımlar sunmaktır. Katip Otomasyonu, işyeri hekimi, iş güvenliği uzmanı ve diğer sağlık personeli atamaları, sözleşme yönetimi ve raporlama gibi süreçleri otomatikleştirerek kurumların verimliliğini artırır.
       </p>
-      <div className="row g-4 mb-4">
+      <div className="row g-4 mb-4 justify-content-center">
         <div className="col-md-6">
           <div className="card h-100 shadow-sm">
             <div className="card-body d-flex flex-column align-items-center text-center">
@@ -22,19 +22,8 @@ function AboutPage() {
             </div>
           </div>
         </div>
-        <div className="col-md-6">
-          <div className="card h-100 shadow-sm">
-            <div className="card-body d-flex flex-column align-items-center text-center">
-              <img src="https://media.licdn.com/dms/image/D4D03AQF1QnQw1Qw1xA/profile-displayphoto-shrink_200_200/0/1700000000000?e=1721865600&v=beta&t=example2" alt="Mustafa Arslan" className="rounded-circle mb-3" style={{ width: 80, height: 80, objectFit: 'cover' }} />
-              <h5 className="card-title mb-1">Mustafa Arslan</h5>
-              <p className="mb-1">Co-Founder | İnşaat Mühendisi</p>
-              <a href="https://www.linkedin.com/in/mustafa-arslan-bb14b3335/" target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm mb-2">LinkedIn Profili</a>
-              <div className="small">E-posta: <a href="mailto:mustafa@katipotomasyonu.com">mustafa@katipotomasyonu.com</a></div>
-            </div>
-          </div>
-        </div>
       </div>
-      <div className="alert alert-light border mt-4" style={{ maxWidth: 700, margin: '0 auto' }}>
+      <div className="alert alert-light border mt-4" style={{ maxWidth: 400, margin: '0 auto' }}>
         Genel destek için: <a href="mailto:info@katipotomasyonu.com">info@katipotomasyonu.com</a>
       </div>
     </div>

@@ -19,6 +19,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import PricingPage from './pages/PricingPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import WhatsappFloatButton from './WhatsappFloatButton';
 import './App.css';
 
 function LoadingSpinner() {
@@ -59,7 +60,6 @@ function AppRoutes() {
           </Routes>
         </div>
       </div>
-      <Footer />
     </>
   );
 }
@@ -68,7 +68,9 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <WhatsappFloatButton />
         <AppRoutes />
+        <Footer />
       </Router>
     </AuthProvider>
   );

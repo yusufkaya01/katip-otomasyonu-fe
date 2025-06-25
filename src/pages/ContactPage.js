@@ -55,6 +55,16 @@ function ContactPage() {
                   <input type="email" className="form-control" id="email" name="email" required style={{ background: '#fff' }} />
                 </div>
                 <div className="mb-3">
+                  <label htmlFor="topic" className="form-label">Konu</label>
+                  <select className="form-control" id="topic" name="topic" required style={{ background: '#fff' }}>
+                    <option value="">Konu seçiniz</option>
+                    <option value="Lisans">Lisans</option>
+                    <option value="Google Chrome Eklentisi">Google Chrome Eklentisi</option>
+                    <option value="Teknik Destek">Teknik Destek</option>
+                    <option value="Diğer">Diğer</option>
+                  </select>
+                </div>
+                <div className="mb-3">
                   <label htmlFor="message" className="form-label">Mesajınız</label>
                   <textarea className="form-control" id="message" name="message" rows="5" required style={{ background: '#fff' }}></textarea>
                 </div>

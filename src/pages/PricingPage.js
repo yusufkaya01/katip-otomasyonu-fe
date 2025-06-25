@@ -49,65 +49,89 @@ function InfoIcon({ text, bold }) {
 
 function PricingPage() {
   return (
-    <div className="container py-5">
-      <h2 className="mb-4 text-center">Fiyat Listesi</h2>
-      <div className="table-responsive mb-3">
-        <table className="table table-bordered table-striped align-middle text-center bg-white">
-          <thead className="table-danger">
-            <tr>
-              <th>Kademe</th>
-              <th>
-                Sözleşme Limiti
-                <InfoIcon bold text={"isg katip'te 'Devam Eden Toplam Sözleşme Sayısı' baz alınır"} />
-              </th>
-              <th>Aylık Fiyat</th>
-              <th style={{ position: 'relative' }}>
-                Yıllık Fiyat <span style={{ fontWeight: 400, fontSize: 13 }}>(31 Aralık 2025 tarihine kadar)</span>
-                <InfoIcon text={"31 Aralık 2025 tarihine kadar kullanım sunar: Yeni yılda İSG-Katip sisteminde yapılacak değişikliklere göre sistemimiz güncellenecek olup, yeni yıl için yeniden lisans almanız gerekecektir."} />
-                <div style={{
-                  fontSize: 13,
-                  color: '#fd7e14',
-                  fontWeight: 600,
-                  marginTop: 2,
-                  letterSpacing: 0.2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4
-                }}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#fd7e14" viewBox="0 0 16 16" style={{marginRight: 2}}><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 8 1.5a6.5 6.5 0 0 1 0 13zm0-10a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4.5zm1 7.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75V7.75c0-.414.336-.75.75-.75s.75.336.75.75v4z"/></svg>
-                  Yıllık ödemede %40 indirim
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {TIERS.map(tier => (
-              <tr key={tier.tier}>
-                <td>{tier.tier}</td>
-                <td>{tier.limit}</td>
-                <td>{tier.monthly}</td>
-                <td>
-                  <span style={{ textDecoration: 'line-through', color: '#678', marginRight: 8 }}>
-                    {parseInt(tier.monthly) * 6}₺
-                  </span>
-                  <span style={{ color: '#fd7e14', fontWeight: 600 }}>{tier.yearly}</span>
-                </td>
+    <>
+      {/* Demo GIF fixed to right, smaller and closer to top */}
+      <img
+        src="/gifs/demo-promotion.gif"
+        alt="3 Gün Ücretsiz Deneyin Demo"
+        style={{
+          position: 'fixed',
+          top: '10%', // closer to top
+          right: 0,
+          transform: 'translateY(0)',
+          maxWidth: 320, // smaller than HomePage
+          width: '30vw',
+          minWidth: 120,
+          height: 'auto',
+          margin: 0,
+          zIndex: 100,
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+          background: 'transparent',
+          boxShadow: 'none',
+        }}
+        onClick={() => window.location.href = '/kayit'}
+      />
+      <div className="container py-5">
+        <h2 className="mb-4 text-center">Fiyat Listesi</h2>
+        <div className="table-responsive mb-3">
+          <table className="table table-bordered table-striped align-middle text-center bg-white">
+            <thead className="table-danger">
+              <tr>
+                <th>Kademe</th>
+                <th>
+                  Sözleşme Limiti
+                  <InfoIcon bold text={"isg katip'te 'Devam Eden Toplam Sözleşme Sayısı' baz alınır"} />
+                </th>
+                <th>Aylık Fiyat</th>
+                <th style={{ position: 'relative' }}>
+                  Yıllık Fiyat <span style={{ fontWeight: 400, fontSize: 13 }}>(31 Aralık 2025 tarihine kadar)</span>
+                  <InfoIcon text={"31 Aralık 2025 tarihine kadar kullanım sunar: Yeni yılda İSG-Katip sisteminde yapılacak değişikliklere göre sistemimiz güncellenecek olup, yeni yıl için yeniden lisans almanız gerekecektir."} />
+                  <div style={{
+                    fontSize: 13,
+                    color: '#fd7e14',
+                    fontWeight: 600,
+                    marginTop: 2,
+                    letterSpacing: 0.2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 4
+                  }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#fd7e14" viewBox="0 0 16 16" style={{marginRight: 2}}><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 8 1.5a6.5 6.5 0 0 1 0 13zm0-10a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4.5zm1 7.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75V7.75c0-.414.336-.75.75-.75s.75.336.75.75v4z"/></svg>
+                    Yıllık peşin ödemelerde %40 indirim
+                  </div>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {TIERS.map(tier => (
+                <tr key={tier.tier}>
+                  <td>{tier.tier}</td>
+                  <td>{tier.limit}</td>
+                  <td>{tier.monthly}</td>
+                  <td>
+                    <span style={{ textDecoration: 'line-through', color: '#678', marginRight: 8 }}>
+                      {parseInt(tier.monthly) * 6}₺
+                    </span>
+                    <span style={{ color: '#fd7e14', fontWeight: 600 }}>{tier.yearly}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="alert alert-info text-center my-3" style={{background: '#e7f1ff', color: '#084298', borderColor: '#b6d4fe'}}>
+          Demo paketi 3 gün boyunca ücretsizdir. Aylık ve yıllık lisanslar için uygun paketi devam eden sözleşme sayınıza göre seçebilirsiniz.
+        </div>
+        <div className="alert alert-warning text-center my-3" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
+          Lisans anahtarınızı satın alırken İSG Katip'teki '<b>Devam Eden Toplam Sözleşme Sayısı</b>'nı kontrol edip uygun kademede lisans anahtarı satın almanız gerekmektedir. Aksi halde, eğer devam eden sözleşme sayınız lisansınıza tanımlı olan sözleşme limitinden fazla ise eklentiyi kullanamaz ve 'Lisans anahtarı geçersizdir.' uyarısı alırsınız.
+        </div>
+        <div className="alert alert-warning mt-4 text-center" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
+          <b>Yıllık lisans:</b> 31 Aralık 2025 tarihine kadar kullanım sunar. Yeni yılda İSG-Katip sisteminde yapılacak değişikliklere göre sistemimiz güncellenecek olup, yeni yıl için yeniden lisans almanız gerekecektir.
+        </div>
       </div>
-      <div className="alert alert-info text-center my-3" style={{background: '#e7f1ff', color: '#084298', borderColor: '#b6d4fe'}}>
-        Demo paketi 3 gün boyunca ücretsizdir. Aylık ve yıllık lisanslar için uygun paketi devam eden sözleşme sayınıza göre seçebilirsiniz.
-      </div>
-      <div className="alert alert-warning text-center my-3" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
-        Lisans anahtarınızı satın alırken İSG Katip'teki '<b>Devam Eden Toplam Sözleşme Sayısı</b>'nı kontrol edip uygun kademede lisans anahtarı satın almanız gerekmektedir. Aksi halde, eğer devam eden sözleşme sayınız lisansınıza tanımlı olan sözleşme limitinden fazla ise eklentiyi kullanamaz ve 'Lisans anahtarı geçersizdir.' uyarısı alırsınız.
-      </div>
-      <div className="alert alert-warning mt-4 text-center" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
-        <b>Yıllık lisans:</b> 31 Aralık 2025 tarihine kadar kullanım sunar. Yeni yılda İSG-Katip sisteminde yapılacak değişikliklere göre sistemimiz güncellenecek olup, yeni yıl için yeniden lisans almanız gerekecektir.
-      </div>
-    </div>
+    </>
   );
 }
 
