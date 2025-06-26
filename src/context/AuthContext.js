@@ -51,11 +51,26 @@ export function AuthProvider({ children }) {
     setRefreshToken(refreshToken);
   };
 
-  // Logout: clear user and tokens
-  const logout = () => {
-    setUser(null);
-    setAccessToken(null);
-    setRefreshToken(null);
+  // Logout: call BE logout API, then clear user and tokens
+  const logout = async () => {
+    try {
+      if (refreshToken) {
+        await fetch('https://customers.katipotomasyonu.com/api/osgb/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.REACT_APP_USER_API_KEY,
+          },
+          body: JSON.stringify({ refreshToken })
+        });
+      }
+    } catch (e) {
+      // Ignore errors, always clear tokens
+    } finally {
+      setUser(null);
+      setAccessToken(null);
+      setRefreshToken(null);
+    }
   };
 
   // Update user (e.g. after profile update)
