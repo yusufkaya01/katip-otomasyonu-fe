@@ -48,7 +48,9 @@ function LoginPage() {
       });
       if (res.status === 200) {
         const data = await res.json();
-        login({ ...data.user, token: data.token });
+        // Store licenseKey in user if present
+        const userWithLicense = data.licenseKey ? { ...data.user, licenseKey: data.licenseKey } : data.user;
+        login({ user: userWithLicense, accessToken: data.accessToken, refreshToken: data.refreshToken });
         navigate('/isletmem', { replace: true });
       } else {
         const data = await res.json();
