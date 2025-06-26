@@ -4,38 +4,58 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [accessToken, setAccessToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // On mount, restore user from localStorage
+  // On mount, restore user and tokens from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('osgbUser');
-    if (stored) {
+    const storedUser = localStorage.getItem('osgbUser');
+    const storedAccessToken = localStorage.getItem('osgbAccessToken');
+    const storedRefreshToken = localStorage.getItem('osgbRefreshToken');
+    if (storedUser) {
       try {
-        setUser(JSON.parse(stored));
+        setUser(JSON.parse(storedUser));
       } catch (e) {
         setUser(null);
       }
     }
-    setLoading(false); // Set loading to false after restoration
+    if (storedAccessToken) setAccessToken(storedAccessToken);
+    if (storedRefreshToken) setRefreshToken(storedRefreshToken);
+    setLoading(false);
   }, []);
 
-  // When user changes, update localStorage
+  // When user or tokens change, update localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem('osgbUser', JSON.stringify(user));
     } else {
       localStorage.removeItem('osgbUser');
     }
-  }, [user]);
+    if (accessToken) {
+      localStorage.setItem('osgbAccessToken', accessToken);
+    } else {
+      localStorage.removeItem('osgbAccessToken');
+    }
+    if (refreshToken) {
+      localStorage.setItem('osgbRefreshToken', refreshToken);
+    } else {
+      localStorage.removeItem('osgbRefreshToken');
+    }
+  }, [user, accessToken, refreshToken]);
 
-  // Login: set user
-  const login = (userObj) => {
+  // Login: set user and tokens
+  const login = ({ user: userObj, accessToken, refreshToken }) => {
     setUser(userObj);
+    setAccessToken(accessToken);
+    setRefreshToken(refreshToken);
   };
 
-  // Logout: clear user
+  // Logout: clear user and tokens
   const logout = () => {
     setUser(null);
+    setAccessToken(null);
+    setRefreshToken(null);
   };
 
   // Update user (e.g. after profile update)
@@ -43,8 +63,13 @@ export function AuthProvider({ children }) {
     setUser(userObj);
   };
 
+  // Update access token only (after refresh)
+  const updateAccessToken = (newToken) => {
+    setAccessToken(newToken);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout, updateUser, updateAccessToken, loading }}>
       {children}
     </AuthContext.Provider>
   );
