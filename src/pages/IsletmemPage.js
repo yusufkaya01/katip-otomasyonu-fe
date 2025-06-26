@@ -78,63 +78,24 @@ function IsletmemPage() {
       });
   }, [navigate, API_KEY, user, updateUser, logout, loading]);
 
-  useEffect(() => {
-    fetchTaxOffices(API_KEY)
-      .then(data => setTaxData(data.cities || []))
-      .catch(() => setTaxData([]));
-  }, [API_KEY]);
+  // Remove this useEffect:
+  // useEffect(() => {
+  //   fetchTaxOffices(API_KEY)
+  //     .then(data => setTaxData(data.cities || []))
+  //     .catch(() => setTaxData([]));
+  // }, [API_KEY]);
 
-  useEffect(() => {
-    if (selectedCity) {
-      const city = taxData.find(c => c.name === selectedCity);
-      setDistricts(city ? city.districts : []);
-      setSelectedDistrict('');
-      setTaxOffices([]);
-    } else {
-      setDistricts([]);
-      setTaxOffices([]);
-    }
-  }, [selectedCity, taxData]);
-
-  useEffect(() => {
-    if (selectedDistrict) {
-      const city = taxData.find(c => c.name === selectedCity);
-      const district = city?.districts.find(d => d.name === selectedDistrict);
-      setTaxOffices(district ? district.taxOffices : []);
-    } else {
-      setTaxOffices([]);
-    }
-  }, [selectedDistrict, selectedCity, taxData]);
-
-  // Move city, district, tax_office, tax_number to the end and remove them from fields
-  const fields = [
-    { key: 'company_name', label: 'Şirket Ünvanı' },
-    { key: 'address', label: 'Adres' },
-    { key: 'osgb_id', label: 'OSGB Yetki Belgesi No' },
-    { key: 'phone', label: 'Telefon' },
-    { key: 'email', label: 'E-posta' },
-    { key: 'password', label: 'Şifre' },
-  ];
-
+  // Fetch tax offices only when editing city/district/tax_office
   const handleEditClick = (key) => {
-    if (key === 'tax_group') {
-      setSelectedCity(user.city || '');
-      setSelectedDistrict(user.district || '');
-      setEditValue(user.tax_office || '');
-      setEditField('tax_group');
-    } else {
-      setEditField(key);
-      if (key === 'city') {
-        setSelectedCity(user.city || '');
-      } else if (key === 'district') {
-        setSelectedDistrict(user.district || '');
-      } else if (key === 'tax_office') {
-        setEditValue(user.tax_office || '');
-      } else {
-        setEditValue(user[key] || '');
+    if (["city", "district", "tax_office", "tax_number"].includes(key)) {
+      if (taxData.length === 0) {
+        fetchTaxOffices(API_KEY)
+          .then(data => setTaxData(data.cities || []))
+          .catch(() => setTaxData([]));
       }
     }
-    setConfirming(true);
+    setEditField(key);
+    setEditValue(user[key] || '');
     setError('');
     setSuccess('');
   };

@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { TaxOfficesProvider } from './context/TaxOfficesContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -68,13 +67,11 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <TaxOfficesProvider>
-        <Router>
-          <WhatsappFloatButton />
-          <AppRoutes />
-          <Footer />
-        </Router>
-      </TaxOfficesProvider>
+      <Router>
+        <WhatsappFloatButton />
+        <AppRoutes />
+        <Footer />
+      </Router>
     </AuthProvider>
   );
 }
