@@ -28,10 +28,27 @@ function Navbar() {
     navigate('/');
   };
 
+  // Collapse navbar on link click (for mobile)
+  const handleNavLinkClick = () => {
+    const navbarCollapse = document.getElementById('navbarNav');
+    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+      // Bootstrap 5 collapse API
+      const collapse = window.bootstrap && window.bootstrap.Collapse
+        ? window.bootstrap.Collapse.getOrCreateInstance(navbarCollapse)
+        : null;
+      if (collapse) {
+        collapse.hide();
+      } else {
+        // fallback: manually remove 'show' class
+        navbarCollapse.classList.remove('show');
+      }
+    }
+  };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
       <div className="container">
-        <Link className="navbar-brand fw-bold d-flex align-items-center gap-2" to="/">
+        <Link className="navbar-brand fw-bold d-flex align-items-center gap-2" to="/" onClick={handleNavLinkClick}>
           <img src="/icon-128px-trasnparent-white.png" alt="Katip Otomasyonu Logo" style={{ width: 36, height: 36 }} />
           Katip Otomasyonu
         </Link>
@@ -45,6 +62,7 @@ function Navbar() {
                 <Link
                   className={`nav-link${location.pathname === item.path ? ' active' : ''}`}
                   to={item.path}
+                  onClick={handleNavLinkClick}
                 >
                   {item.label}
                 </Link>
@@ -53,20 +71,20 @@ function Navbar() {
             {!user && (
               <>
                 <li className="nav-item">
-                  <Link to="/giris" className="btn btn-light btn-sm fw-bold me-2">Giriş Yap</Link>
+                  <Link to="/giris" className="btn btn-light btn-sm fw-bold me-2" onClick={handleNavLinkClick}>Giriş Yap</Link>
                 </li>
                 <li className="nav-item">
-                  <Link to="/kayit" className="btn btn-outline-light btn-sm fw-bold">Kayıt Ol</Link>
+                  <Link to="/kayit" className="btn btn-outline-light btn-sm fw-bold" onClick={handleNavLinkClick}>Kayıt Ol</Link>
                 </li>
               </>
             )}
             {user && (
               <>
                 <li className="nav-item">
-                  <Link to="/isletmem" className="btn btn-light btn-sm fw-bold me-2">İşletmem</Link>
+                  <Link to="/isletmem" className="btn btn-light btn-sm fw-bold me-2" onClick={handleNavLinkClick}>İşletmem</Link>
                 </li>
                 <li className="nav-item">
-                  <button onClick={handleLogout} className="btn btn-outline-light btn-sm fw-bold">Çıkış Yap</button>
+                  <button onClick={() => { handleLogout(); handleNavLinkClick(); }} className="btn btn-outline-light btn-sm fw-bold">Çıkış Yap</button>
                 </li>
                 <li className="nav-item text-white small ms-2">
                   Hoşgeldiniz, {getShortCompanyName(user.company_name)}

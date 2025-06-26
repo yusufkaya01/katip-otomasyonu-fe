@@ -17,8 +17,17 @@ function AboutPage() {
               <img src="https://media.licdn.com/dms/image/v2/D4E03AQHOn7ZA7qk13A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1729455741506?e=1755734400&v=beta&t=AgG5fXzQXD9AozvyP9EUoUPvxecPEgmsQUBlMuZRylI" alt="Yusuf Kaya" className="rounded-circle mb-3" style={{ width: 80, height: 80, objectFit: 'cover' }} />
               <h5 className="card-title mb-1">Yusuf Kaya</h5>
               <p className="mb-1">Co-Founder | DevOps Engineer</p>
-              <a href="https://www.linkedin.com/in/yusufkayatr96/" target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm mb-2">LinkedIn Profili</a>
-              <div className="small">E-posta: <a href="mailto:yusuf@katipotomasyonu.com">yusuf@katipotomasyonu.com</a></div>
+              <div className="d-flex justify-content-center align-items-center gap-3 mb-2">
+                <a href="https://www.linkedin.com/in/yusufkayatr96/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg" alt="LinkedIn" style={{ width: 32, height: 32, display: 'block' }} />
+                </a>
+                <a href="https://medium.com/@yusufkayatr96" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
+                  <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/medium.svg" alt="Medium" style={{ width: 32, height: 32, background: '#fff', borderRadius: '50%', padding: 2, display: 'block' }} />
+                </a>
+                <a href="mailto:yusuf@katipotomasyonu.com" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
+                  <i className="bi bi-envelope-fill" style={{ fontSize: 32, color: '#0d6efd', verticalAlign: 'middle', display: 'block' }}></i>
+                </a>
+              </div>
             </div>
           </div>
         </div>

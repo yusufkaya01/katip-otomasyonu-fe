@@ -105,3 +105,8 @@
 .badge-animated-discount {
   animation: badgeBounce 1.2s infinite;
 }
+
+/* Custom: Change Bootstrap collapse animation speed */
+.collapsing {
+  transition-duration: 0.5s !important; /* Adjust this value for speed */
+}
