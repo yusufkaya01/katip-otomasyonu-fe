@@ -439,7 +439,7 @@ function IsletmemPage() {
             ) : (
               <>
                 <span className="mx-2">{key === 'password' ? '********' : user[key]}</span>
-                <button className="btn btn-link p-0 text-danger" onClick={() => { handleEditClick(key); setConfirmPassword(''); }} title="Düzenle">
+                <button className="btn btn-link p-0 text-danger" onClick={() => { handleEditClick(key); setConfirmPassword(''); setConfirming(true); }} title="Düzenle">
                   <i className="bi bi-pencil"></i>
                 </button>
               </>
@@ -468,7 +468,7 @@ function IsletmemPage() {
           <button
             className="btn btn-link p-0 text-danger position-absolute"
             style={{ top: 8, right: 8 }}
-            onClick={() => handleEditClick('tax_group')}
+            onClick={() => { handleEditClick('tax_group'); setConfirming(true); }}
             title="Düzenle"
           >
             <i className="bi bi-pencil"></i>
