@@ -26,10 +26,6 @@ function IsletmemPage() {
   const [taxData, setTaxData] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
-  const [districts, setDistricts] = useState([]);
-  const [taxOffices, setTaxOffices] = useState([]);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendMessage, setResendMessage] = useState('');
   const [mssEnabled, setMssEnabled] = useState(false);
   const [mssLoading, setMssLoading] = useState(false);
   const [mssModalOpen, setMssModalOpen] = useState(false);
@@ -40,6 +36,9 @@ function IsletmemPage() {
   const [mssModalMode, setMssModalMode] = useState('confirm'); // 'confirm' or 'view'
   const [showMssDisableModal, setShowMssDisableModal] = useState(false);
   const [mssDisableInput, setMssDisableInput] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
+  const [taxOffices] = useState([]);
   const navigate = useNavigate();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
   const didFetchRef = useRef(false); // <-- add this ref
@@ -77,6 +76,17 @@ function IsletmemPage() {
         navigate('/giris', { replace: true });
       });
   }, [navigate, API_KEY, user, updateUser, logout, loading]);
+
+  // Editable fields for the profile
+  const fields = [
+    { key: 'company_name', label: 'Şirket Ünvanı' },
+    { key: 'address', label: 'Adres' },
+    { key: 'osgb_id', label: 'OSGB Yetki Belgesi No' },
+    { key: 'phone', label: 'Telefon' },
+    { key: 'email', label: 'E-posta' },
+    { key: 'password', label: 'Şifre' },
+    // Add city, district, tax_office, tax_number if you want them editable
+  ];
 
   // Remove this useEffect:
   // useEffect(() => {
@@ -489,7 +499,7 @@ function IsletmemPage() {
                     disabled={!selectedCity && !user.city}
                   >
                     <option value="">İlçe seçiniz</option>
-                    {districts.map(d => (
+                    {taxData.find(city => city.name === selectedCity)?.districts.map(d => (
                       <option key={d.name} value={d.name}>{d.name}</option>
                     ))}
                   </select>
