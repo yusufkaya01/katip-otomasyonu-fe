@@ -13,15 +13,24 @@ export function AuthProvider({ children }) {
     const storedUser = localStorage.getItem('osgbUser');
     const storedAccessToken = localStorage.getItem('osgbAccessToken');
     const storedRefreshToken = localStorage.getItem('osgbRefreshToken');
+    let parsedUser = null;
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        parsedUser = JSON.parse(storedUser);
       } catch (e) {
-        setUser(null);
+        parsedUser = null;
       }
     }
-    if (storedAccessToken) setAccessToken(storedAccessToken);
-    if (storedRefreshToken) setRefreshToken(storedRefreshToken);
+    // Merge tokens into user object for compatibility
+    if (parsedUser) {
+      if (storedAccessToken) parsedUser.accessToken = storedAccessToken;
+      if (storedRefreshToken) parsedUser.refreshToken = storedRefreshToken;
+      setUser(parsedUser);
+    } else {
+      setUser(null);
+    }
+    setAccessToken(storedAccessToken || null);
+    setRefreshToken(storedRefreshToken || null);
     setLoading(false);
   }, []);
 
@@ -46,7 +55,9 @@ export function AuthProvider({ children }) {
 
   // Login: set user and tokens
   const login = ({ user: userObj, accessToken, refreshToken }) => {
-    setUser(userObj);
+    // Merge tokens into user object for compatibility
+    const mergedUser = { ...userObj, accessToken, refreshToken };
+    setUser(mergedUser);
     setAccessToken(accessToken);
     setRefreshToken(refreshToken);
   };
@@ -75,7 +86,13 @@ export function AuthProvider({ children }) {
 
   // Update user (e.g. after profile update)
   const updateUser = (userObj) => {
-    setUser(userObj);
+    // If tokens are not present in userObj, merge from state
+    const mergedUser = {
+      ...userObj,
+      accessToken: userObj.accessToken || accessToken,
+      refreshToken: userObj.refreshToken || refreshToken,
+    };
+    setUser(mergedUser);
   };
 
   // Update access token only (after refresh)
