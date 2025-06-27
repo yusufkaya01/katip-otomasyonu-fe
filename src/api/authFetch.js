@@ -1,6 +1,5 @@
 // authFetch.js
 // A fetch wrapper that handles JWT access/refresh token logic for OSGB API
-import { useAuth } from '../context/AuthContext';
 
 /**
  * Usage: import authFetch from '../api/authFetch';
