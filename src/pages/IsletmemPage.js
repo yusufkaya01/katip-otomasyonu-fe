@@ -264,7 +264,7 @@ function IsletmemPage() {
         method: 'GET',
         headers: {
           'x-api-key': API_KEY,
-          'Authorization': `Bearer ${user.token}`
+          'Authorization': `Bearer ${user.accessToken}`
         }
       });
       if (res.ok) {
@@ -291,7 +291,7 @@ function IsletmemPage() {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': API_KEY,
-          'Authorization': `Bearer ${user.token}`
+          'Authorization': `Bearer ${user.accessToken}`
         },
         body: JSON.stringify({ enabled: true })
       });
@@ -318,7 +318,7 @@ function IsletmemPage() {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': API_KEY,
-          'Authorization': `Bearer ${user.token}`
+          'Authorization': `Bearer ${user.accessToken}`
         },
         body: JSON.stringify({ enabled: false })
       });
