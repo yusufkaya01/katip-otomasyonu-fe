@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { fetchTaxOffices } from '../api/taxOffices';
 import { useAuth } from '../context/AuthContext';
+import authFetch from '../api/authFetch';
 
 function LoadingSpinner() {
   return (
@@ -15,9 +16,9 @@ function LoadingSpinner() {
 }
 
 function IsletmemPage() {
-  const { user, updateUser, logout, loading } = useAuth(); // get loading from context
+  const { user, updateUser, logout, loading } = useAuth();
   const [emailVerified, setEmailVerified] = useState(null);
-  const [editField, setEditField] = useState(null); // which field is being edited
+  const [editField, setEditField] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
@@ -26,6 +27,8 @@ function IsletmemPage() {
   const [taxData, setTaxData] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [taxOfficeList, setTaxOfficeList] = useState([]); // <-- fix: for tax offices
+  const [taxNumber, setTaxNumber] = useState(''); // <-- fix: for tax number
   const [mssEnabled, setMssEnabled] = useState(false);
   const [mssLoading, setMssLoading] = useState(false);
   const [mssModalOpen, setMssModalOpen] = useState(false);
@@ -38,36 +41,29 @@ function IsletmemPage() {
   const [mssDisableInput, setMssDisableInput] = useState('');
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
-  const [taxOffices] = useState([]);
   const navigate = useNavigate();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
-  const didFetchRef = useRef(false); // <-- add this ref
+  const didFetchRef = useRef(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
-    if (loading) return; // Wait for auth restoration
-    if (!user || !user.token) {
+    if (loading) return;
+    if (!user || !user.accessToken) {
       navigate('/giris', { replace: true });
       return;
     }
-    if (didFetchRef.current) return; // Prevent multiple fetches
+    if (didFetchRef.current) return;
     didFetchRef.current = true;
-    // Fetch latest user info from backend (only once after login/session restore)
-    fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
-      method: 'GET',
-      headers: {
-        'x-api-key': API_KEY,
-        'Authorization': `Bearer ${user.token}`
-      }
-    })
+    // Use authFetch for profile
+    authFetch('https://customers.katipotomasyonu.com/api/osgb/profile', { method: 'GET' }, { accessToken: user.accessToken })
       .then(res => {
         if (!res.ok) throw new Error('Kullanıcı oturumu geçersiz veya süresi dolmuş.');
         return res.json();
       })
       .then(data => {
-        const updatedUser = { ...user, ...data.user, token: user.token };
+        const updatedUser = { ...user, ...data.user, accessToken: user.accessToken };
         updateUser(updatedUser);
         setEmailVerified(data.user.email_verified);
       })
@@ -88,21 +84,22 @@ function IsletmemPage() {
     // Add city, district, tax_office, tax_number if you want them editable
   ];
 
-  // Remove this useEffect:
-  // useEffect(() => {
-  //   fetchTaxOffices(API_KEY)
-  //     .then(data => setTaxData(data.cities || []))
-  //     .catch(() => setTaxData([]));
-  // }, [API_KEY]);
-
-  // Fetch tax offices only when editing city/district/tax_office
+  // Group edit: always fetch tax offices and set initial values
   const handleEditClick = (key) => {
-    if (["city", "district", "tax_office", "tax_number"].includes(key)) {
-      if (taxData.length === 0) {
-        fetchTaxOffices(API_KEY)
-          .then(data => setTaxData(data.cities || []))
-          .catch(() => setTaxData([]));
-      }
+    if (["city", "district", "tax_office", "tax_number", "tax_group"].includes(key)) {
+      fetchTaxOffices(API_KEY)
+        .then(data => {
+          setTaxData(data.cities || []);
+          // Set initial city/district/tax office/tax number from user
+          setSelectedCity(user.city || '');
+          setSelectedDistrict(user.district || '');
+          setTaxNumber(user.tax_number || '');
+          // Set tax offices for current city/district
+          const cityObj = data.cities.find(c => c.name === (user.city || ''));
+          const districtObj = cityObj?.districts.find(d => d.name === (user.district || ''));
+          setTaxOfficeList(districtObj?.taxOffices || []);
+        })
+        .catch(() => setTaxData([]));
     }
     setEditField(key);
     setEditValue(user[key] || '');
@@ -110,30 +107,59 @@ function IsletmemPage() {
     setSuccess('');
   };
 
+  // Update districts and tax offices when city/district changes
+  useEffect(() => {
+    if (!selectedCity || !taxData.length) return;
+    const cityObj = taxData.find(c => c.name === selectedCity);
+    if (cityObj) {
+      // If selectedDistrict is not in new city, reset
+      if (!cityObj.districts.some(d => d.name === selectedDistrict)) {
+        setSelectedDistrict('');
+        setTaxOfficeList([]);
+      }
+    }
+  }, [selectedCity, selectedDistrict, taxData]);
+
+  useEffect(() => {
+    if (!selectedCity || !selectedDistrict || !taxData.length) return;
+    const cityObj = taxData.find(c => c.name === selectedCity);
+    const districtObj = cityObj?.districts.find(d => d.name === selectedDistrict);
+    setTaxOfficeList(districtObj?.taxOffices || []);
+  }, [selectedDistrict, selectedCity, taxData]);
+
+  // Remove this useEffect:
+  // useEffect(() => {
+  //   fetchTaxOffices(API_KEY)
+  //     .then(data => setTaxData(data.cities || []))
+  //     .catch(() => setTaxData([]));
+  // }, [API_KEY]);
+
   const handleConfirm = async () => {
     setError('');
     setSuccess('');
-    if (!editValue || (editField === 'password' && editValue.length < 8)) {
+    if (!editValue && editField !== 'tax_group') {
       setError('Geçerli bir değer giriniz.');
       return;
     }
-    // Password confirmation check (FE only)
+    if (editField === 'password' && editValue.length < 8) {
+      setError('Şifre en az 8 karakter olmalı.');
+      return;
+    }
     if (editField === 'password' && editValue !== confirmPassword) {
       setError('Şifreler eşleşmiyor.');
       return;
     }
-    if (!user.token) {
+    if (!user.accessToken) {
       setError('Kimlik doğrulama hatası: Lütfen tekrar giriş yapın.');
       return;
     }
-    // Prepare PATCH payload (only the edited field)
     let payload;
     if (editField === 'tax_group') {
       payload = {
         city: selectedCity,
         district: selectedDistrict,
         tax_office: editValue,
-        tax_number: user.tax_number // You may want to use a separate state for tax_number if you want to allow editing it
+        tax_number: taxNumber
       };
     } else if (editField === 'city') {
       payload = { city: selectedCity };
@@ -144,34 +170,24 @@ function IsletmemPage() {
     } else {
       payload = { [editField]: editValue };
     }
-    // Required fields for PATCH: must send all required fields except password (unless changing password)
+    // Required fields for PATCH
     const required = ['company_name', 'tax_number', 'address', 'tax_office', 'osgb_id', 'phone', 'email', 'city', 'district'];
     required.forEach(f => {
       if (!(editField === 'tax_group' && ['city','district','tax_office','tax_number'].includes(f)) && f !== editField) payload[f] = user[f];
     });
     if (editField !== 'password') delete payload.password;
     try {
-      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/update-osgb-info', {
+      const res = await authFetch('https://customers.katipotomasyonu.com/api/osgb/update-osgb-info', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': API_KEY,
-          'Authorization': `Bearer ${user.token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
         body: JSON.stringify(payload)
-      });
+      }, { accessToken: user.accessToken, refreshToken: user.refreshToken, updateAccessToken: updateUser, logout });
       if (res.status === 200) {
-        // After successful update, fetch latest profile from backend
-        const profileRes = await fetch('https://customers.katipotomasyonu.com/api/osgb/profile', {
-          method: 'GET',
-          headers: {
-            'x-api-key': API_KEY,
-            'Authorization': `Bearer ${user.token}`
-          }
-        });
+        // After successful update, fetch latest profile
+        const profileRes = await authFetch('https://customers.katipotomasyonu.com/api/osgb/profile', { method: 'GET', headers: { 'x-api-key': API_KEY } }, { accessToken: user.accessToken });
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          const updatedUser = { ...user, ...profileData.user, token: user.token };
+          const updatedUser = { ...user, ...profileData.user, accessToken: user.accessToken };
           updateUser(updatedUser);
           setEmailVerified(profileData.user.email_verified);
           setSuccess('Bilgileriniz başarıyla güncellendi.');
@@ -183,25 +199,17 @@ function IsletmemPage() {
         }
       } else {
         const data = await res.json();
-        // Handle new validation errors for osgb_id, company_name, city, district
-        if (
-          [
-            'INVALID_OSGB_ID',
-            'INVALID_COMPANY_NAME',
-            'INVALID_CITY',
-            'INVALID_DISTRICT'
-          ].includes(data.error) && data.message
-        ) {
+        if ([
+          'INVALID_OSGB_ID',
+          'INVALID_COMPANY_NAME',
+          'INVALID_CITY',
+          'INVALID_DISTRICT'
+        ].includes(data.error) && data.message) {
           let msg = data.message;
-          if (data.error === 'INVALID_CITY') {
-            msg = 'Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.';
-          } else if (data.error === 'INVALID_DISTRICT') {
-            msg = 'Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.';
-          } else if (data.error === 'INVALID_COMPANY_NAME') {
-            msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
-          } else if (data.error === 'INVALID_OSGB_ID') {
-            msg = 'OSGB Yetki Belgesi No resmi kayıtlarda bulunamadı.';
-          }
+          if (data.error === 'INVALID_CITY') msg = 'Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.';
+          else if (data.error === 'INVALID_DISTRICT') msg = 'Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.';
+          else if (data.error === 'INVALID_COMPANY_NAME') msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
+          else if (data.error === 'INVALID_OSGB_ID') msg = 'OSGB Yetki Belgesi No resmi kayıtlarda bulunamadı.';
           setError(msg);
         } else {
           setError(data.error || 'Güncelleme sırasında bir hata oluştu.');
@@ -481,8 +489,8 @@ function IsletmemPage() {
                   <label className="form-label">Şehir</label>
                   <select
                     className="form-select"
-                    value={selectedCity || user.city || ''}
-                    onChange={e => setSelectedCity(e.target.value)}
+                    value={selectedCity}
+                    onChange={e => { setSelectedCity(e.target.value); setSelectedDistrict(''); setTaxOfficeList([]); }}
                   >
                     <option value="">Şehir seçiniz</option>
                     {taxData.map(city => (
@@ -494,9 +502,9 @@ function IsletmemPage() {
                   <label className="form-label">İlçe</label>
                   <select
                     className="form-select"
-                    value={selectedDistrict || user.district || ''}
+                    value={selectedDistrict}
                     onChange={e => setSelectedDistrict(e.target.value)}
-                    disabled={!selectedCity && !user.city}
+                    disabled={!selectedCity}
                   >
                     <option value="">İlçe seçiniz</option>
                     {taxData.find(city => city.name === selectedCity)?.districts.map(d => (
@@ -508,12 +516,12 @@ function IsletmemPage() {
                   <label className="form-label">Vergi Dairesi</label>
                   <select
                     className="form-select"
-                    value={editValue || user.tax_office || ''}
+                    value={editValue}
                     onChange={e => setEditValue(e.target.value)}
-                    disabled={!selectedDistrict && !user.district}
+                    disabled={!selectedDistrict}
                   >
                     <option value="">Vergi Dairesi seçiniz</option>
-                    {taxOffices.map(office => (
+                    {taxOfficeList.map(office => (
                       <option key={office} value={office}>{office}</option>
                     ))}
                   </select>
@@ -523,8 +531,8 @@ function IsletmemPage() {
                   <input
                     type="text"
                     className="form-control"
-                    value={user.tax_number}
-                    onChange={e => setEditValue(e.target.value)}
+                    value={taxNumber}
+                    onChange={e => setTaxNumber(e.target.value.replace(/[^0-9]/g, ''))}
                     maxLength={10}
                     minLength={10}
                     pattern="[0-9]{10}"
