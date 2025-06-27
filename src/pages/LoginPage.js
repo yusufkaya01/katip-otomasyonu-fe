@@ -7,6 +7,7 @@ function LoginPage() {
   const [form, setForm] = useState({ identifier: '', password: '' }); // 'identifier' can be email or customer_id
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Password visibility toggle
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
@@ -76,7 +77,23 @@ function LoginPage() {
           </div>
           <div className="mb-3">
             <label htmlFor="password" className="form-label">Şifre</label>
-            <input type="password" className="form-control" id="password" name="password" value={form.password} onChange={handleChange} required minLength={8} maxLength={16} autoComplete="current-password" />
+            <div className="input-group">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="form-control"
+                id="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                minLength={8}
+                maxLength={16}
+                autoComplete="current-password"
+              />
+              <span className="input-group-text" style={{cursor:'pointer'}} onClick={() => setShowPassword(v => !v)}>
+                <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+              </span>
+            </div>
           </div>
           {error && <div className="alert alert-danger py-2">{error}</div>}
           <button type="submit" className="btn btn-danger w-100" disabled={loading}>

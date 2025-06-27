@@ -167,6 +167,8 @@ function IsletmemPage() {
       payload = { district: selectedDistrict };
     } else if (editField === 'tax_office') {
       payload = { tax_office: editValue };
+    } else if (editField === 'phone') {
+      payload = { phone: `+90${editValue}` };
     } else {
       payload = { [editField]: editValue };
     }
@@ -432,6 +434,29 @@ function IsletmemPage() {
                       </button>
                     </div>
                   </div>
+                ) : key === 'phone' ? (
+                  <div style={{ width: 250 }}>
+                    <div className="input-group">
+                      <span className="input-group-text">+90</span>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        value={editValue}
+                        onChange={e => {
+                          let value = e.target.value.replace(/\D/g, '');
+                          if (value.startsWith('0')) value = value.slice(1);
+                          if (value.length > 10) value = value.slice(0, 10);
+                          setEditValue(value);
+                        }}
+                        maxLength={10}
+                        minLength={10}
+                        pattern="[0-9]{10}"
+                        placeholder="5XXXXXXXXX"
+                        required
+                      />
+                    </div>
+                    <div className="form-text">Başında 0 olmadan, 10 haneli giriniz. Örn: 5XXXXXXXXX</div>
+                  </div>
                 ) : (
                   <input
                     type={key === 'password' ? 'password' : 'text'}
@@ -446,8 +471,8 @@ function IsletmemPage() {
               </>
             ) : (
               <>
-                <span className="mx-2">{key === 'password' ? '********' : user[key]}</span>
-                <button className="btn btn-link p-0 text-danger" onClick={() => { handleEditClick(key); setConfirmPassword(''); setConfirming(true); }} title="Düzenle">
+                <span className="mx-2">{key === 'password' ? '********' : (key === 'phone' ? `+90${user[key]}` : user[key])}</span>
+                <button className="btn btn-link p-0 text-danger" onClick={() => { setEditField(key); setEditValue(user[key] || ''); setConfirming(true); setError(''); setSuccess(''); }} title="Düzenle">
                   <i className="bi bi-pencil"></i>
                 </button>
               </>
