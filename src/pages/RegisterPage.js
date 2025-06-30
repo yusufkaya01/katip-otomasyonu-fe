@@ -32,9 +32,7 @@ function RegisterPage() {
     kvkk: false, // KVKK Açık Rıza
     commercial: false // Ticari Elektronik İleti Onayı (optional)
   });
-
-  const [touched, setTouched] = useState({});
-  const [fieldErrors, setFieldErrors] = useState({});
+  const [showAgreementWarning, setShowAgreementWarning] = useState(false);
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
 
@@ -70,28 +68,6 @@ function RegisterPage() {
     }
   }, [selectedDistrict, selectedCity, taxData]);
 
-  const validateFields = () => {
-    const errors = {};
-    // Only show city error if user has interacted with city or tax_office
-    if ((!selectedCity) && (touched.city || touched.tax_office)) errors.city = 'Şehir seçiniz.';
-    // Only show district error if user has interacted with district or tax_office
-    if ((!selectedDistrict) && (touched.district || touched.tax_office)) errors.district = 'İlçe seçiniz.';
-    // Only validate tax_office if city and district are selected
-    if (selectedCity && selectedDistrict && !form.tax_office) errors.tax_office = 'Vergi dairesi seçiniz.';
-    if (!form.company_name.trim()) errors.company_name = 'Şirket ünvanı zorunludur.';
-    if (!form.tax_number || form.tax_number.length !== 10) errors.tax_number = 'Vergi Kimlik No 10 haneli olmalıdır.';
-    if (!form.osgb_id) errors.osgb_id = 'OSGB Yetki Belgesi No zorunludur.';
-    if (!form.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) errors.email = 'Geçerli bir e-posta giriniz.';
-    if (!form.password || form.password.length < 8) errors.password = 'Şifre en az 8 karakter olmalı.';
-    if (!form.password_confirm || form.password !== form.password_confirm) errors.password_confirm = 'Şifreler eşleşmiyor.';
-    if (!form.phone || form.phone.length !== 10) errors.phone = 'Telefon numarası 10 haneli olmalı.';
-    if (!form.address.trim()) errors.address = 'Adres zorunludur.';
-    if (!agreements.terms) errors.terms = 'Kullanım Koşulları onaylanmalı.';
-    if (!agreements.privacy) errors.privacy = 'Gizlilik Sözleşmesi onaylanmalı.';
-    if (!agreements.kvkk) errors.kvkk = 'KVKK Açık Rıza onaylanmalı.';
-    return errors;
-  };
-
   const handleChange = (e) => {
     if (e.target.name === 'phone') {
       let value = e.target.value.replace(/\D/g, '');
@@ -108,31 +84,10 @@ function RegisterPage() {
     }
   };
 
-  const handleBlur = (e) => {
-    setTouched(t => ({ ...t, [e.target.name]: true }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setFieldErrors({});
-
-    // Validate all fields (client-side)
-    const errors = validateFields();
-    setFieldErrors(errors);
-    setTouched(t => ({
-      ...t,
-      ...Object.keys(errors).reduce((acc, k) => { acc[k] = true; return acc; }, {})
-    }));
-    if (Object.keys(errors).length > 0) {
-      // Scroll to first error
-      const firstError = Object.keys(errors)[0];
-      const el = document.getElementById(firstError);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setLoading(false);
-      return;
-    }
 
     // Client-side validation: password match
     if (form.password !== form.password_confirm) {
@@ -169,34 +124,30 @@ function RegisterPage() {
         window.location.href = '/giris';
       } else {
         const data = await res.json();
-        let backendFieldErrors = {};
         if (data && data.details && Array.isArray(data.details)) {
           setError(data.details.map(d => d.msg).join(' '));
         } else if (data && data.error) {
-          if ([
-            'INVALID_OSGB_ID',
-            'INVALID_COMPANY_NAME',
-            'INVALID_CITY',
-            'INVALID_DISTRICT'
-          ].includes(data.error)) {
-            // Map backend error to field, show only generic Turkish error
-            if (data.error === 'INVALID_COMPANY_NAME') {
-              backendFieldErrors.company_name = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
-            } else if (data.error === 'INVALID_CITY') {
-              backendFieldErrors.city = 'Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.';
+          // Show backend validation errors for official record mismatches
+          if (
+            [
+              'INVALID_OSGB_ID',
+              'INVALID_COMPANY_NAME',
+              'INVALID_CITY',
+              'INVALID_DISTRICT'
+            ].includes(data.error) && data.message
+          ) {
+            // Translate backend error messages to Turkish
+            let msg = data.message;
+            if (data.error === 'INVALID_CITY') {
+              msg = `Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.`;
             } else if (data.error === 'INVALID_DISTRICT') {
-              backendFieldErrors.district = 'Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.';
+              msg = `Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.`;
+            } else if (data.error === 'INVALID_COMPANY_NAME') {
+              msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
             } else if (data.error === 'INVALID_OSGB_ID') {
-              backendFieldErrors.osgb_id = 'OSGB Yetki Belgesi No resmi kayıtlarda bulunamadı.';
+              msg = 'OSGB Yetki Belgesi No resmi kayıtlarda bulunamadı.';
             }
-            setFieldErrors(f => ({ ...f, ...backendFieldErrors }));
-            setTouched(t => ({ ...t, ...Object.keys(backendFieldErrors).reduce((acc, k) => { acc[k] = true; return acc; }, {}) }));
-            // Scroll to first backend error field
-            const firstError = Object.keys(backendFieldErrors)[0];
-            const el = document.getElementById(firstError);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setLoading(false);
-            return;
+            setError(msg);
           } else if (data.error === 'EMAIL_EXISTS') {
             setError('Bu e-posta ile zaten kayıtlı bir kullanıcı var.');
           } else if (data.error === 'OSGB_ID_EXISTS') {
@@ -235,6 +186,8 @@ function RegisterPage() {
     }
   };
 
+  const canSubmit = agreements.terms && agreements.privacy && agreements.kvkk && !loading;
+
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: 500, margin: '0 auto' }}>
       <div className="alert alert-warning d-flex align-items-center mb-4" style={{background:'#fffbe6', color:'#664d03', borderColor:'#ffe066'}}>
@@ -247,30 +200,25 @@ function RegisterPage() {
             <label htmlFor="company_name" className="form-label">Şirket Ünvanı</label>
             <input
               type="text"
-              className={`form-control${fieldErrors.company_name && touched.company_name ? ' is-invalid' : ''}`}
+              className="form-control"
               id="company_name"
               name="company_name"
               value={form.company_name}
               onChange={handleChange}
-              onBlur={handleBlur}
               required
               maxLength={100}
             />
-            {fieldErrors.company_name && touched.company_name && (
-              <div className="invalid-feedback">{fieldErrors.company_name}</div>
-            )}
           </div>
         </div>
         <div className="col-6">
           <div className="mb-3">
             <label htmlFor="city" className="form-label">Şehir</label>
             <select
-              className={`form-select${fieldErrors.city && touched.city ? ' is-invalid' : ''}`}
+              className="form-select"
               id="city"
               name="city"
               value={selectedCity}
-              onChange={e => { setSelectedCity(e.target.value); setTouched(t => ({...t, city:true})); }}
-              onBlur={() => setTouched(t => ({...t, city:true}))}
+              onChange={e => setSelectedCity(e.target.value)}
               required
             >
               <option value="">Şehir seçiniz</option>
@@ -278,16 +226,13 @@ function RegisterPage() {
                 <option key={city.name} value={city.name}>{city.name}</option>
               ))}
             </select>
-            {fieldErrors.city && touched.city && (
-              <div className="text-danger small">{fieldErrors.city}</div>
-            )}
           </div>
         </div>
         <div className="col-6">
           <div className="mb-3">
             <label htmlFor="district" className="form-label">İlçe</label>
             <select
-              className={`form-select${fieldErrors.district && touched.district ? ' is-invalid' : ''}`}
+              className="form-select"
               id="district"
               name="district"
               value={selectedDistrict}
@@ -300,16 +245,13 @@ function RegisterPage() {
                 <option key={d.name} value={d.name}>{d.name}</option>
               ))}
             </select>
-            {fieldErrors.district && touched.district && (
-              <div className="text-danger small">{fieldErrors.district}</div>
-            )}
           </div>
         </div>
         <div className="col-6">
           <div className="mb-3">
             <label htmlFor="tax_office" className="form-label">Vergi Dairesi</label>
             <select
-              className={`form-select${fieldErrors.tax_office && touched.tax_office ? ' is-invalid' : ''}`}
+              className="form-select"
               id="tax_office"
               name="tax_office"
               value={form.tax_office}
@@ -322,9 +264,6 @@ function RegisterPage() {
                 <option key={office} value={office}>{office}</option>
               ))}
             </select>
-            {fieldErrors.tax_office && touched.tax_office && (
-              <div className="text-danger small">{fieldErrors.tax_office}</div>
-            )}
           </div>
         </div>
         <div className="col-6">
@@ -332,7 +271,7 @@ function RegisterPage() {
             <label htmlFor="tax_number" className="form-label">Vergi Kimlik No</label>
             <input
               type="text"
-              className={`form-control${fieldErrors.tax_number && touched.tax_number ? ' is-invalid' : ''}`}
+              className="form-control"
               id="tax_number"
               name="tax_number"
               value={form.tax_number}
@@ -341,7 +280,6 @@ function RegisterPage() {
                 if (value.length > 10) value = value.slice(0, 10);
                 setForm({ ...form, tax_number: value });
               }}
-              onBlur={handleBlur}
               required
               maxLength={10}
               minLength={10}
@@ -352,9 +290,6 @@ function RegisterPage() {
             {form.tax_number.length > 0 && form.tax_number.length < 10 && (
               <div className="form-text text-danger">Vergi Kimlik No 10 haneli olmalıdır.</div>
             )}
-            {fieldErrors.tax_number && touched.tax_number && (
-              <div className="invalid-feedback">{fieldErrors.tax_number}</div>
-            )}
           </div>
         </div>
         <div className="col-6">
@@ -362,44 +297,16 @@ function RegisterPage() {
             <label htmlFor="osgb_id" className="form-label">OSGB Yetki Belgesi No</label>
             <div className="input-group">
               <span className="input-group-text">OSGB-</span>
-              <input
-                type="text"
-                className={`form-control${fieldErrors.osgb_id && touched.osgb_id ? ' is-invalid' : ''}`}
-                id="osgb_id"
-                name="osgb_id"
-                value={form.osgb_id}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-                maxLength={10}
-                pattern="[0-9]+"
-                placeholder="123456"
-              />
+              <input type="text" className="form-control" id="osgb_id" name="osgb_id" value={form.osgb_id} onChange={handleChange} required maxLength={10} pattern="[0-9]+" placeholder="123456" />
             </div>
             <div className="form-text">Sadece rakam giriniz. Örn: 123456</div>
-            {fieldErrors.osgb_id && touched.osgb_id && (
-              <div className="invalid-feedback">{fieldErrors.osgb_id}</div>
-            )}
           </div>
         </div>
         {/* New order: email, password, password_confirm, phone, address */}
         <div className="col-6">
           <div className="mb-3">
             <label htmlFor="email" className="form-label">E-posta</label>
-            <input
-              type="email"
-              className={`form-control${fieldErrors.email && touched.email ? ' is-invalid' : ''}`}
-              id="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              required
-              maxLength={60}
-            />
-            {fieldErrors.email && touched.email && (
-              <div className="invalid-feedback">{fieldErrors.email}</div>
-            )}
+            <input type="email" className="form-control" id="email" name="email" value={form.email} onChange={handleChange} required maxLength={60} />
           </div>
         </div>
         <div className="col-6">
@@ -408,12 +315,11 @@ function RegisterPage() {
             <div className="input-group">
               <input
                 type={showPassword ? 'text' : 'password'}
-                className={`form-control${fieldErrors.password && touched.password ? ' is-invalid' : ''}`}
+                className="form-control"
                 id="password"
                 name="password"
                 value={form.password}
                 onChange={handleChange}
-                onBlur={handleBlur}
                 required
                 minLength={8}
                 maxLength={16}
@@ -422,9 +328,6 @@ function RegisterPage() {
                 <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
               </span>
             </div>
-            {fieldErrors.password && touched.password && (
-              <div className="invalid-feedback">{fieldErrors.password}</div>
-            )}
           </div>
         </div>
         <div className="col-6">
@@ -433,12 +336,11 @@ function RegisterPage() {
             <div className="input-group">
               <input
                 type={showPasswordConfirm ? 'text' : 'password'}
-                className={`form-control${fieldErrors.password_confirm && touched.password_confirm ? ' is-invalid' : ''}`}
+                className="form-control"
                 id="password_confirm"
                 name="password_confirm"
                 value={form.password_confirm}
                 onChange={handleChange}
-                onBlur={handleBlur}
                 required
                 minLength={8}
                 maxLength={16}
@@ -450,9 +352,6 @@ function RegisterPage() {
             {form.password_confirm.length > 0 && form.password !== form.password_confirm && (
               <div className="form-text text-danger">Şifreler eşleşmiyor.</div>
             )}
-            {fieldErrors.password_confirm && touched.password_confirm && (
-              <div className="invalid-feedback">{fieldErrors.password_confirm}</div>
-            )}
           </div>
         </div>
         <div className="col-6">
@@ -460,45 +359,15 @@ function RegisterPage() {
             <label htmlFor="phone" className="form-label">Telefon Numarası</label>
             <div className="input-group">
               <span className="input-group-text">+90</span>
-              <input
-                type="tel"
-                className={`form-control${fieldErrors.phone && touched.phone ? ' is-invalid' : ''}`}
-                id="phone"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                required
-                maxLength={10}
-                minLength={10}
-                pattern="[0-9]{10}"
-                placeholder="5XXXXXXXXX"
-              />
+              <input type="tel" className="form-control" id="phone" name="phone" value={form.phone} onChange={handleChange} required maxLength={10} minLength={10} pattern="[0-9]{10}" placeholder="5XXXXXXXXX" />
             </div>
             <div className="form-text">Başında 0 olmadan, 10 haneli giriniz. Örn: 5XXXXXXXXX</div>
-            {fieldErrors.phone && touched.phone && (
-              <div className="invalid-feedback">{fieldErrors.phone}</div>
-            )}
           </div>
         </div>
         <div className="col-12">
           <div className="mb-3">
             <label htmlFor="address" className="form-label">Adres</label>
-            <textarea
-              className={`form-control${fieldErrors.address && touched.address ? ' is-invalid' : ''}`}
-              id="address"
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              required
-              rows={3}
-              maxLength={200}
-              style={{resize:'vertical'}}
-            />
-            {fieldErrors.address && touched.address && (
-              <div className="invalid-feedback">{fieldErrors.address}</div>
-            )}
+            <textarea className="form-control" id="address" name="address" value={form.address} onChange={handleChange} required rows={3} maxLength={200} style={{resize:'vertical'}} />
           </div>
         </div>
       </div>
@@ -507,7 +376,7 @@ function RegisterPage() {
         {/* Kullanım Koşulları */}
         <div className="form-check mb-2">
           <input
-            className={`form-check-input${fieldErrors.terms && touched.terms ? ' border-danger' : ''}`}
+            className="form-check-input"
             type="checkbox"
             id="terms"
             checked={agreements.terms}
@@ -517,9 +386,9 @@ function RegisterPage() {
                 e.preventDefault();
                 openAgreementModal('terms');
               } else {
+                // Allow unchecking directly
                 setAgreements(a => ({ ...a, terms: false }));
               }
-              setTouched(t => ({...t, terms:true}));
             }}
             aria-required="true"
           />
@@ -528,14 +397,11 @@ function RegisterPage() {
               <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('terms')}>Sözleşmeyi Oku</button>
             ) <span className="text-danger">*</span>
           </label>
-          {fieldErrors.terms && touched.terms && (
-            <div className="text-danger small">{fieldErrors.terms}</div>
-          )}
         </div>
         {/* Gizlilik Sözleşmesi */}
         <div className="form-check mb-2">
           <input
-            className={`form-check-input${fieldErrors.privacy && touched.privacy ? ' border-danger' : ''}`}
+            className="form-check-input"
             type="checkbox"
             id="privacy"
             checked={agreements.privacy}
@@ -555,14 +421,11 @@ function RegisterPage() {
               <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('privacy')}>Sözleşmeyi Oku</button>
             ) <span className="text-danger">*</span>
           </label>
-          {fieldErrors.privacy && touched.privacy && (
-            <div className="text-danger small">{fieldErrors.privacy}</div>
-          )}
         </div>
         {/* KVKK Açık Rıza */}
         <div className="form-check mb-2">
           <input
-            className={`form-check-input${fieldErrors.kvkk && touched.kvkk ? ' border-danger' : ''}`}
+            className="form-check-input"
             type="checkbox"
             id="kvkk"
             checked={agreements.kvkk}
@@ -582,9 +445,6 @@ function RegisterPage() {
               <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('kvkk')}>Sözleşmeyi Oku</button>
             ) <span className="text-danger">*</span>
           </label>
-          {fieldErrors.kvkk && touched.kvkk && (
-            <div className="text-danger small">{fieldErrors.kvkk}</div>
-          )}
         </div>
         {/* Ticari Elektronik İleti Onayı (optional) */}
         <div className="form-check mb-2">
@@ -601,6 +461,11 @@ function RegisterPage() {
             ) <span className="text-secondary">(isteğe bağlı)</span>
           </label>
         </div>
+        {showAgreementWarning && (
+          <div className="alert alert-warning py-2 mt-2">
+            Kayıt olabilmek için tüm zorunlu sözleşmeleri okuduğunuzu ve onayladığınızı belirtmelisiniz.
+          </div>
+        )}
       </div>
       {/* Agreement Modal */}
       {agreementModal.open && (
@@ -630,7 +495,14 @@ function RegisterPage() {
         </div>
       )}
       {error && <div className="alert alert-danger py-2">{error}</div>}
-      <button type="submit" className="btn btn-danger w-100 mt-2">
+      <button type="submit" className="btn btn-danger w-100 mt-2" disabled={!canSubmit} onClick={e => {
+        if (!(agreements.terms && agreements.privacy && agreements.kvkk)) {
+          e.preventDefault();
+          setShowAgreementWarning(true);
+        } else {
+          setShowAgreementWarning(false);
+        }
+      }}>
         {loading ? 'Kayıt Olunuyor...' : 'Kayıt Ol'}
       </button>
     </form>
