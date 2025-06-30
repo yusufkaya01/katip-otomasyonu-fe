@@ -32,7 +32,6 @@ function RegisterPage() {
     kvkk: false, // KVKK Açık Rıza
     commercial: false // Ticari Elektronik İleti Onayı (optional)
   });
-  const [showAgreementWarning, setShowAgreementWarning] = useState(false);
 
   const [touched, setTouched] = useState({});
   const [fieldErrors, setFieldErrors] = useState({});
@@ -113,7 +112,14 @@ function RegisterPage() {
   const handleRegisterClick = (e) => {
     const errors = validateFields();
     setFieldErrors(errors);
-    setTouched(t => ({ ...t, ...Object.keys(errors).reduce((acc, k) => (acc[k]=true, acc), {}) }));
+    // Fix comma operator warning by using a block
+    setTouched(t => ({
+      ...t,
+      ...Object.keys(errors).reduce((acc, k) => {
+        acc[k] = true;
+        return acc;
+      }, {})
+    }));
     if (Object.keys(errors).length > 0) {
       e.preventDefault();
       // Scroll to first error
@@ -224,8 +230,6 @@ function RegisterPage() {
       closeAgreementModal();
     }
   };
-
-  const canSubmit = agreements.terms && agreements.privacy && agreements.kvkk && !loading;
 
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: 500, margin: '0 auto' }}>
@@ -593,11 +597,6 @@ function RegisterPage() {
             ) <span className="text-secondary">(isteğe bağlı)</span>
           </label>
         </div>
-        {showAgreementWarning && (
-          <div className="alert alert-warning py-2 mt-2">
-            Kayıt olabilmek için tüm zorunlu sözleşmeleri okuduğunuzu ve onayladığınızı belirtmelisiniz.
-          </div>
-        )}
       </div>
       {/* Agreement Modal */}
       {agreementModal.open && (
