@@ -109,31 +109,27 @@ function RegisterPage() {
     setTouched(t => ({ ...t, [e.target.name]: true }));
   };
 
-  const handleRegisterClick = (e) => {
-    const errors = validateFields();
-    setFieldErrors(errors);
-    // Fix comma operator warning by using a block
-    setTouched(t => ({
-      ...t,
-      ...Object.keys(errors).reduce((acc, k) => {
-        acc[k] = true;
-        return acc;
-      }, {})
-    }));
-    if (Object.keys(errors).length > 0) {
-      e.preventDefault();
-      // Scroll to first error
-      const firstError = Object.keys(errors)[0];
-      const el = document.getElementById(firstError);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setFieldErrors({});
+
+    // Validate all fields (client-side)
+    const errors = validateFields();
+    setFieldErrors(errors);
+    setTouched(t => ({
+      ...t,
+      ...Object.keys(errors).reduce((acc, k) => { acc[k] = true; return acc; }, {})
+    }));
+    if (Object.keys(errors).length > 0) {
+      // Scroll to first error
+      const firstError = Object.keys(errors)[0];
+      const el = document.getElementById(firstError);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setLoading(false);
+      return;
+    }
 
     // Client-side validation: password match
     if (form.password !== form.password_confirm) {
@@ -631,7 +627,7 @@ function RegisterPage() {
         </div>
       )}
       {error && <div className="alert alert-danger py-2">{error}</div>}
-      <button type="submit" className="btn btn-danger w-100 mt-2" onClick={handleRegisterClick}>
+      <button type="submit" className="btn btn-danger w-100 mt-2">
         {loading ? 'Kayıt Olunuyor...' : 'Kayıt Ol'}
       </button>
     </form>
