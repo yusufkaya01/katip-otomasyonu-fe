@@ -75,7 +75,8 @@ function RegisterPage() {
     if (!form.company_name.trim()) errors.company_name = 'Şirket ünvanı zorunludur.';
     if (!selectedCity) errors.city = 'Şehir seçiniz.';
     if (!selectedDistrict) errors.district = 'İlçe seçiniz.';
-    if (!form.tax_office) errors.tax_office = 'Vergi dairesi seçiniz.';
+    // Only validate tax_office if city and district are selected
+    if (selectedCity && selectedDistrict && !form.tax_office) errors.tax_office = 'Vergi dairesi seçiniz.';
     if (!form.tax_number || form.tax_number.length !== 10) errors.tax_number = 'Vergi Kimlik No 10 haneli olmalıdır.';
     if (!form.osgb_id) errors.osgb_id = 'OSGB Yetki Belgesi No zorunludur.';
     if (!form.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) errors.email = 'Geçerli bir e-posta giriniz.';
