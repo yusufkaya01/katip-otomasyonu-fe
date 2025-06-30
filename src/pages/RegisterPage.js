@@ -133,6 +133,7 @@ function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setFieldErrors({});
 
     // Client-side validation: password match
     if (form.password !== form.password_confirm) {
@@ -169,30 +170,34 @@ function RegisterPage() {
         window.location.href = '/giris';
       } else {
         const data = await res.json();
+        let backendFieldErrors = {};
         if (data && data.details && Array.isArray(data.details)) {
           setError(data.details.map(d => d.msg).join(' '));
         } else if (data && data.error) {
-          // Show backend validation errors for official record mismatches
-          if (
-            [
-              'INVALID_OSGB_ID',
-              'INVALID_COMPANY_NAME',
-              'INVALID_CITY',
-              'INVALID_DISTRICT'
-            ].includes(data.error) && data.message
-          ) {
-            // Translate backend error messages to Turkish
-            let msg = data.message;
-            if (data.error === 'INVALID_CITY') {
-              msg = `Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.`;
+          if ([
+            'INVALID_OSGB_ID',
+            'INVALID_COMPANY_NAME',
+            'INVALID_CITY',
+            'INVALID_DISTRICT'
+          ].includes(data.error) && data.message) {
+            // Map backend error to field
+            if (data.error === 'INVALID_COMPANY_NAME') {
+              backendFieldErrors.company_name = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
+            } else if (data.error === 'INVALID_CITY') {
+              backendFieldErrors.city = 'Seçilen şehir resmi kayıtlardaki ile eşleşmiyor.';
             } else if (data.error === 'INVALID_DISTRICT') {
-              msg = `Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.`;
-            } else if (data.error === 'INVALID_COMPANY_NAME') {
-              msg = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
+              backendFieldErrors.district = 'Seçilen ilçe resmi kayıtlardaki ile eşleşmiyor.';
             } else if (data.error === 'INVALID_OSGB_ID') {
-              msg = 'OSGB Yetki Belgesi No resmi kayıtlarda bulunamadı.';
+              backendFieldErrors.osgb_id = 'OSGB Yetki Belgesi No resmi kayıtlarda bulunamadı.';
             }
-            setError(msg);
+            setFieldErrors(f => ({ ...f, ...backendFieldErrors }));
+            setTouched(t => ({ ...t, ...Object.keys(backendFieldErrors).reduce((acc, k) => { acc[k] = true; return acc; }, {}) }));
+            // Scroll to first backend error field
+            const firstError = Object.keys(backendFieldErrors)[0];
+            const el = document.getElementById(firstError);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setLoading(false);
+            return;
           } else if (data.error === 'EMAIL_EXISTS') {
             setError('Bu e-posta ile zaten kayıtlı bir kullanıcı var.');
           } else if (data.error === 'OSGB_ID_EXISTS') {
