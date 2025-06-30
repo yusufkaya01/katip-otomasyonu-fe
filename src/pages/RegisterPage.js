@@ -72,11 +72,13 @@ function RegisterPage() {
 
   const validateFields = () => {
     const errors = {};
-    if (!form.company_name.trim()) errors.company_name = 'Şirket ünvanı zorunludur.';
-    if (!selectedCity) errors.city = 'Şehir seçiniz.';
-    if (!selectedDistrict) errors.district = 'İlçe seçiniz.';
+    // Only show city error if user has interacted with city or tax_office
+    if ((!selectedCity) && (touched.city || touched.tax_office)) errors.city = 'Şehir seçiniz.';
+    // Only show district error if user has interacted with district or tax_office
+    if ((!selectedDistrict) && (touched.district || touched.tax_office)) errors.district = 'İlçe seçiniz.';
     // Only validate tax_office if city and district are selected
     if (selectedCity && selectedDistrict && !form.tax_office) errors.tax_office = 'Vergi dairesi seçiniz.';
+    if (!form.company_name.trim()) errors.company_name = 'Şirket ünvanı zorunludur.';
     if (!form.tax_number || form.tax_number.length !== 10) errors.tax_number = 'Vergi Kimlik No 10 haneli olmalıdır.';
     if (!form.osgb_id) errors.osgb_id = 'OSGB Yetki Belgesi No zorunludur.';
     if (!form.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) errors.email = 'Geçerli bir e-posta giriniz.';
@@ -176,8 +178,8 @@ function RegisterPage() {
             'INVALID_COMPANY_NAME',
             'INVALID_CITY',
             'INVALID_DISTRICT'
-          ].includes(data.error) && data.message) {
-            // Map backend error to field
+          ].includes(data.error)) {
+            // Map backend error to field, show only generic Turkish error
             if (data.error === 'INVALID_COMPANY_NAME') {
               backendFieldErrors.company_name = 'Şirket ünvanı resmi kayıtlardaki ile eşleşmiyor.';
             } else if (data.error === 'INVALID_CITY') {
