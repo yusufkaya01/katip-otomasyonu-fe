@@ -16,6 +16,7 @@ h1, h2, h3, h4, h5, h6 {
 .navbar, .navbar-nav, .navbar-brand, .nav-link {
   font-family: 'Atkinson Hyperlegible', 'Space Grotesk', monospace !important;
   font-weight: 700 !important;
+  color: #ffffff;
 }
 
 .navbar .nav-link:hover, .navbar .nav-link.active:hover {
