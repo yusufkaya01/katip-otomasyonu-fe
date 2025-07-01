@@ -8,7 +8,6 @@ function ResetPasswordPage() {
   const [error, setError] = useState('');
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
-  const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || 'production';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

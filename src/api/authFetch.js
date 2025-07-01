@@ -2,7 +2,6 @@
 // A fetch wrapper that handles JWT access/refresh token logic for OSGB API
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
-const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || 'production';
 
 /**
  * Usage: import authFetch from '../api/authFetch';

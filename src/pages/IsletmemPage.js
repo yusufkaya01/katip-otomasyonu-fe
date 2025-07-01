@@ -29,26 +29,15 @@ function IsletmemPage() {
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [taxOfficeList, setTaxOfficeList] = useState([]); // <-- fix: for tax offices
   const [taxNumber, setTaxNumber] = useState(''); // <-- fix: for tax number
-  const [mssEnabled, setMssEnabled] = useState(false);
-  const [mssLoading, setMssLoading] = useState(false);
-  const [mssModalOpen, setMssModalOpen] = useState(false);
-  const [mssAgreementHtml, setMssAgreementHtml] = useState('');
-  const [mssError, setMssError] = useState('');
-  const [mssSuccess, setMssSuccess] = useState('');
-  const [mssConfirm, setMssConfirm] = useState(false);
-  const [mssModalMode, setMssModalMode] = useState('confirm'); // 'confirm' or 'view'
-  const [showMssDisableModal, setShowMssDisableModal] = useState(false);
-  const [mssDisableInput, setMssDisableInput] = useState('');
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendMessage, setResendMessage] = useState('');
   const navigate = useNavigate();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
-  const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || 'production';
   const didFetchRef = useRef(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
 
   useEffect(() => {
     if (loading) return;
@@ -73,7 +62,7 @@ function IsletmemPage() {
         logout();
         navigate('/giris', { replace: true });
       });
-  }, [navigate, API_KEY, user, updateUser, logout, loading]);
+  }, [navigate, API_KEY, user, updateUser, logout, loading, API_BASE_URL]);
 
   // Editable fields for the profile
   const fields = [
@@ -250,93 +239,6 @@ function IsletmemPage() {
       setResendMessage('Sunucuya ulaşılamıyor. Lütfen tekrar deneyin.');
     }
     setResendLoading(false);
-  };
-
-  useEffect(() => {
-    if (user && typeof user.distance_sales_agreement_enabled !== 'undefined') {
-      setMssEnabled(!!user.distance_sales_agreement_enabled);
-    }
-  }, [user]);
-
-  // Add a state to distinguish modal mode
-  const fetchMssAgreement = async (mode = 'confirm') => {
-    setMssLoading(true);
-    setMssAgreementHtml('');
-    setMssError('');
-    try {
-      const res = await fetch(`${API_BASE_URL}/osgb/distance-sales-agreement`, {
-        method: 'GET',
-        headers: {
-          'x-api-key': API_KEY,
-          'Authorization': `Bearer ${user.accessToken}`
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMssAgreementHtml(data.agreementHtml || '');
-        setMssModalMode(mode);
-        setMssModalOpen(true);
-      } else {
-        setMssError('Sözleşme içeriği alınamadı.');
-      }
-    } catch {
-      setMssError('Sunucuya ulaşılamıyor.');
-    }
-    setMssLoading(false);
-  };
-
-  const handleMssEnable = async () => {
-    setMssLoading(true);
-    setMssError('');
-    setMssSuccess('');
-    try {
-      const res = await fetch(`${API_BASE_URL}/osgb/distance-sales-agreement`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': API_KEY,
-          'Authorization': `Bearer ${user.accessToken}`
-        },
-        body: JSON.stringify({ enabled: true })
-      });
-      if (res.ok) {
-        setMssEnabled(true);
-        updateUser({ ...user, distance_sales_agreement_enabled: true });
-        setMssModalOpen(false);
-      } else {
-        setMssError('Sözleşme onaylanamadı.');
-      }
-    } catch {
-      setMssError('Sunucuya ulaşılamıyor.');
-    }
-    setMssLoading(false);
-  };
-
-  const handleMssDisable = async () => {
-    setMssLoading(true);
-    setMssError('');
-    setMssSuccess('');
-    try {
-      const res = await fetch(`${API_BASE_URL}/osgb/distance-sales-agreement`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': API_KEY,
-          'Authorization': `Bearer ${user.accessToken}`
-        },
-        body: JSON.stringify({ enabled: false })
-      });
-      if (res.ok) {
-        setMssEnabled(false);
-        updateUser({ ...user, distance_sales_agreement_enabled: false });
-        setMssSuccess('Mesafeli Satış Sözleşmesi devre dışı bırakıldı.');
-      } else {
-        setMssError('Sözleşme devre dışı bırakılamadı.');
-      }
-    } catch {
-      setMssError('Sunucuya ulaşılamıyor.');
-    }
-    setMssLoading(false);
   };
 
   if (loading) {
@@ -597,117 +499,6 @@ function IsletmemPage() {
           </div>
         )}
       </div>
-      {/* MSS Toggle Section */}
-      <div className="card p-4 shadow-sm mt-4">
-        <div className="d-flex align-items-center mb-2">
-          <strong style={{ minWidth: 200 }}>Mesafeli Satış Sözleşmesi:</strong>
-          <span className={`badge ${mssEnabled ? 'bg-success' : 'bg-secondary'}`}>{mssEnabled ? 'Onaylandı' : 'Onaylanmadı'}</span>
-        </div>
-        <div className="mb-2 d-flex gap-2">
-          {mssEnabled ? (
-            <>
-              <button
-                className="btn btn-outline-danger btn-sm"
-                onClick={() => setShowMssDisableModal(true)}
-                disabled={mssLoading}
-              >
-                {mssLoading ? 'İşleniyor...' : 'Sözleşmeyi İptal Et'}
-              </button>
-              <button className="btn btn-outline-primary btn-sm" onClick={() => fetchMssAgreement('view')} disabled={mssLoading}>
-                Sözleşmeyi Görüntüle
-              </button>
-            </>
-          ) : (
-            <button className="btn btn-outline-success btn-sm" onClick={() => fetchMssAgreement('confirm')} disabled={mssLoading}>
-              {mssLoading ? 'Yükleniyor...' : 'Sözleşmeyi Onayla'}
-            </button>
-          )}
-        </div>
-        {!mssEnabled && (
-          <div className="alert alert-warning mt-2">
-            Mesafeli Satış Sözleşmesi'ni iptal ettiğiniz takdirde satın alma, paket yenileme vb işlemlerinizi yapamazsınız. Bu gibi işlemleri yapabilmek için lütfen MSS'i onaylayınız.
-          </div>
-        )}
-        {mssError && <div className="alert alert-danger py-2 mt-2">{mssError}</div>}
-        {mssSuccess && <div className="alert alert-success py-2 mt-2">{mssSuccess}</div>}
-      </div>
-      {/* MSS Modal (for view or confirm) */}
-      {mssModalOpen && (
-        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Mesafeli Satış Sözleşmesi</h5>
-                <button type="button" className="btn-close" onClick={() => setMssModalOpen(false)}></button>
-              </div>
-              <div className="modal-body" style={{ maxHeight: 400, overflowY: 'auto' }}>
-                <div dangerouslySetInnerHTML={{ __html: mssAgreementHtml }} />
-                {/* Only show confirmation checkbox and enable button if in 'confirm' mode */}
-                {mssModalMode === 'confirm' && (
-                  <div className="form-check mt-3">
-                    <input className="form-check-input" type="checkbox" id="mssConfirm" checked={mssConfirm} onChange={e => setMssConfirm(e.target.checked)} />
-                    <label className="form-check-label" htmlFor="mssConfirm">
-                      Sözleşme içeriğini okudum ve onaylıyorum.
-                    </label>
-                  </div>
-                )}
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setMssModalOpen(false)}>Kapat</button>
-                {/* Only show enable button if in 'confirm' mode */}
-                {mssModalMode === 'confirm' && (
-                  <button className="btn btn-success" onClick={handleMssEnable} disabled={!mssConfirm || mssLoading}>
-                    {mssLoading ? 'Onaylanıyor...' : 'Onayla ve E-posta Gönder'}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* MSS Disable Confirmation Modal */}
-      {showMssDisableModal && (
-        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Sözleşmeyi İptal Et</h5>
-                <button type="button" className="btn-close" onClick={() => { setShowMssDisableModal(false); setMssDisableInput(''); }}></button>
-              </div>
-              <div className="modal-body">
-                <div className="alert alert-warning">
-                  Mesafeli Satış Sözleşmesi'ni iptal ettiğiniz takdirde satın alma, paket yenileme vb işlemlerinizi yapamazsınız.<br />
-                  İşlemi onaylıyorsanız aşağıdaki kutuya <b>onaylıyorum</b> yazınız, büyük/küçük harf kullanımına dikkat ediniz.
-                </div>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="onaylıyorum"
-                  value={mssDisableInput}
-                  onChange={e => setMssDisableInput(e.target.value)}
-                  autoFocus
-                />
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => { setShowMssDisableModal(false); setMssDisableInput(''); }}>Vazgeç</button>
-                <button
-                  className="btn btn-danger"
-                  disabled={mssDisableInput !== 'onaylıyorum' || mssLoading}
-                  onClick={async () => {
-                    if (mssDisableInput === 'onaylıyorum') {
-                      await handleMssDisable();
-                      setShowMssDisableModal(false);
-                      setMssDisableInput('');
-                    }
-                  }}
-                >
-                  {mssLoading ? 'İşleniyor...' : 'İptal Et'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
