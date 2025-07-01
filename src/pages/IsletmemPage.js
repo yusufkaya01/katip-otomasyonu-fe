@@ -43,6 +43,8 @@ function IsletmemPage() {
   const [resendMessage, setResendMessage] = useState('');
   const navigate = useNavigate();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
+  const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || 'production';
   const didFetchRef = useRef(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
@@ -57,7 +59,7 @@ function IsletmemPage() {
     if (didFetchRef.current) return;
     didFetchRef.current = true;
     // Use authFetch for profile
-    authFetch('https://customers.katipotomasyonu.com/api/osgb/profile', { method: 'GET' }, { accessToken: user.accessToken })
+    authFetch(`${API_BASE_URL}/osgb/profile`, { method: 'GET' }, { accessToken: user.accessToken })
       .then(res => {
         if (!res.ok) throw new Error('Kullanıcı oturumu geçersiz veya süresi dolmuş.');
         return res.json();
@@ -179,14 +181,14 @@ function IsletmemPage() {
     });
     if (editField !== 'password') delete payload.password;
     try {
-      const res = await authFetch('https://customers.katipotomasyonu.com/api/osgb/update-osgb-info', {
+      const res = await authFetch(`${API_BASE_URL}/osgb/update-osgb-info`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY },
         body: JSON.stringify(payload)
       }, { accessToken: user.accessToken, refreshToken: user.refreshToken, updateAccessToken: updateUser, logout });
       if (res.status === 200) {
         // After successful update, fetch latest profile
-        const profileRes = await authFetch('https://customers.katipotomasyonu.com/api/osgb/profile', { method: 'GET', headers: { 'x-api-key': API_KEY } }, { accessToken: user.accessToken });
+        const profileRes = await authFetch(`${API_BASE_URL}/osgb/profile`, { method: 'GET', headers: { 'x-api-key': API_KEY } }, { accessToken: user.accessToken });
         if (profileRes.ok) {
           const profileData = await profileRes.json();
           const updatedUser = { ...user, ...profileData.user, accessToken: user.accessToken };
@@ -226,7 +228,7 @@ function IsletmemPage() {
     setResendLoading(true);
     setResendMessage('');
     try {
-      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/resend-verification', {
+      const res = await fetch(`${API_BASE_URL}/osgb/resend-verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,7 +264,7 @@ function IsletmemPage() {
     setMssAgreementHtml('');
     setMssError('');
     try {
-      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/distance-sales-agreement', {
+      const res = await fetch(`${API_BASE_URL}/osgb/distance-sales-agreement`, {
         method: 'GET',
         headers: {
           'x-api-key': API_KEY,
@@ -288,7 +290,7 @@ function IsletmemPage() {
     setMssError('');
     setMssSuccess('');
     try {
-      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/distance-sales-agreement', {
+      const res = await fetch(`${API_BASE_URL}/osgb/distance-sales-agreement`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -315,7 +317,7 @@ function IsletmemPage() {
     setMssError('');
     setMssSuccess('');
     try {
-      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/distance-sales-agreement', {
+      const res = await fetch(`${API_BASE_URL}/osgb/distance-sales-agreement`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

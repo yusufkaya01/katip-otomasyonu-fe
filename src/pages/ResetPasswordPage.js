@@ -7,13 +7,16 @@ function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
+  const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || 'production';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess(false);
     try {
-      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/reset-password', {
+      const res = await fetch(`${API_BASE_URL}/osgb/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

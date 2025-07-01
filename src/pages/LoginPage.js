@@ -11,6 +11,9 @@ function LoginPage() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
+  const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || 'production';
+
   useEffect(() => {
     if (user) {
       navigate('/isletmem', { replace: true });
@@ -39,7 +42,7 @@ function LoginPage() {
         setLoading(false);
         return;
       }
-      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/login', {
+      const res = await fetch(`${API_BASE_URL}/osgb/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

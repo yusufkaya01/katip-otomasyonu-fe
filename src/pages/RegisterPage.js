@@ -54,6 +54,8 @@ function RegisterPage() {
   };
 
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
+  const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || 'production';
 
   useEffect(() => {
     fetchTaxOffices(API_KEY)
@@ -130,7 +132,7 @@ function RegisterPage() {
     };
 
     try {
-      const res = await fetch('https://customers.katipotomasyonu.com/api/osgb/register', {
+      const res = await fetch(`${API_BASE_URL}/osgb/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

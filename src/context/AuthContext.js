@@ -8,6 +8,9 @@ export function AuthProvider({ children }) {
   const [refreshToken, setRefreshToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
+
+
   // On mount, restore user and tokens from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem('osgbUser');
@@ -66,7 +69,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       if (refreshToken) {
-        await fetch('https://customers.katipotomasyonu.com/api/osgb/logout', {
+        await fetch(`${API_BASE_URL}/osgb/logout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -1,6 +1,9 @@
 // authFetch.js
 // A fetch wrapper that handles JWT access/refresh token logic for OSGB API
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
+const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT || 'production';
+
 /**
  * Usage: import authFetch from '../api/authFetch';
  * const res = await authFetch('/api/osgb/profile', { method: 'GET' }, authContext);
@@ -17,7 +20,7 @@ export default async function authFetch(url, options = {}, auth) {
   // If access token expired, try refresh
   if (response.status === 401 && auth.refreshToken) {
     // Try to refresh the access token
-    const refreshRes = await fetch('https://customers.katipotomasyonu.com/api/osgb/refresh-token', {
+    const refreshRes = await fetch(`${API_BASE_URL}/osgb/refresh-token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
