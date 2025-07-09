@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
-const TIERS = Array.from({ length: 9 }, (_, i) => {
+const TIERS = Array.from({ length: 10 }, (_, i) => {
   const tier = i + 1;
-  const limit = tier < 9 ? (tier * 500).toString() : 'Sınırsız';
-  const monthly = 1000 * tier;
-  // New yearly: 65% of (monthly * 6)
-  const yearly = Math.round(monthly * 6 * 0.6) + '₺';
-  return { tier, limit, monthly: monthly + '₺', yearly };
+  const limit = tier < 10 ? (tier * 500).toString() : 'Sınırsız';
+  // Prices: start at 6000, increment by 3000 each tier
+  const yearly = (6000 + (i * 3000)) + '₺';
+  // No monthly, only yearly
+  return { tier, limit, yearly };
 });
 
 function InfoIcon({ text, bold }) {
@@ -40,7 +40,7 @@ function InfoIcon({ text, bold }) {
           whiteSpace: 'normal',
           fontWeight: 500,
         }}>
-          {bold ? <span>isg katip'te '<b>Devam Eden Toplam Sözleşme Sayısı</b>' baz alınır</span> : text}
+          {bold ? <span>İSG Katip'te '<b>Devam Eden Toplam Sözleşme Sayısı</b>' baz alınır</span> : text}
         </span>
       )}
     </span>
@@ -81,12 +81,11 @@ function PricingPage() {
                 <th>Kademe</th>
                 <th>
                   Sözleşme Limiti
-                  <InfoIcon bold text={"isg katip'te 'Devam Eden Toplam Sözleşme Sayısı' baz alınır"} />
+                  <InfoIcon bold text={"İSG Katip'te 'Devam Eden Toplam Sözleşme Sayısı' baz alınır"} />
                 </th>
-                <th>Aylık Fiyat</th>
                 <th style={{ position: 'relative' }}>
-                  Yıllık Fiyat <span style={{ fontWeight: 400, fontSize: 13 }}>(31 Aralık 2025 tarihine kadar)</span>
-                  <InfoIcon text={"31 Aralık 2025 tarihine kadar kullanım sunar: Yeni yılda İSG-Katip sisteminde yapılacak değişikliklere göre sistemimiz güncellenecek olup, yeni yıl için yeniden lisans almanız gerekecektir."} />
+                  Yıllık Fiyat <span style={{ fontWeight: 400, fontSize: 13 }}>(366 Gün)</span>
+                  <InfoIcon text={"Satın alımdan itibaren 366 gün kullanım sunar. Süre bitiminde yeni lisans gereklidir."} />
                   <div style={{
                     fontSize: 13,
                     color: '#fd7e14',
@@ -99,7 +98,7 @@ function PricingPage() {
                     gap: 4
                   }}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#fd7e14" viewBox="0 0 16 16" style={{marginRight: 2}}><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 8 1.5a6.5 6.5 0 0 1 0 13zm0-10a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4.5zm1 7.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75V7.75c0-.414.336-.75.75-.75s.75.336.75.75v4z"/></svg>
-                    Yıllık peşin ödemelerde %40 indirim
+                    Satın alım tarihinden itibaren 366 gün geçerlidir
                   </div>
                 </th>
               </tr>
@@ -109,11 +108,7 @@ function PricingPage() {
                 <tr key={tier.tier}>
                   <td>{tier.tier}</td>
                   <td>{tier.limit}</td>
-                  <td>{tier.monthly}</td>
                   <td>
-                    <span style={{ textDecoration: 'line-through', color: '#678', marginRight: 8 }}>
-                      {parseInt(tier.monthly) * 6}₺
-                    </span>
                     <span style={{ color: '#fd7e14', fontWeight: 600 }}>{tier.yearly}</span>
                   </td>
                 </tr>
@@ -122,13 +117,13 @@ function PricingPage() {
           </table>
         </div>
         <div className="alert alert-info text-center my-3" style={{background: '#e7f1ff', color: '#084298', borderColor: '#b6d4fe'}}>
-          Demo paketi 3 gün boyunca ücretsizdir. Aylık ve yıllık lisanslar için uygun paketi devam eden sözleşme sayınıza göre seçebilirsiniz.
+          Demo paketi 3 gün boyunca ücretsizdir. Demo süresi sona erdikten sonra, lisansınızın süresini sitemize kayıt olarak uzatabilirsiniz.
         </div>
         <div className="alert alert-warning text-center my-3" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
-          Lisans anahtarınızı satın alırken İSG Katip'teki '<b>Devam Eden Toplam Sözleşme Sayısı</b>'nı kontrol edip uygun kademede lisans anahtarı satın almanız gerekmektedir. Aksi halde, eğer devam eden sözleşme sayınız lisansınıza tanımlı olan sözleşme limitinden fazla ise eklentiyi kullanamaz ve 'Lisans anahtarı geçersizdir.' uyarısı alırsınız.
+          Lisans anahtarınızın <b>süresini uzatırken veya kademenizi güncellerken</b> <b>İSG Katip'teki 'Devam Eden Toplam Sözleşme Sayısı'</b>nı kontrol edip <b>uygun kademede</b> satın alım yapmanız gerekmektedir. Aksi halde, devam eden sözleşme sayınız lisansınıza tanımlı olan sözleşme limitinden fazla ise eklentiyi kullanamaz ve 'Lisans anahtarı geçersizdir.' uyarısı alırsınız.
         </div>
         <div className="alert alert-warning mt-4 text-center" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
-          <b>Yıllık lisans:</b> 31 Aralık 2025 tarihine kadar kullanım sunar. Yeni yılda İSG-Katip sisteminde yapılacak değişikliklere göre sistemimiz güncellenecek olup, yeni yıl için yeniden lisans almanız gerekecektir.
+          <b>Yıllık lisans:</b> Satın alımdan itibaren 366 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır.
         </div>
       </div>
     </>
