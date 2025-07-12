@@ -1,0 +1,240 @@
+# Frontend Integration Note: OSGB 2-Step Registration (with Email Verification)
+
+## Overview
+Otomasyon Katibi backend now uses a robust, production-ready 2-step registration process for OSGB users. The legacy `/api/osgb/register` endpoint is removed. The new flow requires email verification with a 6-digit code. The frontend (FE) must update registration logic and UI to match this flow.
+
+---
+
+## Registration Flow
+
+### 1. Step 1: License & Document Validation
+- **Endpoint:** `POST /api/osgb/register-step1`
+- **Content-Type:** `multipart/form-data`
+- **Request Body:**
+  - `vergiLevhasi` (file, required) — PDF or image
+  - `yetkiBelgesi` (file, required) — PDF or image
+  - `licenseKey` (string, 10 chars, required)
+
+**Example Request (FormData):**
+```
+vergiLevhasi: <file>
+yetkiBelgesi: <file>
+licenseKey: "ABC1234567"
+```
+
+**Success Response:**
+```
+Status: 200 OK
+{
+  "success": true,
+  "companyInfo": {
+    "company_name": "...",
+    "osgb_id": "...",
+    "city": "...",
+    "district": "...",
+    "address": "..."
+  },
+  "step1Token": "<JWT_TOKEN>"
+}
+```
+- `step1Token` is a JWT required for all subsequent registration steps. FE must store this securely (in memory, not localStorage).
+
+**Error Responses (exact BE messages):**
+- Status: 400/429/500
+- Body examples:
+```
+{
+  "success": false,
+  "error": "All fields (licenseKey, vergiLevhasi, yetkiBelgesi) are required."
+}
+{
+  "success": false,
+  "error": "EMAIL_ALREADY_REGISTERED_FOR_LICENSE",
+  "message": "This email is already registered with this license code."
+}
+{
+  "success": false,
+  "error": "License key not found."
+}
+{
+  "success": false,
+  "error": "License key is not active."
+}
+{
+  "success": false,
+  "error": "Vergi levhası is invalid or unreadable."
+}
+{
+  "success": false,
+  "error": "Yetki belgesi is invalid or unreadable."
+}
+{
+  "success": false,
+  "error": "OSGB record not found."
+}
+{
+  "success": false,
+  "error": "Internal server error."
+}
+{
+  "success": false,
+  "error": "LICENSE_ALREADY_USED",
+  "message": "This license key has already been used for registration."
+}
+```
+
+---
+
+### 2. Step 2: User Info & Email Verification
+- **Endpoint:** `POST /api/osgb/register-step2`
+- **Content-Type:** `application/json`
+- **Headers:**
+  - `x-registration-step1-token`: `<JWT_TOKEN>` (required, from Step 1 response)
+- **Request Body:**
+```
+{
+  "licenseKey": "ABC1234567",
+  "email": "test@example.com",
+  "password": "gizliParola1",
+  "phone": "5551234567", // must be exactly 10 digits
+  "emailCode": "123456"
+}
+```
+
+**Success Response:**
+```
+Status: 200 OK
+{
+  "success": true,
+  "message": "Registration successful."
+}
+```
+
+**Error Responses (exact BE messages):**
+- Status: 400/401/500
+- Body examples:
+```
+{
+  "error": "STEP1_TOKEN_REQUIRED",
+  "message": "Step 1 must be completed before registration."
+}
+{
+  "error": "STEP1_TOKEN_INVALID_OR_EXPIRED",
+  "message": "Step 1 must be completed before registration."
+}
+{
+  "error": "STEP1_TOKEN_LICENSE_MISMATCH",
+  "message": "Step 1 token does not match license key."
+}
+{
+  "error": "INVALID_INPUT",
+  "details": [ { "msg": "emailCode is required", "param": "emailCode", ... } ]
+}
+{
+  "error": "INVALID_EMAIL_CODE",
+  "message": "Invalid or expired email confirmation code."
+}
+{
+  "error": "EMAIL_ALREADY_REGISTERED",
+  "message": "Email is already registered."
+}
+{
+  "error": "LICENSE_ALREADY_USED",
+  "message": "License key already used."
+}
+{
+  "error": "INTERNAL_ERROR",
+  "message": "Internal server error."
+}
+```
+
+---
+
+### Send/Resend Email Verification Code
+- **Endpoint:** `POST /api/osgb/send-email-code`
+- **Content-Type:** `application/json`
+- **Headers:**
+  - `x-registration-step1-token`: `<JWT_TOKEN>` (required, from Step 1 response)
+- **Request Body:**
+```
+{
+  "email": "test@example.com",
+  "licenseKey": "ABC1234567"
+}
+```
+- **Behavior:**
+  - Sends (or resends) a 6-digit email verification code to the given email if registration step 1 is already completed and the email is not yet verified. Requires the Step 1 JWT token in the header.
+
+**Success Response:**
+```
+Status: 200 OK
+{
+  "success": true,
+  "message": "6 digit code sent to your email."
+}
+```
+
+**Error Responses (exact BE messages):**
+- Status: 400/401/429/500
+- Body examples:
+```
+{
+  "error": "STEP1_TOKEN_REQUIRED",
+  "message": "Step 1 must be completed before requesting email code."
+}
+{
+  "error": "STEP1_TOKEN_INVALID_OR_EXPIRED",
+  "message": "Step 1 must be completed before requesting email code."
+}
+{
+  "error": "STEP1_TOKEN_LICENSE_MISMATCH",
+  "message": "Step 1 token does not match license key."
+}
+{
+  "error": "INVALID_INPUT",
+  "details": [ { "msg": "email is required", "param": "email", ... } ]
+}
+{
+  "error": "EMAIL_ALREADY_REGISTERED",
+  "message": "Email is already registered."
+}
+{
+  "error": "TOO_MANY_ATTEMPTS",
+  "message": "Too many attempts, please try again later."
+}
+{
+  "error": "INTERNAL_ERROR",
+  "message": "Internal server error."
+}
+```
+
+---
+
+## Field Validation Errors (Field-specific, as returned by BE)
+- `email` – "email must be valid"
+- `password` – "password must be 8-16 chars"
+- `phone` – "phone must be 10 digits"
+- `licenseKey` – "licenseKey must be 10 characters"
+- `emailCode` – "emailCode must be 6 digits"
+
+---
+
+## Required FE Changes
+- Remove all usage of the old `/api/osgb/register` endpoint.
+- Implement the above two-step registration flow.
+- Prompt user for the 6-digit email code after Step 1.
+- Show all backend error messages to the user as returned by BE, map to Turkish in the UI.
+- Display field-specific errors inline with the relevant input.
+
+---
+
+## FE Action Items
+- FE must update registration UI to:
+  - Collect and upload required documents in Step 1.
+  - Prompt for and validate the 6-digit email code in Step 2.
+  - Display all backend error messages to the user as returned by BE (in English), or map to Turkish in the UI if desired.
+- Do not use the old `/api/osgb/register` endpoint.
+- For any questions, contact the backend team.
+- During Step 2, prompt the user to enter their email and click a button to request the 6-digit code to be sent to their email address (without leaving the page). Then prompt for the code input.
+
+**Note:** Step 1 does NOT send an email code. After Step 1, the FE must prompt the user for their email and provide a button to request the 6-digit code via `/api/osgb/send-email-code` (using the step1Token). This should be done during Step 2, without changing screens.

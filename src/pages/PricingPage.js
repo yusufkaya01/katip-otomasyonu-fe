@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 const TIERS = Array.from({ length: 10 }, (_, i) => {
   const tier = i + 1;
   const limit = tier < 10 ? (tier * 500).toString() : 'Sınırsız';
-  // Prices: start at 6000, increment by 3000 each tier
-  const yearly = (6000 + (i * 3000)) + '₺';
-  // No monthly, only yearly
+  // Prices: start at 8000, increment by 2000 each tier
+  const yearly = (8000 + (i * 2000)) + '₺';
   return { tier, limit, yearly };
 });
 
@@ -50,28 +49,37 @@ function InfoIcon({ text, bold }) {
 function PricingPage() {
   return (
     <>
-      {/* Demo GIF fixed to right, smaller and closer to top */}
-      <img
-        src="/gifs/demo-promotion.gif"
-        alt="3 Gün Ücretsiz Deneyin Demo"
-        style={{
-          position: 'fixed',
-          top: '10%', // closer to top
-          right: 0,
-          transform: 'translateY(0)',
-          maxWidth: 320, // smaller than HomePage
-          width: '30vw',
-          minWidth: 120,
-          height: 'auto',
-          margin: 0,
-          zIndex: 100,
-          pointerEvents: 'auto',
-          cursor: 'pointer',
-          background: 'transparent',
-          boxShadow: 'none',
-        }}
-        onClick={() => window.location.href = '/kayit'}
-      />
+      {/* Animated sticky catch phrase for installment info */}
+      <div style={{
+        position: 'fixed',
+        top: 80,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'linear-gradient(90deg, #e6ffed 0%, #b6f0c2 100%)',
+        color: '#146c43',
+        borderRadius: 32,
+        boxShadow: '0 4px 24px rgba(22,160,133,0.12)',
+        padding: '14px 36px',
+        fontWeight: 700,
+        fontSize: 20,
+        zIndex: 9999,
+        animation: 'bounce 1.2s infinite',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12
+      }}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#146c43" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 8 1.5a6.5 6.5 0 0 1 0 13zm0-10a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4.5zm1 7.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75V7.75c0-.414.336-.75.75-.75s.75.336.75.75v4z"/></svg>
+        3 taksite kadar <span style={{color:'#198754'}}>vade farkı yok!</span>
+        <style>{`
+          @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            20% { transform: translateX(-50%) translateY(-10px); }
+            40% { transform: translateX(-50%) translateY(-20px); }
+            60% { transform: translateX(-50%) translateY(-10px); }
+            80% { transform: translateX(-50%) translateY(0); }
+          }
+        `}</style>
+      </div>
       <div className="container py-5">
         <h2 className="mb-4 text-center">Fiyat Listesi</h2>
         <div className="table-responsive mb-3">
