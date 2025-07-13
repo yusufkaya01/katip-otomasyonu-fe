@@ -93,7 +93,7 @@ function PricingPage() {
                 </th>
                 <th style={{ position: 'relative' }}>
                   Yıllık Fiyat <span style={{ fontWeight: 400, fontSize: 13 }}>(366 Gün)</span>
-                  <InfoIcon text={"Satın alımdan itibaren 366 gün kullanım sunar. Süre bitiminde yeni lisans gereklidir."} />
+                  <InfoIcon text={"Satın alımdan itibaren 366 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır."} />
                   <div style={{
                     fontSize: 13,
                     color: '#fd7e14',
@@ -125,7 +125,7 @@ function PricingPage() {
           </table>
         </div>
         <div className="alert alert-info text-center my-3" style={{background: '#e7f1ff', color: '#084298', borderColor: '#b6d4fe'}}>
-          Demo paketi 3 gün boyunca ücretsizdir. Demo süresi sona erdikten sonra, lisansınızın süresini sitemize kayıt olarak uzatabilirsiniz.
+          Demo paketi 7 gün boyunca ücretsizdir. Demo süresi sona erdikten sonra, lisansınızın süresini sitemize kayıt olarak uzatabilirsiniz.
         </div>
         <div className="alert alert-warning text-center my-3" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
           Lisans anahtarınızın <b>süresini uzatırken veya kademenizi güncellerken</b> <b>İSG Katip'teki 'Devam Eden Toplam Sözleşme Sayısı'</b>nı kontrol edip <b>uygun kademede</b> satın alım yapmanız gerekmektedir. Aksi halde, devam eden sözleşme sayınız lisansınıza tanımlı olan sözleşme limitinden fazla ise eklentiyi kullanamaz ve 'Lisans anahtarı geçersizdir.' uyarısı alırsınız.
