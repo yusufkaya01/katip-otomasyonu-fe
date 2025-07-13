@@ -49,6 +49,32 @@ function RegisterPage() {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   // Step 1 submit
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+  const handleVergiLevhasiChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > MAX_FILE_SIZE) {
+      setVergiLevhasi(null);
+      setStep1Error(prev => ({ ...prev, vergiLevhasi: 'Dosya boyutu çok büyük. Maksimum izin verilen boyut: 10 MB.' }));
+      e.target.value = '';
+    } else {
+      setVergiLevhasi(file || null);
+      setStep1Error(prev => ({ ...prev, vergiLevhasi: undefined }));
+    }
+  };
+
+  const handleYetkiBelgesiChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > MAX_FILE_SIZE) {
+      setYetkiBelgesi(null);
+      setStep1Error(prev => ({ ...prev, yetkiBelgesi: 'Dosya boyutu çok büyük. Maksimum izin verilen boyut: 10 MB.' }));
+      e.target.value = '';
+    } else {
+      setYetkiBelgesi(file || null);
+      setStep1Error(prev => ({ ...prev, yetkiBelgesi: undefined }));
+    }
+  };
+
   const handleStep1 = async (e) => {
     e.preventDefault();
     setStep1Error({});
@@ -261,7 +287,7 @@ function RegisterPage() {
                 accept=".pdf,.jpg,.jpeg,.png"
                 id="vergiLevhasiInput"
                 style={{display:'none'}}
-                onChange={e => setVergiLevhasi(e.target.files[0])}
+                onChange={handleVergiLevhasiChange}
                 ref={fieldRefs.vergiLevhasi}
                 required
               />
@@ -274,6 +300,7 @@ function RegisterPage() {
                 style={{cursor:'default'}}
               />
             </div>
+            <div className="form-text">Maksimum dosya boyutu: 10 MB</div>
             {step1Error.vergiLevhasi && <div className="invalid-feedback d-block">{step1Error.vergiLevhasi}</div>}
           </div>
           <div className="mb-3">
@@ -286,7 +313,7 @@ function RegisterPage() {
                 accept=".pdf,.jpg,.jpeg,.png"
                 id="yetkiBelgesiInput"
                 style={{display:'none'}}
-                onChange={e => setYetkiBelgesi(e.target.files[0])}
+                onChange={handleYetkiBelgesiChange}
                 ref={fieldRefs.yetkiBelgesi}
                 required
               />
@@ -299,6 +326,7 @@ function RegisterPage() {
                 style={{cursor:'default'}}
               />
             </div>
+            <div className="form-text">Maksimum dosya boyutu: 10 MB</div>
             {step1Error.yetkiBelgesi && <div className="invalid-feedback d-block">{step1Error.yetkiBelgesi}</div>}
           </div>
           {step1GeneralError && <div className="alert alert-danger py-2">{step1GeneralError}</div>}
