@@ -25,6 +25,16 @@ function IsletmemPage() {
   const [showLicense, setShowLicense] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
+  const [showExtendModal, setShowExtendModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [orderStep, setOrderStep] = useState(1); // 1: select, 2: confirm
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderError, setOrderError] = useState('');
+  const [orderResult, setOrderResult] = useState(null);
+  const [pendingOrders, setPendingOrders] = useState([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [pendingError, setPendingError] = useState('');
+  const [bankIbans, setBankIbans] = useState([]);
   const navigate = useNavigate();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
@@ -54,6 +64,39 @@ function IsletmemPage() {
         navigate('/giris', { replace: true });
       });
   }, [navigate, API_KEY, user, updateUser, logout, loading, API_BASE_URL]);
+
+  // Map backend error to Turkish for pending order
+  const getOrderErrorMessage = (msg) => {
+    if (msg === 'You already have a pending order. Please complete payment or wait for invoice.') {
+      return 'Zaten bekleyen bir siparişiniz var. Lütfen mevcut siparişinizin ödemesini tamamlayın veya fatura bekleyin.';
+    }
+    return msg;
+  };
+
+  // Fetch pending orders on mount (new logic for new API response)
+  useEffect(() => {
+    if (!user || !user.accessToken) return;
+    setPendingLoading(true);
+    setPendingError('');
+    fetch(`${API_BASE_URL}/osgb/orders/pending`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'Authorization': `Bearer ${user.accessToken}`
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data.pendingOrders)) {
+          setPendingOrders(data.pendingOrders);
+        } else {
+          setPendingOrders([]);
+        }
+      })
+      .catch(() => setPendingError('Bekleyen siparişler alınamadı.'))
+      .finally(() => setPendingLoading(false));
+  }, [user, API_KEY, API_BASE_URL]);
 
   const handleEditClick = (key) => {
     if (!(key === 'phone' || key === 'email')) return;
@@ -144,6 +187,56 @@ function IsletmemPage() {
     setResendLoading(false);
   };
 
+  // License extension order handler
+  const handleCreateOrder = async () => {
+    setOrderLoading(true);
+    setOrderError('');
+    setOrderResult(null);
+    setBankIbans([]);
+    try {
+      const res = await fetch(`${API_BASE_URL}/osgb/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'Authorization': `Bearer ${user.accessToken}`
+        },
+        body: JSON.stringify({ payment_method: paymentMethod })
+      });
+      const data = await res.json();
+      if (res.ok && data.success !== false) {
+        setOrderResult(data);
+        setOrderStep(3); // success
+        // If payment is cash and no ibans in result, fetch them
+        if (paymentMethod === 'cash' && (!data.ibans || !Array.isArray(data.ibans) || data.ibans.length === 0) && (!data.banks || !Array.isArray(data.banks) || data.banks.length === 0)) {
+          fetch(`${API_BASE_URL}/osgb/bank-ibans`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': API_KEY,
+              'Authorization': `Bearer ${user.accessToken}`
+            }
+          })
+            .then(res => res.json())
+            .then(ibanData => {
+              if (Array.isArray(ibanData)) setBankIbans(ibanData);
+              else if (ibanData.ibans && Array.isArray(ibanData.ibans)) setBankIbans(ibanData.ibans);
+              else if (ibanData.banks && Array.isArray(ibanData.banks)) setBankIbans(ibanData.banks);
+            });
+        } else if (paymentMethod === 'cash' && data.banks && Array.isArray(data.banks)) {
+          setBankIbans(data.banks);
+        } else if (paymentMethod === 'cash' && data.ibans && Array.isArray(data.ibans)) {
+          setBankIbans(data.ibans);
+        }
+      } else {
+        setOrderError(getOrderErrorMessage(data.error || data.message || 'Sipariş oluşturulamadı.'));
+      }
+    } catch (err) {
+      setOrderError('Sunucuya ulaşılamadı.');
+    }
+    setOrderLoading(false);
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -152,7 +245,171 @@ function IsletmemPage() {
 
   return (
     <div className="container py-5" style={{ maxWidth: 600 }}>
-      <h2 className="mb-4">İşletmem</h2>
+      {/* Pending Orders Section */}
+      {pendingLoading && <div className="alert alert-info">Bekleyen siparişler yükleniyor...</div>}
+      {pendingError && <div className="alert alert-danger">{pendingError}</div>}
+      {pendingOrders.length > 0 && (
+        <div className="alert alert-warning mb-4">
+          <div className="fw-bold mb-2">Bekleyen Lisans Uzatma Siparişiniz Var</div>
+          <ul className="mb-2">
+            {pendingOrders.map((order, i) => (
+              <li key={order.order_id || i}>
+                {order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'} ile {order.amount ? `${order.amount} TL` : '12.000 TL'} / {order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : ''} - Bekliyor
+              </li>
+            ))}
+          </ul>
+          <div className="small">Yeni bir sipariş oluşturmak için önce mevcut siparişi tamamlayın.</div>
+        </div>
+      )}
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <h2 className="mb-0">İşletmem</h2>
+        <button className="btn btn-outline-danger" onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('cash'); }} disabled={pendingOrders.length > 0}>
+          Lisans Süremi Uzat
+        </button>
+      </div>
+      {/* License Extension Modal */}
+      {showExtendModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Lisans Süresi Uzatma</h5>
+                <button type="button" className="btn-close" onClick={() => setShowExtendModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                {orderStep === 1 && (
+                  <>
+                    <div className="mb-3 text-center">
+                      <div className="fw-bold mb-2">Lisansınız <span className="text-danger">12.000 TL</span> karşılığında <span className="text-danger">366 gün</span> daha uzatılacaktır.</div>
+                      <div className="text-muted" style={{fontSize:'0.95em'}}>Sipariş sonrası lisansınız otomatik olarak uzatılır.</div>
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label">Ödeme Yöntemi</label>
+                      <div className="d-flex gap-3">
+                        <div className="form-check">
+                          <input className="form-check-input" type="radio" id="pay-cash" name="paymentMethod" value="cash" checked={paymentMethod==='cash'} onChange={()=>setPaymentMethod('cash')} />
+                          <label className="form-check-label" htmlFor="pay-cash">EFT/Havale</label>
+                        </div>
+                        <div className="form-check">
+                          <input className="form-check-input" type="radio" id="pay-card" name="paymentMethod" value="card" checked={paymentMethod==='card'} onChange={()=>setPaymentMethod('card')} />
+                          <label className="form-check-label" htmlFor="pay-card">Kredi Kartı</label>
+                        </div>
+                      </div>
+                    </div>
+                    {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
+                    <button className="btn btn-danger w-100" onClick={()=>setOrderStep(2)} disabled={orderLoading}>Sipariş Oluştur</button>
+                  </>
+                )}
+                {orderStep === 2 && (
+                  <>
+                    <div className="mb-3">
+                      <div className="fw-bold mb-2">Sipariş Özeti</div>
+                      <ul className="list-group mb-3">
+                        <li className="list-group-item d-flex justify-content-between align-items-center">
+                          <span>Lisans Uzatma</span>
+                          <span>12.000 TL / 366 gün</span>
+                        </li>
+                        <li className="list-group-item d-flex justify-content-between align-items-center">
+                          <span>Ödeme Yöntemi</span>
+                          <span>{paymentMethod === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'}</span>
+                        </li>
+                      </ul>
+                      <div className="alert alert-warning small">Siparişi onayladığınızda ödeme adımına yönlendirileceksiniz.</div>
+                    </div>
+                    {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
+                    <div className="d-flex justify-content-between">
+                      <button className="btn btn-secondary" onClick={()=>setOrderStep(1)} disabled={orderLoading}>Geri</button>
+                      <button className="btn btn-danger" onClick={handleCreateOrder} disabled={orderLoading}>{orderLoading ? 'Oluşturuluyor...' : 'Siparişi Onayla'}</button>
+                    </div>
+                  </>
+                )}
+                {orderStep === 3 && orderResult && (
+                  <>
+                    <div className="mb-3">
+                      <div className="fw-bold mb-2">Siparişiniz başarıyla oluşturuldu.</div>
+                      {paymentMethod === 'cash' && (
+                        <div className="alert alert-info small">
+                          <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
+                            Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
+                            <button
+                              className="btn btn-link p-0 text-danger ms-1"
+                              title="Kopyala"
+                              style={{fontSize:'1.1em'}}
+                              onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
+                            >
+                              <i className="bi bi-clipboard"></i>
+                            </button>
+                          </div>
+                          <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
+                            Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
+                            <span style={{display:'inline-block',marginTop:6}}>
+                              <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                                Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
+                                <button
+                                  className="btn btn-link p-0 text-danger ms-1"
+                                  title="Kopyala"
+                                  style={{fontSize:'1.1em'}}
+                                  onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
+                                >
+                                  <i className="bi bi-clipboard"></i>
+                                </button>
+                              </span>
+                              <div>veya</div>
+                              <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
+                                Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
+                                <button
+                                  className="btn btn-link p-0 text-danger ms-1"
+                                  title="Kopyala"
+                                  style={{fontSize:'1.1em'}}
+                                  onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
+                                >
+                                  <i className="bi bi-clipboard"></i>
+                                </button>
+                              </span>
+                            </span>
+                          </div>
+                          <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
+                          <div>
+                            {(orderResult.ibans && orderResult.ibans.length > 0
+                              ? orderResult.ibans
+                              : orderResult.banks && orderResult.banks.length > 0
+                                ? orderResult.banks
+                                : bankIbans
+                            ).map((iban, i, arr) => (
+                              <React.Fragment key={i}>
+                                <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
+                                  <div>
+                                    <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
+                                  </div>
+                                  <button
+                                    className="btn btn-link p-0 text-danger ms-2"
+                                    title="Kopyala"
+                                    style={{fontSize:'1.1em'}}
+                                    onClick={() => navigator.clipboard.writeText(iban.iban)}
+                                  >
+                                    <i className="bi bi-clipboard"></i>
+                                  </button>
+                                </div>
+                                {i < arr.length - 1 && (
+                                  <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
+                                )}
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {paymentMethod === 'card' && (
+                        <div className="alert alert-info small">Kredi kartı ile ödeme işlemi başlatıldı. (Test ortamı: ödeme otomatik olarak tamamlanmazsa lütfen destek ile iletişime geçin.)</div>
+                      )}
+                    </div>
+                    <button className="btn btn-success w-100" onClick={()=>setShowExtendModal(false)}>Kapat</button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="card p-4 shadow-sm">
         {/* Customer ID Display */}
         {user.customer_id && (

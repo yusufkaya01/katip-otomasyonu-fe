@@ -1,0 +1,87 @@
+# OSGB Order API Backend Rules (for Frontend)
+
+## Order Creation
+- Only the `payment_method` field is accepted from the frontend when creating an order. All other order details (customer, license, price, extension period, etc.) are determined by the backend.
+- The only valid values for `payment_method` are `"cash"` and `"card"`. Any other value will be rejected with a clear error message.
+- The backend enforces that only one pending (unpaid/unconfirmed) order can exist per customer at a time. If a pending order exists, new order creation will be blocked.
+- The backend uses environment variables to determine the fixed order price and license extension period. These values are not sent from the frontend.
+- All business logic (customer/license lookup, pending order check, price, etc.) is enforced server-side for security and consistency.
+
+## API Usage
+- The frontend must send a valid JWT (in the `Authorization: Bearer <token>` header) and the required API key (`x-api-key` header) for all order-related requests.
+
+### Example: Create Order (Card Payment)
+POST `/api/osgb/orders`
+Headers:
+- `Authorization: Bearer <jwt>`
+- `x-api-key: <api-key>`
+- `Content-Type: application/json`
+Body:
+```json
+{
+  "payment_method": "card"
+}
+```
+
+### Example: Create Order (Cash Payment)
+POST `/api/osgb/orders`
+Headers:
+- `Authorization: Bearer <jwt>`
+- `x-api-key: <api-key>`
+- `Content-Type: application/json`
+Body:
+```json
+{
+  "payment_method": "cash"
+}
+```
+
+### Example: Get Bank IBANs
+GET `/api/osgb/bank-ibans`
+Headers:
+- `Authorization: Bearer <jwt>`
+- `x-api-key: <api-key>`
+
+### Example: Get All Orders
+GET `/api/osgb/orders`
+Headers:
+- `Authorization: Bearer <jwt>`
+- `x-api-key: <api-key>`
+
+### Example: Get Pending Orders
+GET `/api/osgb/orders/pending`
+Headers:
+- `Authorization: Bearer <jwt>`
+- `x-api-key: <api-key>`
+
+## Error Handling
+- If the `payment_method` is invalid, the backend will respond with:
+```json
+{
+  "success": false,
+  "error": "payment_method must be either \"cash\" or \"card\""
+}
+```
+- If the user already has a pending order, the backend will respond with:
+```json
+{
+  "success": false,
+  "message": "You already have a pending order. Please complete payment or wait for invoice."
+}
+```
+- If card payment fails (mocked), the backend will respond with:
+```json
+{
+  "success": false,
+  "message": "Card payment failed. Order not created."
+}
+```
+- All other order and license logic is handled automatically by the backend. The frontend does not need to send or manage price, license, or customer details.
+
+## Summary
+- Only send `payment_method`.
+- Always use valid JWT and API key.
+- Handle error messages as described above.
+- All other logic is backend-enforced and secure.
+- There is no separate card payment endpoint; card payments are handled as part of order creation.
+- For cash payments, the response will include a list of Turkish bank IBANs for manual transfer.
