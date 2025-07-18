@@ -35,6 +35,11 @@ function IsletmemPage() {
   const [pendingLoading, setPendingLoading] = useState(false);
   const [pendingError, setPendingError] = useState('');
   const [bankIbans, setBankIbans] = useState([]);
+  // Card payment status states
+  const [cardOrderId, setCardOrderId] = useState(null);
+  const [cardStatus, setCardStatus] = useState(null);
+  const [cardStatusLoading, setCardStatusLoading] = useState(false);
+  const [cardStatusError, setCardStatusError] = useState('');
   const navigate = useNavigate();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
@@ -193,6 +198,9 @@ function IsletmemPage() {
     setOrderError('');
     setOrderResult(null);
     setBankIbans([]);
+    setCardOrderId(null);
+    setCardStatus(null);
+    setCardStatusError('');
     try {
       const res = await fetch(`${API_BASE_URL}/osgb/orders`, {
         method: 'POST',
@@ -205,6 +213,13 @@ function IsletmemPage() {
       });
       const data = await res.json();
       if (res.ok && data.success !== false) {
+        // Card payment: redirect to iyzico if paymentPageUrl exists
+        if (paymentMethod === 'card' && data.iyzico && data.iyzico.paymentPageUrl) {
+          // Save orderId to state for status check after return
+          setCardOrderId(data.order?.order_id || data.order_id || data.iyzico.orderId || null);
+          window.location.href = data.iyzico.paymentPageUrl;
+          return; // Don't continue modal flow, user is redirected
+        }
         setOrderResult(data);
         setOrderStep(3); // success
         // If payment is cash and no ibans in result, fetch them
@@ -235,6 +250,33 @@ function IsletmemPage() {
       setOrderError('Sunucuya ulaşılamadı.');
     }
     setOrderLoading(false);
+  };
+
+  // Card payment: check status handler
+  const handleCheckCardStatus = async () => {
+    if (!cardOrderId) return;
+    setCardStatusLoading(true);
+    setCardStatusError('');
+    setCardStatus(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/osgb/orders/${cardOrderId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'Authorization': `Bearer ${user.accessToken}`
+        }
+      });
+      const data = await res.json();
+      if (res.ok && data.order) {
+        setCardStatus(data.order.is_paid ? 'success' : 'pending');
+      } else {
+        setCardStatusError('Sipariş durumu alınamadı.');
+      }
+    } catch (err) {
+      setCardStatusError('Sunucuya ulaşılamadı.');
+    }
+    setCardStatusLoading(false);
   };
 
   if (loading) {
@@ -399,7 +441,17 @@ function IsletmemPage() {
                         </div>
                       )}
                       {paymentMethod === 'card' && (
-                        <div className="alert alert-info small">Kredi kartı ile ödeme işlemi başlatıldı. (Test ortamı: ödeme otomatik olarak tamamlanmazsa lütfen destek ile iletişime geçin.)</div>
+                        <div className="alert alert-info small">
+                          Kredi kartı ile ödeme işlemi başlatıldı.<br />
+                          <b>Ödeme sayfasına yönlendirildiniz.</b><br />
+                          Eğer ödeme tamamlandıysa, aşağıdan ödeme durumunu kontrol edebilirsiniz.<br />
+                          <button className="btn btn-outline-success btn-sm mt-2" onClick={handleCheckCardStatus} disabled={cardStatusLoading}>
+                            {cardStatusLoading ? 'Kontrol Ediliyor...' : 'Ödeme Durumunu Kontrol Et'}
+                          </button>
+                          {cardStatus === 'success' && <div className="alert alert-success mt-2 py-1">Ödeme başarılı! Lisansınız uzatıldı.</div>}
+                          {cardStatus === 'pending' && <div className="alert alert-warning mt-2 py-1">Ödeme henüz tamamlanmamış.</div>}
+                          {cardStatusError && <div className="alert alert-danger mt-2 py-1">{cardStatusError}</div>}
+                        </div>
                       )}
                     </div>
                     <button className="btn btn-success w-100" onClick={()=>setShowExtendModal(false)}>Kapat</button>

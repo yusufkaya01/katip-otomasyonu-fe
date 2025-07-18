@@ -1,0 +1,144 @@
+# Frontend Integration Guide: iyzico Card Payments (Checkout Form, Redirect Flow)
+
+This guide explains, step by step, how frontend (FE) developers should implement card payment flow using iyzico's official redirect-based payment page with the Otomasyon Katibi backend. Follow all steps for a robust, user-friendly, and secure integration.
+
+---
+
+## 1. Order Creation (Start Payment)
+
+- When the user chooses to pay by card, FE should send a POST request to `/api/osgb/orders` with:
+  - `payment_method: "card"` in the JSON body
+  - Required headers: `Authorization`, `x-api-key`, etc.
+- Example:
+
+```js
+fetch('/api/osgb/orders', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer <jwt>',
+    'x-api-key': '<api-key>'
+  },
+  body: JSON.stringify({ payment_method: 'card' })
+})
+.then(res => res.json())
+.then(data => { /* see below */ })
+```
+
+- The backend will respond with:
+  - `order` object (with `is_paid: false`)
+  - `iyzico.token` (string, for status checks)
+  - `iyzico.paymentPageUrl` (string, for redirect)
+
+---
+
+## 2. Redirecting to iyzico Payment Page
+
+- FE should redirect the user to the iyzico payment page using the `paymentPageUrl` from the backend response.
+- Example:
+
+```js
+window.location.href = data.iyzico.paymentPageUrl;
+```
+
+- This will take the user to iyzico's secure payment page. The user completes payment there.
+
+---
+
+## 3. Handling Payment Result (After Redirect)
+
+- After payment, iyzico will call your backend callback URL to notify about payment result.
+- The user will NOT be automatically redirected back to your site. You must:
+  - Show instructions on the iyzico page for the user to return manually (or use iyzico's return/cancel URL features if configured).
+  - On your site, provide a button or link for the user to check payment status after returning.
+
+---
+
+## 4. Polling for Payment Status
+
+- FE should allow the user to check if their payment was successful.
+- Use GET `/api/osgb/orders/:orderId` (from the `order.order_id` in the response).
+- Example:
+
+```js
+fetch(`/api/osgb/orders/${orderId}`, {
+  headers: { 'Authorization': 'Bearer <jwt>', 'x-api-key': '<api-key>' }
+})
+  .then(res => res.json())
+  .then(data => {
+    if (data.order && data.order.is_paid) {
+      // Payment successful
+    } else {
+      // Not paid yet
+    }
+  });
+```
+
+- You can poll every few seconds, or let the user click a "Check Payment Status" button.
+
+---
+
+## 5. Handling Payment Success or Failure
+
+- When `is_paid` becomes `true`, FE should:
+  - Show a success message or redirect as needed
+- If payment fails or is cancelled, show an error and allow retry.
+
+---
+
+## 6. Troubleshooting & Common Issues
+
+- **Redirect does not work:**
+  - Make sure you use the exact `paymentPageUrl` from the backend response.
+- **No payment status update:**
+  - Ensure backend callback is reachable by iyzico (public URL, not localhost).
+  - Make sure you are checking the correct order ID.
+- **User not returned automatically:**
+  - This is expected; provide clear instructions or a button for the user to return and check status.
+- **Token expired or reused:**
+  - Always use a fresh token and paymentPageUrl for each payment attempt.
+
+---
+
+## 7. Security & UX Notes
+
+- Never store or process card data on FE or BE; all handled by iyzico.
+- Show clear loading and error states during payment.
+- Make sure the callback URL is accessible from iyzico (use ngrok or deploy to a public server for real tests).
+
+---
+
+## 8. Example Flow (Pseudocode)
+
+```js
+// 1. Start payment
+fetch('/api/osgb/orders', { /* ... */ })
+  .then(res => res.json())
+  .then(data => {
+    // 2. Redirect to iyzico
+    window.location.href = data.iyzico.paymentPageUrl;
+  });
+
+// 3. After user returns, check payment status
+fetch(`/api/osgb/orders/${orderId}`, { /* ... */ })
+  .then(res => res.json())
+  .then(data => {
+    if (data.order && data.order.is_paid) {
+      // Payment successful
+    }
+  });
+```
+
+---
+
+## 9. Testing
+
+- You cannot test the full payment flow in Postman; you must use a browser.
+- For backend-only tests, you can create orders and simulate callbacks, but the payment must be tested in the FE.
+
+---
+
+## 10. Support
+
+- If you have issues, check browser console for errors and review this guide.
+- Contact backend team if you need more help or if the callback is not working.
