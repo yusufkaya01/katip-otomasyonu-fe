@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useAuth } from '../context/AuthContext';
 import authFetch from '../api/authFetch';
@@ -40,7 +40,12 @@ function IsletmemPage() {
   const [cardStatus, setCardStatus] = useState(null);
   const [cardStatusLoading, setCardStatusLoading] = useState(false);
   const [cardStatusError, setCardStatusError] = useState('');
+  // Payment result modal states
+  const [showPaymentResult, setShowPaymentResult] = useState(false);
+  const [paymentResultStatus, setPaymentResultStatus] = useState('waiting'); // 'waiting', 'success', 'error', 'timeout'
+  const [paymentResultMsg, setPaymentResultMsg] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
   const didFetchRef = useRef(false);
@@ -192,6 +197,14 @@ function IsletmemPage() {
     setResendLoading(false);
   };
 
+  // Helper to get frontend base URL
+  function getFrontendBaseUrl() {
+    if (typeof window !== 'undefined') {
+      return window.location.origin;
+    }
+    return '';
+  }
+
   // License extension order handler
   const handleCreateOrder = async () => {
     setOrderLoading(true);
@@ -202,6 +215,13 @@ function IsletmemPage() {
     setCardStatus(null);
     setCardStatusError('');
     try {
+      // Build returnUrl for card payments
+      let body = { payment_method: paymentMethod };
+      if (paymentMethod === 'card') {
+        // Use a dedicated payment result page, or fallback to /isletmem
+        const baseUrl = getFrontendBaseUrl();
+        body.returnUrl = `${baseUrl}/isletmem?orderId=ORDER_ID_PLACEHOLDER`;
+      }
       const res = await fetch(`${API_BASE_URL}/osgb/orders`, {
         method: 'POST',
         headers: {
@@ -209,16 +229,62 @@ function IsletmemPage() {
           'x-api-key': API_KEY,
           'Authorization': `Bearer ${user.accessToken}`
         },
-        body: JSON.stringify({ payment_method: paymentMethod })
+        body: JSON.stringify(body)
       });
       const data = await res.json();
       if (res.ok && data.success !== false) {
-        // Card payment: redirect to iyzico if paymentPageUrl exists
+        // Card payment: open iyzico in new tab and poll for status
         if (paymentMethod === 'card' && data.iyzico && data.iyzico.paymentPageUrl) {
-          // Save orderId to state for status check after return
-          setCardOrderId(data.order?.order_id || data.order_id || data.iyzico.orderId || null);
-          window.location.href = data.iyzico.paymentPageUrl;
-          return; // Don't continue modal flow, user is redirected
+          const orderId = data.order?.order_id || data.order_id || data.iyzico.orderId || null;
+          setCardOrderId(orderId);
+          setShowPaymentResult(true);
+          setShowExtendModal(false); // Close the order modal for best UX
+          setPaymentResultStatus('waiting');
+          setPaymentResultMsg('Ödeme sayfası yeni sekmede açıldı. Lütfen ödemenizi tamamlayınız...');
+          // Open iyzico in new tab
+          window.open(data.iyzico.paymentPageUrl, '_blank', 'noopener');
+          // Start polling for payment status
+          let attempts = 0;
+          const maxAttempts = 40; // ~2 minutes
+          let stopped = false;
+          async function poll() {
+            while (attempts < maxAttempts && !stopped) {
+              try {
+                const res = await fetch(`${API_BASE_URL}/osgb/orders/${orderId}`, {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': API_KEY,
+                    'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
+                  }
+                });
+                const data = await res.json();
+                if (res.ok && data.order) {
+                  if (data.order.is_paid) {
+                    setPaymentResultStatus('success');
+                    setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                    return;
+                  }
+                } else if (res.status === 404) {
+                  setPaymentResultStatus('error');
+                  setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
+                  return;
+                }
+              } catch (err) {
+                setPaymentResultStatus('error');
+                setPaymentResultMsg('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
+                return;
+              }
+              attempts++;
+              await new Promise(r => setTimeout(r, 3000));
+            }
+            if (!stopped) {
+              setPaymentResultStatus('timeout');
+              setPaymentResultMsg('Ödeme tamamlanmadı veya zaman aşımına uğradı. Lütfen tekrar deneyin veya destek ile iletişime geçin.');
+            }
+          }
+          poll();
+          return; // Don't continue modal flow, user is polling
         }
         setOrderResult(data);
         setOrderStep(3); // success
@@ -279,6 +345,59 @@ function IsletmemPage() {
     setCardStatusLoading(false);
   };
 
+  // On mount, check for orderId in URL and start polling if present
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const orderId = params.get('orderId');
+    if (orderId) {
+      setShowPaymentResult(true);
+      setPaymentResultStatus('waiting');
+      setPaymentResultMsg('Ödemeniz işleniyor, lütfen bekleyiniz...');
+      // Polling logic
+      let attempts = 0;
+      const maxAttempts = 40; // ~2 minutes
+      let stopped = false;
+      async function poll() {
+        while (attempts < maxAttempts && !stopped) {
+          try {
+            const res = await fetch(`${API_BASE_URL}/osgb/orders/${orderId}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': API_KEY,
+                'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
+              }
+            });
+            const data = await res.json();
+            if (res.ok && data.order) {
+              if (data.order.is_paid) {
+                setPaymentResultStatus('success');
+                setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                return;
+              }
+            } else if (res.status === 404) {
+              setPaymentResultStatus('error');
+              setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
+              return;
+            }
+          } catch (err) {
+            setPaymentResultStatus('error');
+            setPaymentResultMsg('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
+            return;
+          }
+          attempts++;
+          await new Promise(r => setTimeout(r, 3000));
+        }
+        if (!stopped) {
+          setPaymentResultStatus('timeout');
+          setPaymentResultMsg('Ödeme tamamlanmadı veya zaman aşımına uğradı. Lütfen tekrar deneyin veya destek ile iletişime geçin.');
+        }
+      }
+      poll();
+      return () => { stopped = true; };
+    }
+  }, [location.search, API_BASE_URL, API_KEY, user]);
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -287,6 +406,81 @@ function IsletmemPage() {
 
   return (
     <div className="container py-5" style={{ maxWidth: 600 }}>
+      {/* Payment Result Modal */}
+      {showPaymentResult && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Ödeme Sonucu</h5>
+                <button type="button" className="btn-close" onClick={() => setShowPaymentResult(false)}></button>
+              </div>
+              <div className="modal-body text-center">
+                {paymentResultStatus === 'waiting' && (
+                  <>
+                    <div className="mb-3">
+                      <div className="spinner-border text-danger" role="status">
+                        <span className="visually-hidden">Yükleniyor...</span>
+                      </div>
+                    </div>
+                    <div>{paymentResultMsg}</div>
+                    <button className="btn btn-outline-success btn-sm mt-3" onClick={async () => {
+                      if (!cardOrderId) return;
+                      setPaymentResultMsg('Ödeme durumu kontrol ediliyor...');
+                      try {
+                        const res = await fetch(`${API_BASE_URL}/osgb/orders/${cardOrderId}`, {
+                          method: 'GET',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': API_KEY,
+                            'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
+                          }
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.order) {
+                          if (data.order.is_paid) {
+                            setPaymentResultStatus('success');
+                            setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                          } else {
+                            setPaymentResultMsg('Ödeme henüz tamamlanmamış. Lütfen tekrar deneyin.');
+                          }
+                        } else if (res.status === 404) {
+                          setPaymentResultStatus('error');
+                          setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
+                        } else {
+                          setPaymentResultMsg('Ödeme durumu alınamadı. Lütfen tekrar deneyin.');
+                        }
+                      } catch (err) {
+                        setPaymentResultMsg('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
+                      }
+                    }}>
+                      Ödeme Durumunu Manuel Kontrol Et
+                    </button>
+                  </>
+                )}
+                {paymentResultStatus === 'success' && (
+                  <>
+                    <div className="mb-3">
+                      <i className="bi bi-check-circle-fill text-success" style={{fontSize:'2.5rem'}}></i>
+                    </div>
+                    <div className="fw-bold text-success mb-2">{paymentResultMsg}</div>
+                    <button className="btn btn-success w-100" onClick={() => setShowPaymentResult(false)}>Devam Et</button>
+                  </>
+                )}
+                {(paymentResultStatus === 'error' || paymentResultStatus === 'timeout') && (
+                  <>
+                    <div className="mb-3">
+                      <i className="bi bi-x-circle-fill text-danger" style={{fontSize:'2.5rem'}}></i>
+                    </div>
+                    <div className="fw-bold text-danger mb-2">{paymentResultMsg}</div>
+                    <button className="btn btn-danger w-100" onClick={() => setShowPaymentResult(false)}>Kapat</button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Pending Orders Section */}
       {pendingLoading && <div className="alert alert-info">Bekleyen siparişler yükleniyor...</div>}
       {pendingError && <div className="alert alert-danger">{pendingError}</div>}

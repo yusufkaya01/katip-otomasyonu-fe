@@ -1,0 +1,80 @@
+# Frontend Integration Guide: iyzico Card Payment Status & User Feedback
+
+This document explains how frontend (FE) developers should handle the iyzico card payment flow, including how to show real-time payment status to users and provide a robust, user-friendly experience.
+
+---
+
+## 1. Card Payment Flow Overview
+
+- User initiates a card payment from the license extension/upgrade page.
+- FE sends a POST request to `/api/osgb/orders` with `{ payment_method: 'card' }` and required headers (JWT, x-api-key).
+- Backend responds with an `iyzico.paymentPageUrl` and `token`.
+- FE redirects the user to the iyzico payment page (`window.location.href = paymentPageUrl`).
+- User completes payment on iyzico's secure page.
+- After payment, iyzico redirects the user back to your site (if you set a return URL), but **the payment result is NOT sent directly to the frontend**.
+- The backend receives a callback from iyzico and verifies payment status securely.
+
+---
+
+## 2. How to Show Payment Status to the User
+
+### a. Show a "Waiting for Payment" Page
+- After redirecting the user to iyzico and then returning to your site, show a page like:
+  - "Ödemeniz işleniyor, lütfen bekleyiniz..."
+  - Display a spinner or progress indicator.
+
+### b. Poll the Backend for Order Status
+- Use the order ID (from the original order creation response or URL param) to poll the backend:
+  - Endpoint: `GET /api/osgb/orders/:orderId`
+  - Poll every 2-3 seconds until `order.is_paid === true` or a timeout (e.g., 2 minutes).
+- Example polling code:
+
+```js
+async function pollOrderStatus(orderId, onStatus) {
+  let attempts = 0;
+  const maxAttempts = 40; // ~2 minutes
+  while (attempts < maxAttempts) {
+    const res = await fetch(`/api/osgb/orders/${orderId}`, { headers: { /* JWT, x-api-key */ } });
+    const data = await res.json();
+    if (data.order && data.order.is_paid) {
+      onStatus('success', data.order);
+      return;
+    }
+    await new Promise(r => setTimeout(r, 3000));
+    attempts++;
+  }
+  onStatus('timeout');
+}
+```
+
+### c. Show Result to the User
+- If `is_paid === true`: Show a success message ("Ödemeniz başarıyla tamamlandı!") and allow the user to continue.
+- If polling times out or `is_paid` is still `false` after several attempts: Show an error or "Payment not completed" message, and provide support contact info.
+- If the backend returns an error (e.g., order not found): Show a clear error message.
+
+---
+
+## 3. Best Practices
+- Never trust the payment result from the frontend alone. Always poll the backend for the real status.
+- Do not show "success" until the backend confirms `is_paid`.
+- Optionally, show a link/button to retry or contact support if payment fails or times out.
+- Log all payment attempts and user actions for support/debugging.
+
+---
+
+## 4. Example User Flow
+1. User clicks "Pay by Card" → redirected to iyzico.
+2. User completes payment → redirected back to your site.
+3. FE shows "Waiting for Payment" page and starts polling.
+4. When backend confirms payment, show success and update UI.
+5. If payment fails or times out, show error and next steps.
+
+---
+
+## 5. Troubleshooting
+- If users report payment issues, check backend logs for iyzico callback and cross-check results.
+- If polling never returns `is_paid: true`, payment may have failed or callback not received.
+
+---
+
+For questions or issues, contact the backend team.
