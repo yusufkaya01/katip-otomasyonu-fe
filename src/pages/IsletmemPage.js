@@ -259,12 +259,21 @@ function IsletmemPage() {
                   }
                 });
                 const data = await res.json();
-                if (res.ok && data.order) {
-                  if (data.order.is_paid) {
+                // New logic: check status field from BE
+                if (res.ok && data.status) {
+                  if (data.status === 'paid') {
                     setPaymentResultStatus('success');
                     setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
                     return;
-                  }
+                  } else if (data.status === 'failed') {
+                    setPaymentResultStatus('error');
+                    setPaymentResultMsg(data.failureReason || 'Ödeme işlemi başarısız oldu. Lütfen kart bilgilerinizi ve bakiyenizi kontrol edin veya bankanız ile iletişime geçin.');
+                    return;
+                  } // else pending: continue polling
+                } else if (res.ok && data.order && data.order.is_paid) {
+                  setPaymentResultStatus('success');
+                  setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                  return;
                 } else if (res.status === 404) {
                   setPaymentResultStatus('error');
                   setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
@@ -369,12 +378,21 @@ function IsletmemPage() {
               }
             });
             const data = await res.json();
-            if (res.ok && data.order) {
-              if (data.order.is_paid) {
+            // New logic: check status field from BE
+            if (res.ok && data.status) {
+              if (data.status === 'paid') {
                 setPaymentResultStatus('success');
                 setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
                 return;
-              }
+              } else if (data.status === 'failed') {
+                setPaymentResultStatus('error');
+                setPaymentResultMsg(data.failureReason || 'Ödeme işlemi başarısız oldu. Lütfen kart bilgilerinizi ve bakiyenizi kontrol edin veya bankanız ile iletişime geçin.');
+                return;
+              } // else pending: continue polling
+            } else if (res.ok && data.order && data.order.is_paid) {
+              setPaymentResultStatus('success');
+              setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+              return;
             } else if (res.status === 404) {
               setPaymentResultStatus('error');
               setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
