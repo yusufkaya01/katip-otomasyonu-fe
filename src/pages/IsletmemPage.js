@@ -516,90 +516,90 @@ function IsletmemPage() {
           <button className="btn btn-outline-danger btn-sm mb-2" onClick={() => setShowPendingBankDetails(true)}>
             Banka Bilgilerini Göster
           </button>
-          <div className="small">Yeni bir sipariş oluşturmak için önce mevcut siparişi tamamlayın.</div>
-        </div>
-      )}
-      {/* Pending Bank Details Modal */}
-      {showPendingBankDetails && (
-        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Banka Bilgileri</h5>
-                <button type="button" className="btn-close" onClick={() => setShowPendingBankDetails(false)}></button>
-              </div>
-              <div className="modal-body small">
-                <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
-                  Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
-                  <button
-                    className="btn btn-link p-0 text-danger ms-1"
-                    title="Kopyala"
-                    style={{fontSize:'1.1em'}}
-                    onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
-                  >
-                    <i className="bi bi-clipboard"></i>
-                  </button>
-                </div>
-                <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
-                  Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
-                  <span style={{display:'inline-block',marginTop:6}}>
-                    <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                      Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
+          {/* Modal for pending bank details */}
+          {showPendingBankDetails && (
+            <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Banka Bilgileri</h5>
+                    <button type="button" className="btn-close" onClick={() => setShowPendingBankDetails(false)}></button>
+                  </div>
+                  <div className="modal-body">
+                    <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
+                      Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
                       <button
                         className="btn btn-link p-0 text-danger ms-1"
                         title="Kopyala"
                         style={{fontSize:'1.1em'}}
-                        onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
+                        onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
                       >
                         <i className="bi bi-clipboard"></i>
                       </button>
-                    </span>
-                    <div>veya</div>
-                    <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
-                      Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
-                      <button
-                        className="btn btn-link p-0 text-danger ms-1"
-                        title="Kopyala"
-                        style={{fontSize:'1.1em'}}
-                        onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
-                      >
-                        <i className="bi bi-clipboard"></i>
-                      </button>
-                    </span>
-                  </span>
-                </div>
-                <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
-                <div>
-                  {(bankIbans.length > 0 ? bankIbans : [
-                    { bank: 'Ziraat Bankası', iban: 'TR00 0001 0000 0000 0000 0000 01' },
-                    { bank: 'İş Bankası', iban: 'TR00 0006 4000 0000 0000 0000 02' },
-                    { bank: 'Garanti BBVA', iban: 'TR00 0006 2000 0000 0000 0000 03' },
-                    { bank: 'Akbank', iban: 'TR00 0004 6000 0000 0000 0000 04' },
-                    { bank: 'Yapı Kredi', iban: 'TR00 0006 7000 0000 0000 0000 05' },
-                  ]).map((iban, i, arr) => (
-                    <React.Fragment key={i}>
-                      <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
-                        <div>
-                          <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
-                        </div>
-                        <button
-                          className="btn btn-link p-0 text-danger ms-2"
-                          title="Kopyala"
-                          style={{fontSize:'1.1em'}}
-                          onClick={() => navigator.clipboard.writeText(iban.iban)}
-                        >
-                          <i className="bi bi-clipboard"></i>
-                        </button>
-                      </div>
-                      {i < arr.length - 1 && (
-                        <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
-                      )}
-                    </React.Fragment>
-                  ))}
+                    </div>
+                    <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
+                      Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
+                      <span style={{display:'inline-block',marginTop:6}}>
+                        <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                          Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
+                          <button
+                            className="btn btn-link p-0 text-danger ms-1"
+                            title="Kopyala"
+                            style={{fontSize:'1.1em'}}
+                            onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
+                          >
+                            <i className="bi bi-clipboard"></i>
+                          </button>
+                        </span>
+                        <div>veya</div>
+                        <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
+                          Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
+                          <button
+                            className="btn btn-link p-0 text-danger ms-1"
+                            title="Kopyala"
+                            style={{fontSize:'1.1em'}}
+                            onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
+                          >
+                            <i className="bi bi-clipboard"></i>
+                          </button>
+                        </span>
+                      </span>
+                    </div>
+                    <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
+                    <div>
+                      {(bankIbans.length > 0 ? bankIbans : [
+                        { bank: 'Ziraat Bankası', iban: 'TR00 0001 0000 0000 0000 0000 01' },
+                        { bank: 'İş Bankası', iban: 'TR00 0006 4000 0000 0000 0000 02' },
+                        { bank: 'Garanti BBVA', iban: 'TR00 0006 2000 0000 0000 0000 03' },
+                        { bank: 'Akbank', iban: 'TR00 0004 6000 0000 0000 0000 04' },
+                        { bank: 'Yapı Kredi', iban: 'TR00 0006 7000 0000 0000 0000 05' },
+                      ]).map((iban, i, arr) => (
+                        <React.Fragment key={i}>
+                          <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
+                            <div>
+                              <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
+                            </div>
+                            <button
+                              className="btn btn-link p-0 text-danger ms-2"
+                              title="Kopyala"
+                              style={{fontSize:'1.1em'}}
+                              onClick={() => navigator.clipboard.writeText(iban.iban)}
+                            >
+                              <i className="bi bi-clipboard"></i>
+                            </button>
+                          </div>
+                          {i < arr.length - 1 && (
+                            <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
+          <div className="small">Yeni bir sipariş oluşturmak için önce mevcut siparişi tamamlayın.</div>
         </div>
       )}
       <div className="d-flex align-items-center justify-content-between mb-4">

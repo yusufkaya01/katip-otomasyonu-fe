@@ -1,0 +1,171 @@
+# Admin API Backend Changes Log
+
+## [2025-07-19] Initial Admin API Scaffolding
+- Created `src/admin/` directory structure: routes, controllers, middlewares, services.
+- Added `adminRoutes.js` with all planned admin endpoints under `/api/admin/`.
+- Implemented admin JWT and API key middleware for security.
+- Added password hashing service for admin authentication.
+- Populated `.env` and `.env.example` with admin-related environment variables:
+  - `ADMIN_JWT_SECRET`, `ADMIN_API_KEY`, `ADMIN_PASSWORD_HASH_SALT`, `ADMIN_AUTO_CONFIRM_ORDERS`
+- Next: Will implement endpoint logic and wire routes into main app.
+
+## [2025-07-19] Admin Auth Endpoints Implemented
+- Implemented backend logic for:
+  - `POST /api/admin/login` (returns JWT on success)
+  - `POST /api/admin/logout` (stateless, FE deletes token)
+  - `POST /api/admin/change-password` (requires old and new password)
+- `forgot-password` and `reset-password` endpoints are stubbed (not implemented yet).
+- Admin DB table (`admins`) is now used for authentication and password changes.
+- All actions are logged with winston.
+
+## [2025-07-19] Admin Password Reset Implemented
+- Added secure password reset flow for admins:
+  - `POST /api/admin/forgot-password` now generates a reset token, stores it in the DB, and sends a reset link via email.
+  - `POST /api/admin/reset-password` verifies the token, updates the password, and clears the token.
+- DB schema updated: `admins` table now has `reset_token` and `reset_token_expires` columns.
+- Example reset link: `${ADMIN_RESET_URL}?token=<token>` (set `ADMIN_RESET_URL` in env).
+- All actions are logged.
+- See below for updated request/response details.
+
+## [2025-07-19] Admin Order Management APIs Implemented
+- Added endpoints for admin order management:
+  - `GET /api/admin/orders/pending` — List orders where is_confirmed = false OR is_paid = false.
+  - `POST /api/admin/orders/:orderId/confirm` — Set is_confirmed = true, confirmed_at = NOW().
+  - `POST /api/admin/orders/:orderId/payment` — Increment payment_amount; if payment_amount >= amount, set is_paid = true, paid_at = NOW(), is_confirmed = true, confirmed_at = NOW().
+  - `POST /api/admin/orders/:orderId/invoice` — Set invoice_id, invoice_date, is_invoice_created = true, invoice_created_at = NOW().
+  - `GET /api/admin/orders/pending-invoices` — List orders where is_invoice_created = false.
+  - `GET /api/admin/orders/previous` — List orders where is_confirmed = true AND is_paid = true AND is_invoice_created = true.
+- All business rules for confirmation, payment, and invoice logic are enforced in the backend.
+- Partial payments are supported via payment_amount field.
+- All actions are logged.
+
+## [2025-07-19] Admin Auth Endpoints: Request/Response Details
+
+### POST /api/admin/login
+**Request Body:**
+```
+{
+  "email": "admin@example.com",
+  "password": "yourpassword"
+}
+```
+**Success Response:**
+- Status: 200
+```
+{
+  "token": "<JWT token>"
+}
+```
+**Error Responses:**
+- 400: `{ "error": "Email and password required" }`
+- 401: `{ "error": "Invalid credentials" }`
+- 500: `{ "error": "Internal server error" }`
+**Headers:**
+- x-admin-api-key: <admin API key>
+
+### POST /api/admin/change-password
+**Headers:**
+- Authorization: Bearer <admin JWT>
+- x-admin-api-key: <admin API key>
+**Request Body:**
+```
+{
+  "oldPassword": "oldpass",
+  "newPassword": "newpass"
+}
+```
+**Success Response:**
+- Status: 200
+```
+{ "message": "Password changed successfully" }
+```
+**Error Responses:**
+- 400: `{ "error": "Old and new password required" }`
+- 401: `{ "error": "Invalid old password" }`
+- 404: `{ "error": "Admin not found" }`
+- 500: `{ "error": "Internal server error" }`
+
+### POST /api/admin/forgot-password
+**Request Body:**
+```
+{ "email": "admin@example.com" }
+```
+**Success Response:**
+- Status: 200
+```
+{ "message": "Reset link sent to your email" }
+```
+**Error Responses:**
+- 400: `{ "error": "Email required" }`
+- 404: `{ "error": "Admin not found" }`
+- 500: `{ "error": "Internal server error" }`
+**Headers:**
+- x-admin-api-key: <admin API key>
+
+### POST /api/admin/reset-password
+**Request Body:**
+```
+{ "token": "resetToken", "newPassword": "newpass" }
+```
+**Success Response:**
+- Status: 200
+```
+{ "message": "Password reset successfully" }
+```
+**Error Responses:**
+- 400: `{ "error": "Token and new password required" }`
+- 401: `{ "error": "Invalid or expired token" }`
+- 404: `{ "error": "Admin not found" }`
+- 500: `{ "error": "Internal server error" }`
+**Headers:**
+- x-admin-api-key: <admin API key>
+
+### Admin Order Management: Request/Response Details
+
+#### POST /api/admin/orders/:orderId/confirm
+**Headers:**
+- Authorization: Bearer <admin JWT>
+- x-admin-api-key: <admin API key>
+**Response:**
+```
+{ "message": "Order confirmed" }
+```
+
+#### POST /api/admin/orders/:orderId/payment
+**Headers:**
+- Authorization: Bearer <admin JWT>
+- x-admin-api-key: <admin API key>
+**Request Body:**
+```
+{ "paymentAmount": 1000 }
+```
+**Response:**
+```
+{ "message": "Payment updated" }
+```
+
+#### POST /api/admin/orders/:orderId/invoice
+**Headers:**
+- Authorization: Bearer <admin JWT>
+- x-admin-api-key: <admin API key>
+**Request Body:**
+```
+{ "invoiceId": "INV-2025-001", "invoiceDate": "2025-07-19" }
+```
+**Response:**
+```
+{ "message": "Invoice created" }
+```
+
+#### GET /api/admin/orders/pending
+**Headers:**
+- Authorization: Bearer <admin JWT>
+- x-admin-api-key: <admin API key>
+**Response:**
+```
+{ "orders": [ ... ] }
+```
+
+---
+
+# Please update this file with every admin API/backend change for FE devs.

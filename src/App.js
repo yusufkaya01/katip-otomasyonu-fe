@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -20,6 +20,7 @@ import RegisterPage from './pages/RegisterPage';
 import PricingPage from './pages/PricingPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import WhatsappFloatButton from './WhatsappFloatButton';
+import AdminRoutes from './admin/AdminRoutes';
 import './App.css';
 
 function LoadingSpinner() {
@@ -34,7 +35,13 @@ function LoadingSpinner() {
 
 function AppRoutes() {
   const { loading } = useAuth();
+  const location = useLocation();
   if (loading) return <LoadingSpinner />;
+  // If path starts with /admin, render only admin routes (no Navbar/Footer/bg)
+  if (location.pathname.startsWith('/admin')) {
+    return <AdminRoutes />;
+  }
+  // User layout for all other routes
   return (
     <>
       <Navbar />
