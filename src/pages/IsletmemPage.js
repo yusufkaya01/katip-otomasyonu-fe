@@ -311,6 +311,7 @@ function IsletmemPage() {
             .then(res => res.json())
             .then(ibanData => {
               if (Array.isArray(ibanData)) setBankIbans(ibanData);
+              else if (ibanData.bankIbans && Array.isArray(ibanData.bankIbans)) setBankIbans(ibanData.bankIbans);
               else if (ibanData.ibans && Array.isArray(ibanData.ibans)) setBankIbans(ibanData.ibans);
               else if (ibanData.banks && Array.isArray(ibanData.banks)) setBankIbans(ibanData.banks);
             });
@@ -417,6 +418,27 @@ function IsletmemPage() {
     }
   }, [location.search, API_BASE_URL, API_KEY, user]);
 
+  // Fetch bank IBANs when showing pending bank details modal, if not already loaded
+  useEffect(() => {
+    if (showPendingBankDetails && bankIbans.length === 0 && user && user.accessToken) {
+      fetch(`${API_BASE_URL}/osgb/bank-ibans`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'Authorization': `Bearer ${user.accessToken}`
+        }
+      })
+        .then(res => res.json())
+        .then(ibanData => {
+          if (Array.isArray(ibanData)) setBankIbans(ibanData);
+          else if (ibanData.bankIbans && Array.isArray(ibanData.bankIbans)) setBankIbans(ibanData.bankIbans);
+          else if (ibanData.ibans && Array.isArray(ibanData.ibans)) setBankIbans(ibanData.ibans);
+          else if (ibanData.banks && Array.isArray(ibanData.banks)) setBankIbans(ibanData.banks);
+        });
+    }
+  }, [showPendingBankDetails, bankIbans.length, user, API_KEY, API_BASE_URL]);
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -509,7 +531,7 @@ function IsletmemPage() {
           <ul className="mb-2">
             {pendingOrders.map((order, i) => (
               <li key={order.order_id || i}>
-                {order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'} ile {order.amount ? `${order.amount} TL` : '12.000 TL'} / {order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : ''} - Bekliyor
+                {order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'} ile {order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '12.000 TL'} / {order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : ''} - Bekliyor
               </li>
             ))}
           </ul>
@@ -567,32 +589,30 @@ function IsletmemPage() {
                     </div>
                     <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
                     <div>
-                      {(bankIbans.length > 0 ? bankIbans : [
-                        { bank: 'Ziraat Bankası', iban: 'TR00 0001 0000 0000 0000 0000 01' },
-                        { bank: 'İş Bankası', iban: 'TR00 0006 4000 0000 0000 0000 02' },
-                        { bank: 'Garanti BBVA', iban: 'TR00 0006 2000 0000 0000 0000 03' },
-                        { bank: 'Akbank', iban: 'TR00 0004 6000 0000 0000 0000 04' },
-                        { bank: 'Yapı Kredi', iban: 'TR00 0006 7000 0000 0000 0000 05' },
-                      ]).map((iban, i, arr) => (
-                        <React.Fragment key={i}>
-                          <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
-                            <div>
-                              <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
+                      {bankIbans.length > 0 ? (
+                        bankIbans.map((iban, i, arr) => (
+                          <React.Fragment key={i}>
+                            <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
+                              <div>
+                                <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
+                              </div>
+                              <button
+                                className="btn btn-link p-0 text-danger ms-2"
+                                title="Kopyala"
+                                style={{fontSize:'1.1em'}}
+                                onClick={() => navigator.clipboard.writeText(iban.iban)}
+                              >
+                                <i className="bi bi-clipboard"></i>
+                              </button>
                             </div>
-                            <button
-                              className="btn btn-link p-0 text-danger ms-2"
-                              title="Kopyala"
-                              style={{fontSize:'1.1em'}}
-                              onClick={() => navigator.clipboard.writeText(iban.iban)}
-                            >
-                              <i className="bi bi-clipboard"></i>
-                            </button>
-                          </div>
-                          {i < arr.length - 1 && (
-                            <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
-                          )}
-                        </React.Fragment>
-                      ))}
+                            {i < arr.length - 1 && (
+                              <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
+                            )}
+                          </React.Fragment>
+                        ))
+                      ) : (
+                        <div className="text-muted">Banka bilgileri yükleniyor veya bulunamadı.</div>
+                      )}
                     </div>
                   </div>
                 </div>
