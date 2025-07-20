@@ -1,0 +1,35 @@
+Admin OSGB APIs for FE integration
+==================================
+
+1. GET /api/admin/osgbs/missing-tax-info
+   - Returns all companies (OSGBs) missing tax_office or tax_number.
+   - Each item includes: osgb_id, company_name, license_key, customer_id, email, and signed S3 URLs for vergiLevhasi and yetkiBelgesi docs.
+   - Security: Requires admin JWT and admin API key.
+   - Example response:
+     [
+       {
+         "osgb_id": "OSGB-1234",
+         "company_name": "ABC OSGB",
+         "license_key": "XYZ123",
+         "customer_id": "CUST001",
+         "email": "abc@osgb.com",
+         "vergiLevhasiUrl": "https://...",
+         "yetkiBelgesiUrl": "https://..."
+       },
+       ...
+     ]
+
+2. POST /api/admin/osgbs/update-tax-info
+   - Updates tax_office and tax_number for a company (OSGB) by customer_id.
+   - Body: { customer_id, tax_office, tax_number }
+   - Security: Requires admin JWT and admin API key.
+   - Returns: { success: true } on success, error otherwise.
+
+FE Flow:
+- Call GET to list all companies needing tax info and get doc links.
+- Show docs to admin, let them enter tax info, then call POST to update.
+
+Notes:
+- S3 signed URLs are valid for 15 minutes.
+- If a doc is missing, the URL may return 403 (file not found).
+- All endpoints are protected; FE must send both admin JWT and API key.

@@ -35,6 +35,11 @@ export default function AdminNavbar({ onLogout }) {
               </NavLink>
             </li>
             <li className="nav-item">
+              <NavLink to="/admin/missing-tax-info" className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
+                Eksik Vergi Bilgili Şirketler
+              </NavLink>
+            </li>
+            <li className="nav-item">
               <button className="btn btn-outline-light btn-sm fw-bold ms-3" onClick={onLogout}>Çıkış Yap</button>
             </li>
           </ul>

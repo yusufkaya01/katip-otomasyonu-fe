@@ -7,6 +7,7 @@ import AdminPanel from './AdminPanel';
 import AdminCustomersPage from './AdminCustomersPage';
 import AdminPendingInvoicesPage from './AdminPendingInvoicesPage';
 import AdminPendingPaymentsPage from './AdminPendingPaymentsPage';
+import AdminMissingTaxInfoPage from './AdminMissingTaxInfoPage';
 
 export default function AdminRoutes() {
   const [token, setToken] = useState(() => localStorage.getItem('adminToken') || '');
@@ -33,6 +34,7 @@ export default function AdminRoutes() {
       <Route path="/admin/pending-invoices" element={token ? <AdminPendingInvoicesPage onLogout={handleLogout} token={token} /> : <Navigate to="/admin/login" />} />
       <Route path="/admin/customers" element={token ? <AdminCustomersPage token={token} onLogout={handleLogout} /> : <Navigate to="/admin/login" />} />
       <Route path="/admin/pending-payments" element={token ? <AdminPendingPaymentsPage onLogout={handleLogout} token={token} /> : <Navigate to="/admin/login" />} />
+      <Route path="/admin/missing-tax-info" element={token ? <AdminMissingTaxInfoPage token={token} onLogout={handleLogout} /> : <Navigate to="/admin/login" />} />
       <Route path="/admin" element={token ? <AdminPanel token={token} onLogout={handleLogout} /> : <Navigate to="/admin/login" />} />
     </Routes>
   );
