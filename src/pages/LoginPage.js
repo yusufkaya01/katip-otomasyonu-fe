@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AuthLayout from '../components/AuthLayout';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 function LoginPage() {
   const [form, setForm] = useState({ identifier: '', password: '' }); // 'identifier' can be email or customer_id
@@ -66,47 +67,50 @@ function LoginPage() {
   };
 
   return (
-    <AuthLayout>
-      <div style={{display:'flex',justifyContent:'center',alignItems:'flex-start',minHeight:'100vh',paddingTop:32}}>
-        <form onSubmit={handleSubmit} style={{ minWidth: 320, maxWidth: 400, width: '100%', margin: 0 }}>
-          <h2 className="mb-4">Giriş Yap</h2>
-          <div className="mb-3">
-            <label htmlFor="identifier" className="form-label">E-posta veya Müşteri Numarası</label>
-            <input type="text" className="form-control" id="identifier" name="identifier" value={form.identifier} onChange={handleChange} required autoComplete="username" />
-            <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
-              Giriş için e-posta adresinizi <b>veya</b> müşteri numaranızı kullanabilirsiniz.
+    <>
+      <PageLoadingSpinner show={loading} fullscreen />
+      <AuthLayout>
+        <div style={{display:'flex',justifyContent:'center',alignItems:'flex-start',minHeight:'100vh',paddingTop:32}}>
+          <form onSubmit={handleSubmit} style={{ minWidth: 320, maxWidth: 400, width: '100%', margin: 0 }}>
+            <h2 className="mb-4">Giriş Yap</h2>
+            <div className="mb-3">
+              <label htmlFor="identifier" className="form-label">E-posta veya Müşteri Numarası</label>
+              <input type="text" className="form-control" id="identifier" name="identifier" value={form.identifier} onChange={handleChange} required autoComplete="username" />
+              <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
+                Giriş için e-posta adresinizi <b>veya</b> müşteri numaranızı kullanabilirsiniz.
+              </div>
             </div>
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label">Şifre</label>
-            <div className="input-group">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                className="form-control"
-                id="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                minLength={8}
-                maxLength={16}
-                autoComplete="current-password"
-              />
-              <span className="input-group-text" style={{cursor:'pointer'}} onClick={() => setShowPassword(v => !v)}>
-                <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
-              </span>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">Şifre</label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-control"
+                  id="password"
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                  minLength={8}
+                  maxLength={16}
+                  autoComplete="current-password"
+                />
+                <span className="input-group-text" style={{cursor:'pointer'}} onClick={() => setShowPassword(v => !v)}>
+                  <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                </span>
+              </div>
             </div>
-          </div>
-          {error && <div className="alert alert-danger py-2">{error}</div>}
-          <button type="submit" className="btn btn-danger w-100" disabled={loading}>
-            {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
-          </button>
-          <div className="text-center mt-3">
-            <a href="/sifremi-unuttum" className="small text-danger">Şifremi Unuttum</a>
-          </div>
-        </form>
-      </div>
-    </AuthLayout>
+            {error && <div className="alert alert-danger py-2">{error}</div>}
+            <button type="submit" className="btn btn-danger w-100" disabled={loading}>
+              {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
+            </button>
+            <div className="text-center mt-3">
+              <a href="/sifremi-unuttum" className="small text-danger">Şifremi Unuttum</a>
+            </div>
+          </form>
+        </div>
+      </AuthLayout>
+    </>
   );
 }
 

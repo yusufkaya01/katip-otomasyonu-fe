@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AdminNavbar from './AdminNavbar';
+import AdminPagination from '../components/AdminPagination';
+import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 const ADMIN_API_KEY = process.env.REACT_APP_ADMIN_API_KEY || '';
@@ -8,6 +10,9 @@ export default function AdminCustomersPage({ token, onLogout }) {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     async function fetchCustomers() {
@@ -22,8 +27,10 @@ export default function AdminCustomersPage({ token, onLogout }) {
           },
         });
         const data = await res.json();
-        if (res.ok && data.customers) {
-          setCustomers(data.customers);
+        if (res.ok && (data.customers || data.items)) {
+          const allCustomers = data.customers || data.items || [];
+          setTotal(allCustomers.length);
+          setCustomers(allCustomers);
         } else {
           setError(data.error || 'Müşteriler alınamadı.');
         }
@@ -33,14 +40,16 @@ export default function AdminCustomersPage({ token, onLogout }) {
       setLoading(false);
     }
     fetchCustomers();
-  }, [token]);
+  }, [token]); // Only fetch once, FE paginates
+
+  const paginatedCustomers = customers.slice((page - 1) * perPage, page * perPage);
 
   return (
     <div className="container-fluid px-0">
+      <PageLoadingSpinner show={loading} fullscreen />
       <AdminNavbar onLogout={onLogout} />
       <div className="container py-4">
         <h3 className="mb-4">Tüm Müşteriler</h3>
-        {loading && <div className="alert alert-info">Yükleniyor...</div>}
         {error && <div className="alert alert-danger">{error}</div>}
         {customers.length > 0 && (
           <div style={{overflowX:'auto'}}>
@@ -58,7 +67,7 @@ export default function AdminCustomersPage({ token, onLogout }) {
                 </tr>
               </thead>
               <tbody>
-                {customers.map(c => (
+                {paginatedCustomers.map(c => (
                   <tr key={c.customer_id}>
                     <td>{c.customer_id}</td>
                     <td>{c.company_name}</td>
@@ -73,6 +82,15 @@ export default function AdminCustomersPage({ token, onLogout }) {
               </tbody>
             </table>
           </div>
+        )}
+        {customers.length > 0 && (
+          <AdminPagination
+            page={page}
+            perPage={perPage}
+            total={total}
+            onPageChange={setPage}
+            onPerPageChange={v => { setPerPage(v); setPage(1); }}
+          />
         )}
         {(!loading && customers.length === 0 && !error) && <div className="alert alert-warning">Hiç müşteri bulunamadı.</div>}
       </div>

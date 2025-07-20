@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useAuth } from '../context/AuthContext';
 import authFetch from '../api/authFetch';
+import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 function LoadingSpinner() {
   return (
@@ -446,488 +447,491 @@ function IsletmemPage() {
   if (!user) return null;
 
   return (
-    <div className="container py-5" style={{ maxWidth: 600 }}>
-      {/* Payment Result Modal */}
-      {showPaymentResult && (
-        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Ödeme Sonucu</h5>
-                <button type="button" className="btn-close" onClick={() => setShowPaymentResult(false)}></button>
-              </div>
-              <div className="modal-body text-center">
-                {paymentResultStatus === 'waiting' && (
-                  <>
-                    <div className="mb-3">
-                      <div className="spinner-border text-danger" role="status">
-                        <span className="visually-hidden">Yükleniyor...</span>
+    <>
+      <PageLoadingSpinner show={loading} fullscreen />
+      <div className="container py-5" style={{ maxWidth: 600 }}>
+        {/* Payment Result Modal */}
+        {showPaymentResult && (
+          <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Ödeme Sonucu</h5>
+                  <button type="button" className="btn-close" onClick={() => setShowPaymentResult(false)}></button>
+                </div>
+                <div className="modal-body text-center">
+                  {paymentResultStatus === 'waiting' && (
+                    <>
+                      <div className="mb-3">
+                        <div className="spinner-border text-danger" role="status">
+                          <span className="visually-hidden">Yükleniyor...</span>
+                        </div>
                       </div>
-                    </div>
-                    <div>{paymentResultMsg}</div>
-                    <button className="btn btn-outline-success btn-sm mt-3" onClick={async () => {
-                      if (!cardOrderId) return;
-                      setPaymentResultMsg('Ödeme durumu kontrol ediliyor...');
-                      try {
-                        const res = await fetch(`${API_BASE_URL}/osgb/orders/${cardOrderId}`, {
-                          method: 'GET',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'x-api-key': API_KEY,
-                            'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
-                          }
-                        });
-                        const data = await res.json();
-                        if (res.ok && data.order) {
-                          if (data.order.is_paid) {
-                            setPaymentResultStatus('success');
-                            setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                      <div>{paymentResultMsg}</div>
+                      <button className="btn btn-outline-success btn-sm mt-3" onClick={async () => {
+                        if (!cardOrderId) return;
+                        setPaymentResultMsg('Ödeme durumu kontrol ediliyor...');
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/osgb/orders/${cardOrderId}`, {
+                            method: 'GET',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'x-api-key': API_KEY,
+                              'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
+                            }
+                          });
+                          const data = await res.json();
+                          if (res.ok && data.order) {
+                            if (data.order.is_paid) {
+                              setPaymentResultStatus('success');
+                              setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                            } else {
+                              setPaymentResultMsg('Ödeme henüz tamamlanmamış. Lütfen tekrar deneyin.');
+                            }
+                          } else if (res.status === 404) {
+                            setPaymentResultStatus('error');
+                            setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
                           } else {
-                            setPaymentResultMsg('Ödeme henüz tamamlanmamış. Lütfen tekrar deneyin.');
+                            setPaymentResultMsg('Ödeme durumu alınamadı. Lütfen tekrar deneyin.');
                           }
-                        } else if (res.status === 404) {
-                          setPaymentResultStatus('error');
-                          setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
-                        } else {
-                          setPaymentResultMsg('Ödeme durumu alınamadı. Lütfen tekrar deneyin.');
+                        } catch (err) {
+                          setPaymentResultMsg('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
                         }
-                      } catch (err) {
-                        setPaymentResultMsg('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
-                      }
-                    }}>
-                      Ödeme Durumunu Manuel Kontrol Et
-                    </button>
-                  </>
-                )}
-                {paymentResultStatus === 'success' && (
-                  <>
-                    <div className="mb-3">
-                      <i className="bi bi-check-circle-fill text-success" style={{fontSize:'2.5rem'}}></i>
-                    </div>
-                    <div className="fw-bold text-success mb-2">{paymentResultMsg}</div>
-                    <button className="btn btn-success w-100" onClick={() => setShowPaymentResult(false)}>Devam Et</button>
-                  </>
-                )}
-                {(paymentResultStatus === 'error' || paymentResultStatus === 'timeout') && (
-                  <>
-                    <div className="mb-3">
-                      <i className="bi bi-x-circle-fill text-danger" style={{fontSize:'2.5rem'}}></i>
-                    </div>
-                    <div className="fw-bold text-danger mb-2">{paymentResultMsg}</div>
-                    <button className="btn btn-danger w-100" onClick={() => setShowPaymentResult(false)}>Kapat</button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Pending Orders Section */}
-      {pendingLoading && <div className="alert alert-info">Bekleyen siparişler yükleniyor...</div>}
-      {pendingError && <div className="alert alert-danger">{pendingError}</div>}
-      {pendingOrders.length > 0 && (
-        <div className="alert alert-warning mb-4">
-          <div className="fw-bold mb-2">Bekleyen Lisans Uzatma Siparişiniz Var</div>
-          <ul className="mb-2">
-            {pendingOrders.map((order, i) => (
-              <li key={order.order_id || i}>
-                {order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'} ile {order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '12.000 TL'} / {order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : ''} - Bekliyor
-              </li>
-            ))}
-          </ul>
-          <button className="btn btn-outline-danger btn-sm mb-2" onClick={() => setShowPendingBankDetails(true)}>
-            Banka Bilgilerini Göster
-          </button>
-          {/* Modal for pending bank details */}
-          {showPendingBankDetails && (
-            <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
-              <div className="modal-dialog modal-dialog-centered">
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h5 className="modal-title">Banka Bilgileri</h5>
-                    <button type="button" className="btn-close" onClick={() => setShowPendingBankDetails(false)}></button>
-                  </div>
-                  <div className="modal-body">
-                    <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
-                      Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
-                      <button
-                        className="btn btn-link p-0 text-danger ms-1"
-                        title="Kopyala"
-                        style={{fontSize:'1.1em'}}
-                        onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
-                      >
-                        <i className="bi bi-clipboard"></i>
+                      }}>
+                        Ödeme Durumunu Manuel Kontrol Et
                       </button>
-                    </div>
-                    <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
-                      Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
-                      <span style={{display:'inline-block',marginTop:6}}>
-                        <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                          Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
-                          <button
-                            className="btn btn-link p-0 text-danger ms-1"
-                            title="Kopyala"
-                            style={{fontSize:'1.1em'}}
-                            onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
-                          >
-                            <i className="bi bi-clipboard"></i>
-                          </button>
-                        </span>
-                        <div>veya</div>
-                        <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
-                          Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
-                          <button
-                            className="btn btn-link p-0 text-danger ms-1"
-                            title="Kopyala"
-                            style={{fontSize:'1.1em'}}
-                            onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
-                          >
-                            <i className="bi bi-clipboard"></i>
-                          </button>
-                        </span>
-                      </span>
-                    </div>
-                    <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
-                    <div>
-                      {bankIbans.length > 0 ? (
-                        bankIbans.map((iban, i, arr) => (
-                          <React.Fragment key={i}>
-                            <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
-                              <div>
-                                <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
-                              </div>
-                              <button
-                                className="btn btn-link p-0 text-danger ms-2"
-                                title="Kopyala"
-                                style={{fontSize:'1.1em'}}
-                                onClick={() => navigator.clipboard.writeText(iban.iban)}
-                              >
-                                <i className="bi bi-clipboard"></i>
-                              </button>
-                            </div>
-                            {i < arr.length - 1 && (
-                              <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
-                            )}
-                          </React.Fragment>
-                        ))
-                      ) : (
-                        <div className="text-muted">Banka bilgileri yükleniyor veya bulunamadı.</div>
-                      )}
-                    </div>
-                  </div>
+                    </>
+                  )}
+                  {paymentResultStatus === 'success' && (
+                    <>
+                      <div className="mb-3">
+                        <i className="bi bi-check-circle-fill text-success" style={{fontSize:'2.5rem'}}></i>
+                      </div>
+                      <div className="fw-bold text-success mb-2">{paymentResultMsg}</div>
+                      <button className="btn btn-success w-100" onClick={() => setShowPaymentResult(false)}>Devam Et</button>
+                    </>
+                  )}
+                  {(paymentResultStatus === 'error' || paymentResultStatus === 'timeout') && (
+                    <>
+                      <div className="mb-3">
+                        <i className="bi bi-x-circle-fill text-danger" style={{fontSize:'2.5rem'}}></i>
+                      </div>
+                      <div className="fw-bold text-danger mb-2">{paymentResultMsg}</div>
+                      <button className="btn btn-danger w-100" onClick={() => setShowPaymentResult(false)}>Kapat</button>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
-          )}
-          <div className="small">Yeni bir sipariş oluşturmak için önce mevcut siparişi tamamlayın.</div>
-        </div>
-      )}
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <h2 className="mb-0">İşletmem</h2>
-        <button className="btn btn-outline-danger" onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('cash'); }} disabled={pendingOrders.length > 0}>
-          Lisans Süremi Uzat
-        </button>
-      </div>
-      {/* License Extension Modal */}
-      {showExtendModal && (
-        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Lisans Süresi Uzatma</h5>
-                <button type="button" className="btn-close" onClick={() => setShowExtendModal(false)}></button>
-              </div>
-              <div className="modal-body">
-                {orderStep === 1 && (
-                  <>
-                    <div className="mb-3 text-center">
-                      <div className="fw-bold mb-2">Lisansınız <span className="text-danger">12.000 TL</span> karşılığında <span className="text-danger">366 gün</span> daha uzatılacaktır.</div>
-                      <div className="text-muted" style={{fontSize:'0.95em'}}>Sipariş sonrası lisansınız otomatik olarak uzatılır.</div>
+          </div>
+        )}
+        {/* Pending Orders Section */}
+        {pendingLoading && <div className="alert alert-info">Bekleyen siparişler yükleniyor...</div>}
+        {pendingError && <div className="alert alert-danger">{pendingError}</div>}
+        {pendingOrders.length > 0 && (
+          <div className="alert alert-warning mb-4">
+            <div className="fw-bold mb-2">Bekleyen Lisans Uzatma Siparişiniz Var</div>
+            <ul className="mb-2">
+              {pendingOrders.map((order, i) => (
+                <li key={order.order_id || i}>
+                  {order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'} ile {order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '12.000 TL'} / {order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : ''} - Bekliyor
+                </li>
+              ))}
+            </ul>
+            <button className="btn btn-outline-danger btn-sm mb-2" onClick={() => setShowPendingBankDetails(true)}>
+              Banka Bilgilerini Göster
+            </button>
+            {/* Modal for pending bank details */}
+            {showPendingBankDetails && (
+              <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
+                <div className="modal-dialog modal-dialog-centered">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title">Banka Bilgileri</h5>
+                      <button type="button" className="btn-close" onClick={() => setShowPendingBankDetails(false)}></button>
                     </div>
-                    <div className="mb-3">
-                      <label className="form-label">Ödeme Yöntemi</label>
-                      <div className="d-flex gap-3">
-                        <div className="form-check">
-                          <input className="form-check-input" type="radio" id="pay-cash" name="paymentMethod" value="cash" checked={paymentMethod==='cash'} onChange={()=>setPaymentMethod('cash')} />
-                          <label className="form-check-label" htmlFor="pay-cash">EFT/Havale</label>
-                        </div>
-                        <div className="form-check">
-                          <input className="form-check-input" type="radio" id="pay-card" name="paymentMethod" value="card" checked={paymentMethod==='card'} onChange={()=>setPaymentMethod('card')} />
-                          <label className="form-check-label" htmlFor="pay-card">Kredi Kartı</label>
-                        </div>
+                    <div className="modal-body">
+                      <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
+                        Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
+                        <button
+                          className="btn btn-link p-0 text-danger ms-1"
+                          title="Kopyala"
+                          style={{fontSize:'1.1em'}}
+                          onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
+                        >
+                          <i className="bi bi-clipboard"></i>
+                        </button>
                       </div>
-                    </div>
-                    {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
-                    <button className="btn btn-danger w-100" onClick={()=>setOrderStep(2)} disabled={orderLoading}>Sipariş Oluştur</button>
-                  </>
-                )}
-                {orderStep === 2 && (
-                  <>
-                    <div className="mb-3">
-                      <div className="fw-bold mb-2">Sipariş Özeti</div>
-                      <ul className="list-group mb-3">
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span>Lisans Uzatma</span>
-                          <span>12.000 TL / 366 gün</span>
-                        </li>
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span>Ödeme Yöntemi</span>
-                          <span>{paymentMethod === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'}</span>
-                        </li>
-                      </ul>
-                      <div className="alert alert-warning small">Siparişi onayladığınızda ödeme adımına yönlendirileceksiniz.</div>
-                    </div>
-                    {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
-                    <div className="d-flex justify-content-between">
-                      <button className="btn btn-secondary" onClick={()=>setOrderStep(1)} disabled={orderLoading}>Geri</button>
-                      <button className="btn btn-danger" onClick={handleCreateOrder} disabled={orderLoading}>{orderLoading ? 'Oluşturuluyor...' : 'Siparişi Onayla'}</button>
-                    </div>
-                  </>
-                )}
-                {orderStep === 3 && orderResult && (
-                  <>
-                    <div className="mb-3">
-                      <div className="fw-bold mb-2">Siparişiniz başarıyla oluşturuldu.</div>
-                      {paymentMethod === 'cash' && (
-                        <div className="alert alert-info small">
-                          <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
-                            Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
+                      <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
+                        Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
+                        <span style={{display:'inline-block',marginTop:6}}>
+                          <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                            Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
                             <button
                               className="btn btn-link p-0 text-danger ms-1"
                               title="Kopyala"
                               style={{fontSize:'1.1em'}}
-                              onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
+                              onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
                             >
                               <i className="bi bi-clipboard"></i>
                             </button>
-                          </div>
-                          <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
-                            Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
-                            <span style={{display:'inline-block',marginTop:6}}>
-                              <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                                Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
+                          </span>
+                          <div>veya</div>
+                          <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
+                            Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
+                            <button
+                              className="btn btn-link p-0 text-danger ms-1"
+                              title="Kopyala"
+                              style={{fontSize:'1.1em'}}
+                              onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
+                            >
+                              <i className="bi bi-clipboard"></i>
+                            </button>
+                          </span>
+                        </span>
+                      </div>
+                      <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
+                      <div>
+                        {bankIbans.length > 0 ? (
+                          bankIbans.map((iban, i, arr) => (
+                            <React.Fragment key={i}>
+                              <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
+                                <div>
+                                  <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
+                                </div>
                                 <button
-                                  className="btn btn-link p-0 text-danger ms-1"
+                                  className="btn btn-link p-0 text-danger ms-2"
                                   title="Kopyala"
                                   style={{fontSize:'1.1em'}}
-                                  onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
+                                  onClick={() => navigator.clipboard.writeText(iban.iban)}
                                 >
                                   <i className="bi bi-clipboard"></i>
                                 </button>
-                              </span>
-                              <div>veya</div>
-                              <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
-                                Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
-                                <button
-                                  className="btn btn-link p-0 text-danger ms-1"
-                                  title="Kopyala"
-                                  style={{fontSize:'1.1em'}}
-                                  onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
-                                >
-                                  <i className="bi bi-clipboard"></i>
-                                </button>
-                              </span>
-                            </span>
+                              </div>
+                              {i < arr.length - 1 && (
+                                <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
+                              )}
+                            </React.Fragment>
+                          ))
+                        ) : (
+                          <div className="text-muted">Banka bilgileri yükleniyor veya bulunamadı.</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="small">Yeni bir sipariş oluşturmak için önce mevcut siparişi tamamlayın.</div>
+          </div>
+        )}
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <h2 className="mb-0">İşletmem</h2>
+          <button className="btn btn-outline-danger" onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('cash'); }} disabled={pendingOrders.length > 0}>
+            Lisans Süremi Uzat
+          </button>
+        </div>
+        {/* License Extension Modal */}
+        {showExtendModal && (
+          <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Lisans Süresi Uzatma</h5>
+                  <button type="button" className="btn-close" onClick={() => setShowExtendModal(false)}></button>
+                </div>
+                <div className="modal-body">
+                  {orderStep === 1 && (
+                    <>
+                      <div className="mb-3 text-center">
+                        <div className="fw-bold mb-2">Lisansınız <span className="text-danger">12.000 TL</span> karşılığında <span className="text-danger">366 gün</span> daha uzatılacaktır.</div>
+                        <div className="text-muted" style={{fontSize:'0.95em'}}>Sipariş sonrası lisansınız otomatik olarak uzatılır.</div>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Ödeme Yöntemi</label>
+                        <div className="d-flex gap-3">
+                          <div className="form-check">
+                            <input className="form-check-input" type="radio" id="pay-cash" name="paymentMethod" value="cash" checked={paymentMethod==='cash'} onChange={()=>setPaymentMethod('cash')} />
+                            <label className="form-check-label" htmlFor="pay-cash">EFT/Havale</label>
                           </div>
-                          <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
-                          <div>
-                            {(orderResult.ibans && orderResult.ibans.length > 0
-                              ? orderResult.ibans
-                              : orderResult.banks && orderResult.banks.length > 0
-                                ? orderResult.banks
-                                : bankIbans
-                            ).map((iban, i, arr) => (
-                              <React.Fragment key={i}>
-                                <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
-                                  <div>
-                                    <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
-                                  </div>
+                          <div className="form-check">
+                            <input className="form-check-input" type="radio" id="pay-card" name="paymentMethod" value="card" checked={paymentMethod==='card'} onChange={()=>setPaymentMethod('card')} />
+                            <label className="form-check-label" htmlFor="pay-card">Kredi Kartı</label>
+                          </div>
+                        </div>
+                      </div>
+                      {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
+                      <button className="btn btn-danger w-100" onClick={()=>setOrderStep(2)} disabled={orderLoading}>Sipariş Oluştur</button>
+                    </>
+                  )}
+                  {orderStep === 2 && (
+                    <>
+                      <div className="mb-3">
+                        <div className="fw-bold mb-2">Sipariş Özeti</div>
+                        <ul className="list-group mb-3">
+                          <li className="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Lisans Uzatma</span>
+                            <span>12.000 TL / 366 gün</span>
+                          </li>
+                          <li className="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Ödeme Yöntemi</span>
+                            <span>{paymentMethod === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'}</span>
+                          </li>
+                        </ul>
+                        <div className="alert alert-warning small">Siparişi onayladığınızda ödeme adımına yönlendirileceksiniz.</div>
+                      </div>
+                      {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
+                      <div className="d-flex justify-content-between">
+                        <button className="btn btn-secondary" onClick={()=>setOrderStep(1)} disabled={orderLoading}>Geri</button>
+                        <button className="btn btn-danger" onClick={handleCreateOrder} disabled={orderLoading}>{orderLoading ? 'Oluşturuluyor...' : 'Siparişi Onayla'}</button>
+                      </div>
+                    </>
+                  )}
+                  {orderStep === 3 && orderResult && (
+                    <>
+                      <div className="mb-3">
+                        <div className="fw-bold mb-2">Siparişiniz başarıyla oluşturuldu.</div>
+                        {paymentMethod === 'cash' && (
+                          <div className="alert alert-info small">
+                            <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
+                              Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
+                              <button
+                                className="btn btn-link p-0 text-danger ms-1"
+                                title="Kopyala"
+                                style={{fontSize:'1.1em'}}
+                                onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
+                              >
+                                <i className="bi bi-clipboard"></i>
+                              </button>
+                            </div>
+                            <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
+                              Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
+                              <span style={{display:'inline-block',marginTop:6}}>
+                                <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                                  Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
                                   <button
-                                    className="btn btn-link p-0 text-danger ms-2"
+                                    className="btn btn-link p-0 text-danger ms-1"
                                     title="Kopyala"
                                     style={{fontSize:'1.1em'}}
-                                    onClick={() => navigator.clipboard.writeText(iban.iban)}
+                                    onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
                                   >
                                     <i className="bi bi-clipboard"></i>
                                   </button>
-                                </div>
-                                {i < arr.length - 1 && (
-                                  <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
-                                )}
-                              </React.Fragment>
-                            ))}
+                                </span>
+                                <div>veya</div>
+                                <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
+                                  Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
+                                  <button
+                                    className="btn btn-link p-0 text-danger ms-1"
+                                    title="Kopyala"
+                                    style={{fontSize:'1.1em'}}
+                                    onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
+                                  >
+                                    <i className="bi bi-clipboard"></i>
+                                  </button>
+                                </span>
+                              </span>
+                            </div>
+                            <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
+                            <div>
+                              {(orderResult.ibans && orderResult.ibans.length > 0
+                                ? orderResult.ibans
+                                : orderResult.banks && orderResult.banks.length > 0
+                                  ? orderResult.banks
+                                  : bankIbans
+                              ).map((iban, i, arr) => (
+                                <React.Fragment key={i}>
+                                  <div className="d-flex align-items-center justify-content-between flex-wrap" style={{gap:8}}>
+                                    <div>
+                                      <span className="fw-bold">{iban.bank}:</span> <span style={{fontFamily:'monospace'}}>{iban.iban}</span>
+                                    </div>
+                                    <button
+                                      className="btn btn-link p-0 text-danger ms-2"
+                                      title="Kopyala"
+                                      style={{fontSize:'1.1em'}}
+                                      onClick={() => navigator.clipboard.writeText(iban.iban)}
+                                    >
+                                      <i className="bi bi-clipboard"></i>
+                                    </button>
+                                  </div>
+                                  {i < arr.length - 1 && (
+                                    <hr className="my-2" style={{width:'60%',margin:'8px auto',borderTop:'1px solid #bbb'}} />
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      {paymentMethod === 'card' && (
-                        <div className="alert alert-info small">
-                          Kredi kartı ile ödeme işlemi başlatıldı.<br />
-                          <b>Ödeme sayfasına yönlendirildiniz.</b><br />
-                          Eğer ödeme tamamlandıysa, aşağıdan ödeme durumunu kontrol edebilirsiniz.<br />
-                          <button className="btn btn-outline-success btn-sm mt-2" onClick={handleCheckCardStatus} disabled={cardStatusLoading}>
-                            {cardStatusLoading ? 'Kontrol Ediliyor...' : 'Ödeme Durumunu Kontrol Et'}
-                          </button>
-                          {cardStatus === 'success' && <div className="alert alert-success mt-2 py-1">Ödeme başarılı! Lisansınız uzatıldı.</div>}
-                          {cardStatus === 'pending' && <div className="alert alert-warning mt-2 py-1">Ödeme henüz tamamlanmamış.</div>}
-                          {cardStatusError && <div className="alert alert-danger mt-2 py-1">{cardStatusError}</div>}
-                        </div>
-                      )}
-                    </div>
-                    <button className="btn btn-success w-100" onClick={()=>setShowExtendModal(false)}>Kapat</button>
-                  </>
-                )}
+                        )}
+                        {paymentMethod === 'card' && (
+                          <div className="alert alert-info small">
+                            Kredi kartı ile ödeme işlemi başlatıldı.<br />
+                            <b>Ödeme sayfasına yönlendirildiniz.</b><br />
+                            Eğer ödeme tamamlandıysa, aşağıdan ödeme durumunu kontrol edebilirsiniz.<br />
+                            <button className="btn btn-outline-success btn-sm mt-2" onClick={handleCheckCardStatus} disabled={cardStatusLoading}>
+                              {cardStatusLoading ? 'Kontrol Ediliyor...' : 'Ödeme Durumunu Kontrol Et'}
+                            </button>
+                            {cardStatus === 'success' && <div className="alert alert-success mt-2 py-1">Ödeme başarılı! Lisansınız uzatıldı.</div>}
+                            {cardStatus === 'pending' && <div className="alert alert-warning mt-2 py-1">Ödeme henüz tamamlanmamış.</div>}
+                            {cardStatusError && <div className="alert alert-danger mt-2 py-1">{cardStatusError}</div>}
+                          </div>
+                        )}
+                      </div>
+                      <button className="btn btn-success w-100" onClick={()=>setShowExtendModal(false)}>Kapat</button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-      <div className="card p-4 shadow-sm">
-        {/* Customer ID Display */}
-        {user.customer_id && (
-          <div className="mb-2 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>Müşteri Numarası:</strong>
-            <span className="mx-2" style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>{user.customer_id}</span>
-            <button
-              className="btn btn-link p-0 text-danger mx-1"
-              title="Kopyala"
-              onClick={() => navigator.clipboard.writeText(user.customer_id)}
-            >
-              <i className="bi bi-clipboard"></i>
-            </button>
-          </div>
         )}
-        {/* License Key Display */}
-        {user.licenseKey && (
-          <div className="mb-2 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>Lisans Anahtarı:</strong>
-            <span className="mx-2" style={{ letterSpacing: '1px', fontFamily: 'monospace' }}>
-              {showLicense ? user.licenseKey : '•'.repeat(user.licenseKey.length)}
-            </span>
-            <button
-              className="btn btn-link p-0 text-danger mx-1"
-              title="Kopyala"
-              onClick={() => navigator.clipboard.writeText(user.licenseKey)}
-            >
-              <i className="bi bi-clipboard"></i>
-            </button>
-            <button
-              className="btn btn-link p-0 text-secondary"
-              title={showLicense ? 'Gizle' : 'Göster'}
-              onClick={() => setShowLicense(v => !v)}
-            >
-              <i className={`bi bi-eye${showLicense ? '-slash' : ''}`}></i>
-            </button>
-          </div>
-        )}
-        {/* Şirket Ünvanı */}
-        <div className="mb-2 d-flex align-items-center">
-          <strong style={{ minWidth: 140 }}>Şirket Ünvanı:</strong>
-          <span className="mx-2">{user.company_name}</span>
-        </div>
-        {/* Şehir */}
-        <div className="mb-2 d-flex align-items-center">
-          <strong style={{ minWidth: 140 }}>Şehir:</strong>
-          <span className="mx-2">{user.city}</span>
-        </div>
-        {/* İlçe */}
-        <div className="mb-2 d-flex align-items-center">
-          <strong style={{ minWidth: 140 }}>İlçe:</strong>
-          <span className="mx-2">{user.district}</span>
-        </div>
-        {/* Adres */}
-        <div className="mb-2 d-flex align-items-center">
-          <strong style={{ minWidth: 140 }}>Adres:</strong>
-          <span className="mx-2">{user.address}</span>
-        </div>
-        {/* Only show edit for phone and email */}
-        {['phone', 'email'].map(key => (
-          <div key={key} className="mb-3 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>{key === 'phone' ? 'Telefon' : 'E-posta'}:</strong>
-            {editField === key && confirming ? (
-              <>
-                {key === 'phone' ? (
-                  <div style={{ width: 250 }}>
-                    <div className="input-group">
-                      <span className="input-group-text">+90</span>
-                      <input
-                        type="tel"
-                        className="form-control"
-                        value={editValue}
-                        onChange={e => {
-                          let value = e.target.value.replace(/\D/g, '');
-                          if (value.startsWith('0')) value = value.slice(1);
-                          if (value.length > 10) value = value.slice(0, 10);
-                          setEditValue(value);
-                        }}
-                        maxLength={10}
-                        minLength={10}
-                        pattern="[0-9]{10}"
-                        placeholder="5XXXXXXXXX"
-                        required
-                      />
-                    </div>
-                    <div className="form-text">Başında 0 olmadan, 10 haneli giriniz. Örn: 5XXXXXXXXX</div>
-                  </div>
-                ) : (
-                  <input
-                    type="email"
-                    className="form-control mx-2"
-                    value={editValue}
-                    onChange={e => setEditValue(e.target.value)}
-                    style={{ maxWidth: 250 }}
-                  />
-                )}
-                <button className="btn btn-success btn-sm mx-1" onClick={handleConfirm}>Evet</button>
-                <button className="btn btn-secondary btn-sm" onClick={() => { setEditField(null); setConfirming(false); }}>Hayır</button>
-              </>
-            ) : (
-              <>
-                <span className="mx-2">{key === 'phone' ? `+90${user[key]}` : user[key]}</span>
-                <button className="btn btn-link p-0 text-danger" onClick={() => handleEditClick(key)} title="Düzenle">
-                  <i className="bi bi-pencil"></i>
-                </button>
-              </>
-            )}
-          </div>
-        ))}
-        {/* Only Vergi Dairesi and Vergi Kimlik No in the red box, now at the bottom */}
-        <div className="mb-3 p-3 rounded border border-2 border-danger position-relative" style={{borderStyle:'dashed', minHeight: 80}}>
-          {/* Vergi Dairesi */}
-          <div className="mb-2 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>Vergi Dairesi:</strong>
-            <span className="mx-2">{user.tax_office}</span>
-          </div>
-          {/* Vergi Kimlik No */}
-          <div className="mb-2 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>Vergi Kimlik No:</strong>
-            <span className="mx-2">{user.tax_number}</span>
-          </div>
-        </div>
-        {error && <div className="alert alert-danger py-2">{error}</div>}
-        {success && <div className="alert alert-success py-2">{success}</div>}
-        {emailVerified === 0 && (
-          <div className="alert alert-warning d-flex align-items-center" role="alert">
-            <div>
-              E-posta adresiniz henüz doğrulanmadı. Lütfen e-postanızı kontrol edin ve doğrulama linkine tıklayın.
-              <br />
+        <div className="card p-4 shadow-sm">
+          {/* Customer ID Display */}
+          {user.customer_id && (
+            <div className="mb-2 d-flex align-items-center">
+              <strong style={{ minWidth: 140 }}>Müşteri Numarası:</strong>
+              <span className="mx-2" style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>{user.customer_id}</span>
               <button
-                className="btn btn-outline-danger btn-sm mt-2"
-                onClick={handleResendVerification}
-                disabled={resendLoading}
+                className="btn btn-link p-0 text-danger mx-1"
+                title="Kopyala"
+                onClick={() => navigator.clipboard.writeText(user.customer_id)}
               >
-                {resendLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder'}
+                <i className="bi bi-clipboard"></i>
               </button>
-              {resendMessage && <div className="mt-2 small">{resendMessage}</div>}
+            </div>
+          )}
+          {/* License Key Display */}
+          {user.licenseKey && (
+            <div className="mb-2 d-flex align-items-center">
+              <strong style={{ minWidth: 140 }}>Lisans Anahtarı:</strong>
+              <span className="mx-2" style={{ letterSpacing: '1px', fontFamily: 'monospace' }}>
+                {showLicense ? user.licenseKey : '•'.repeat(user.licenseKey.length)}
+              </span>
+              <button
+                className="btn btn-link p-0 text-danger mx-1"
+                title="Kopyala"
+                onClick={() => navigator.clipboard.writeText(user.licenseKey)}
+              >
+                <i className="bi bi-clipboard"></i>
+              </button>
+              <button
+                className="btn btn-link p-0 text-secondary"
+                title={showLicense ? 'Gizle' : 'Göster'}
+                onClick={() => setShowLicense(v => !v)}
+              >
+                <i className={`bi bi-eye${showLicense ? '-slash' : ''}`}></i>
+              </button>
+            </div>
+          )}
+          {/* Şirket Ünvanı */}
+          <div className="mb-2 d-flex align-items-center">
+            <strong style={{ minWidth: 140 }}>Şirket Ünvanı:</strong>
+            <span className="mx-2">{user.company_name}</span>
+          </div>
+          {/* Şehir */}
+          <div className="mb-2 d-flex align-items-center">
+            <strong style={{ minWidth: 140 }}>Şehir:</strong>
+            <span className="mx-2">{user.city}</span>
+          </div>
+          {/* İlçe */}
+          <div className="mb-2 d-flex align-items-center">
+            <strong style={{ minWidth: 140 }}>İlçe:</strong>
+            <span className="mx-2">{user.district}</span>
+          </div>
+          {/* Adres */}
+          <div className="mb-2 d-flex align-items-center">
+            <strong style={{ minWidth: 140 }}>Adres:</strong>
+            <span className="mx-2">{user.address}</span>
+          </div>
+          {/* Only show edit for phone and email */}
+          {['phone', 'email'].map(key => (
+            <div key={key} className="mb-3 d-flex align-items-center">
+              <strong style={{ minWidth: 140 }}>{key === 'phone' ? 'Telefon' : 'E-posta'}:</strong>
+              {editField === key && confirming ? (
+                <>
+                  {key === 'phone' ? (
+                    <div style={{ width: 250 }}>
+                      <div className="input-group">
+                        <span className="input-group-text">+90</span>
+                        <input
+                          type="tel"
+                          className="form-control"
+                          value={editValue}
+                          onChange={e => {
+                            let value = e.target.value.replace(/\D/g, '');
+                            if (value.startsWith('0')) value = value.slice(1);
+                            if (value.length > 10) value = value.slice(0, 10);
+                            setEditValue(value);
+                          }}
+                          maxLength={10}
+                          minLength={10}
+                          pattern="[0-9]{10}"
+                          placeholder="5XXXXXXXXX"
+                          required
+                        />
+                      </div>
+                      <div className="form-text">Başında 0 olmadan, 10 haneli giriniz. Örn: 5XXXXXXXXX</div>
+                    </div>
+                  ) : (
+                    <input
+                      type="email"
+                      className="form-control mx-2"
+                      value={editValue}
+                      onChange={e => setEditValue(e.target.value)}
+                      style={{ maxWidth: 250 }}
+                    />
+                  )}
+                  <button className="btn btn-success btn-sm mx-1" onClick={handleConfirm}>Evet</button>
+                  <button className="btn btn-secondary btn-sm" onClick={() => { setEditField(null); setConfirming(false); }}>Hayır</button>
+                </>
+              ) : (
+                <>
+                  <span className="mx-2">{key === 'phone' ? `+90${user[key]}` : user[key]}</span>
+                  <button className="btn btn-link p-0 text-danger" onClick={() => handleEditClick(key)} title="Düzenle">
+                    <i className="bi bi-pencil"></i>
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+          {/* Only Vergi Dairesi and Vergi Kimlik No in the red box, now at the bottom */}
+          <div className="mb-3 p-3 rounded border border-2 border-danger position-relative" style={{borderStyle:'dashed', minHeight: 80}}>
+            {/* Vergi Dairesi */}
+            <div className="mb-2 d-flex align-items-center">
+              <strong style={{ minWidth: 140 }}>Vergi Dairesi:</strong>
+              <span className="mx-2">{user.tax_office}</span>
+            </div>
+            {/* Vergi Kimlik No */}
+            <div className="mb-2 d-flex align-items-center">
+              <strong style={{ minWidth: 140 }}>Vergi Kimlik No:</strong>
+              <span className="mx-2">{user.tax_number}</span>
             </div>
           </div>
-        )}
-        {emailVerified === 1 && (
-          <div className="alert alert-success" role="alert">
-            E-posta adresiniz doğrulandı.
-          </div>
-        )}
+          {error && <div className="alert alert-danger py-2">{error}</div>}
+          {success && <div className="alert alert-success py-2">{success}</div>}
+          {emailVerified === 0 && (
+            <div className="alert alert-warning d-flex align-items-center" role="alert">
+              <div>
+                E-posta adresiniz henüz doğrulanmadı. Lütfen e-postanızı kontrol edin ve doğrulama linkine tıklayın.
+                <br />
+                <button
+                  className="btn btn-outline-danger btn-sm mt-2"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                >
+                  {resendLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder'}
+                </button>
+                {resendMessage && <div className="mt-2 small">{resendMessage}</div>}
+              </div>
+            </div>
+          )}
+          {emailVerified === 1 && (
+            <div className="alert alert-success" role="alert">
+              E-posta adresiniz doğrulandı.
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

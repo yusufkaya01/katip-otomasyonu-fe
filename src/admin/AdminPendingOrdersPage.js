@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminNavbar from './AdminNavbar';
+import AdminPagination from '../components/AdminPagination';
+import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 const ADMIN_API_KEY = process.env.REACT_APP_ADMIN_API_KEY || '';
@@ -16,11 +18,14 @@ export default function AdminPendingOrdersPage({ token, onLogout }) {
   const [discountError, setDiscountError] = useState('');
   const [discountLoading, setDiscountLoading] = useState(false);
   const [discountSuccess, setDiscountSuccess] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     fetchPendingOrders();
     // eslint-disable-next-line
-  }, [token]);
+  }, [token]); // Only fetch once, FE paginates
 
   async function fetchPendingOrders() {
     setLoading(true);
@@ -34,8 +39,10 @@ export default function AdminPendingOrdersPage({ token, onLogout }) {
         },
       });
       const data = await res.json();
-      if (res.ok && data.orders) {
-        setPendingOrders(data.orders);
+      if (res.ok && (data.orders || data.items)) {
+        const allOrders = data.orders || data.items || [];
+        setTotal(allOrders.length);
+        setPendingOrders(allOrders);
       } else {
         setError(data.error || 'Siparişler alınamadı.');
       }
@@ -123,6 +130,7 @@ export default function AdminPendingOrdersPage({ token, onLogout }) {
 
   return (
     <div className="container-fluid px-0">
+      <PageLoadingSpinner show={loading} fullscreen />
       <AdminNavbar onLogout={onLogout} />
       <div className="container py-4">
         <h4 className="mb-3">Bekleyen Siparişler</h4>
@@ -130,42 +138,50 @@ export default function AdminPendingOrdersPage({ token, onLogout }) {
         {error && <div className="alert alert-danger">{error}</div>}
         {pendingOrders.length === 0 && !loading && <div className="alert alert-success">Bekleyen sipariş yok.</div>}
         {pendingOrders.length > 0 && (
-          <table className="table table-bordered">
-            <thead>
-              <tr>
-                <th>Sipariş No</th>
-                <th>Müşteri No</th>
-                <th>Şirket Ünvanı</th>
-                <th>Tutar</th>
-                <th>Oluşturulma</th>
-                <th>Durum</th>
-                <th>İşlemler</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingOrders.map(order => (
-                <tr key={order.order_id}>
-                  <td>{order.order_id}</td>
-                  <td>{order.customer_name || order.customer_id}</td>
-                  <td>{order.company_name || '-'}</td>
-                  <td>{order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '-'}</td>
-                  <td>{order.created_at ? new Date(order.created_at).toLocaleString('tr-TR') : ''}</td>
-                  <td>{order.is_confirmed ? 'Onaylandı' : 'Bekliyor'}</td>
-                  <td>
-                    <button className="btn btn-success btn-sm" onClick={() => handleConfirm(order.order_id)} disabled={confirmLoading===order.order_id}>
-                      {confirmLoading===order.order_id ? 'Onaylanıyor...' : 'Onayla'}
-                    </button>
-                    <button className="btn btn-outline-info btn-sm ms-2" onClick={() => openDiscountModal(order)}>
-                      İndirim Ekle/Güncelle
-                    </button>
-                  </td>
+          <>
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Sipariş No</th>
+                  <th>Müşteri No</th>
+                  <th>Şirket Ünvanı</th>
+                  <th>Tutar</th>
+                  <th>Oluşturulma</th>
+                  <th>Durum</th>
+                  <th>İşlemler</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pendingOrders.slice((page - 1) * perPage, page * perPage).map(order => (
+                  <tr key={order.order_id}>
+                    <td>{order.order_id}</td>
+                    <td>{order.customer_name || order.customer_id}</td>
+                    <td>{order.company_name || '-'}</td>
+                    <td>{order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '-'}</td>
+                    <td>{order.created_at ? new Date(order.created_at).toLocaleString('tr-TR') : ''}</td>
+                    <td>{order.is_confirmed ? 'Onaylandı' : 'Bekliyor'}</td>
+                    <td>
+                      <button className="btn btn-success btn-sm" onClick={() => handleConfirm(order.order_id)} disabled={confirmLoading===order.order_id}>
+                        {confirmLoading===order.order_id ? 'Onaylanıyor...' : 'Onayla'}
+                      </button>
+                      <button className="btn btn-outline-info btn-sm ms-2" onClick={() => openDiscountModal(order)}>
+                        İndirim Ekle/Güncelle
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <AdminPagination
+              page={page}
+              perPage={perPage}
+              total={total}
+              onPageChange={setPage}
+              onPerPageChange={v => { setPerPage(v); setPage(1); }}
+            />
+          </>
         )}
       </div>
-
       {/* Discount Modal */}
       {discountModal && (
         <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>

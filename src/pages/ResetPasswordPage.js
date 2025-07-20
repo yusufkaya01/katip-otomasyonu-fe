@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 function ResetPasswordPage() {
   const [token, setToken] = useState('');
@@ -36,33 +37,36 @@ function ResetPasswordPage() {
   };
 
   return (
-    <div className="container py-5" style={{ maxWidth: 400 }}>
-      <h2 className="mb-4">Şifre Sıfırla</h2>
-      {success ? (
-        <div className="alert alert-success">Şifreniz başarıyla güncellendi. Artık yeni şifrenizle giriş yapabilirsiniz.</div>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label htmlFor="token" className="form-label">E-posta ile gelen Kod</label>
-            <input type="text" className="form-control" id="token" value={token} onChange={e => setToken(e.target.value)} required />
-            <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
-              Şifre sıfırlama e-postasındaki kodu buraya giriniz.
+    <>
+      <PageLoadingSpinner show={loading} fullscreen />
+      <div className="container py-5" style={{ maxWidth: 400 }}>
+        <h2 className="mb-4">Şifre Sıfırla</h2>
+        {success ? (
+          <div className="alert alert-success">Şifreniz başarıyla güncellendi. Artık yeni şifrenizle giriş yapabilirsiniz.</div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label htmlFor="token" className="form-label">E-posta ile gelen Kod</label>
+              <input type="text" className="form-control" id="token" value={token} onChange={e => setToken(e.target.value)} required />
+              <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
+                Şifre sıfırlama e-postasındaki kodu buraya giriniz.
+              </div>
             </div>
-          </div>
-          <div className="mb-3">
-            <label htmlFor="newPassword" className="form-label">Yeni Şifre</label>
-            <input type="password" className="form-control" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={8} maxLength={16} />
-            <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
-              Şifreniz 8-16 karakter arasında olmalıdır.
+            <div className="mb-3">
+              <label htmlFor="newPassword" className="form-label">Yeni Şifre</label>
+              <input type="password" className="form-control" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={8} maxLength={16} />
+              <div className="form-text text-muted" style={{fontSize:'0.95em'}}>
+                Şifreniz 8-16 karakter arasında olmalıdır.
+              </div>
             </div>
-          </div>
-          {error && <div className="alert alert-danger py-2">{error}</div>}
-          <button type="submit" className="btn btn-danger w-100" disabled={loading}>
-            {loading ? 'Sıfırlanıyor...' : 'Şifreyi Sıfırla'}
-          </button>
-        </form>
-      )}
-    </div>
+            {error && <div className="alert alert-danger py-2">{error}</div>}
+            <button type="submit" className="btn btn-danger w-100" disabled={loading}>
+              {loading ? 'Sıfırlanıyor...' : 'Şifreyi Sıfırla'}
+            </button>
+          </form>
+        )}
+      </div>
+    </>
   );
 }
 

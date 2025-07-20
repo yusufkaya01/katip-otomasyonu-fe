@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AdminNavbar from './AdminNavbar';
+import AdminPagination from '../components/AdminPagination';
+import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 export default function AdminMissingTaxInfoPage({ token, onLogout }) {
   // Use token from props, fallback to adminUser?.accessToken for compatibility
@@ -11,6 +13,10 @@ export default function AdminMissingTaxInfoPage({ token, onLogout }) {
   const [companies, setCompanies] = useState([]);
   const [updating, setUpdating] = useState({});
   const [success, setSuccess] = useState({});
+
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [total, setTotal] = useState(0);
 
   const API_KEY = process.env.REACT_APP_ADMIN_API_KEY;
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
@@ -33,11 +39,13 @@ export default function AdminMissingTaxInfoPage({ token, onLogout }) {
     })
       .then(res => res.json())
       .then(data => {
-        setCompanies(Array.isArray(data) ? data : []);
+        const allCompanies = Array.isArray(data.items) ? data.items : (Array.isArray(data) ? data : []);
+        setTotal(allCompanies.length);
+        setCompanies(allCompanies);
       })
       .catch(() => setError('Eksik vergi bilgisi olan şirketler alınamadı.'))
       .finally(() => setLoading(false));
-  }, [API_BASE_URL, API_KEY, adminToken]);
+  }, [API_BASE_URL, API_KEY, adminToken]); // Only fetch once, FE paginates
 
   const handleUpdate = async (customer_id, idx) => {
     const tax_office = document.getElementById(`tax_office_${idx}`).value;
@@ -70,14 +78,14 @@ export default function AdminMissingTaxInfoPage({ token, onLogout }) {
 
   return (
     <>
+      <PageLoadingSpinner show={loading} fullscreen />
       <AdminNavbar />
       <div className="container py-4">
         <h3 className="mb-4">Eksik Vergi Bilgili Şirketler</h3>
-        {loading && <div>Yükleniyor...</div>}
         {error && <div className="alert alert-danger">{error}</div>}
         {companies.length === 0 && !loading && <div className="alert alert-info">Tüm şirketlerin vergi bilgileri tamam.</div>}
         <div className="row g-4">
-          {companies.map((c, idx) => (
+          {companies.slice((page-1)*perPage, page*perPage).map((c, idx) => (
             <div className="col-12 col-md-6 col-lg-4" key={c.customer_id}>
               <div className="card shadow-sm p-3">
                 <div className="fw-bold mb-2">{c.company_name}</div>
@@ -108,6 +116,15 @@ export default function AdminMissingTaxInfoPage({ token, onLogout }) {
             </div>
           ))}
         </div>
+        {companies.length > 0 && (
+          <AdminPagination
+            page={page}
+            perPage={perPage}
+            total={total}
+            onPageChange={setPage}
+            onPerPageChange={v => { setPerPage(v); setPage(1); }}
+          />
+        )}
       </div>
     </>
   );

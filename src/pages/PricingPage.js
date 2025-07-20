@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 const TIERS = Array.from({ length: 10 }, (_, i) => {
   const tier = i + 1;
@@ -47,8 +48,11 @@ function InfoIcon({ text, bold }) {
 }
 
 function PricingPage() {
+  const [loading, setLoading] = useState(false);
+
   return (
     <>
+      <PageLoadingSpinner show={loading} fullscreen />
       {/* Animated sticky catch phrase for installment info */}
       <div style={{
         position: 'fixed',

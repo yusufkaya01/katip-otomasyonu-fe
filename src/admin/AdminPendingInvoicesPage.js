@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AdminNavbar from './AdminNavbar';
+import AdminPagination from '../components/AdminPagination';
+import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 const ADMIN_API_KEY = process.env.REACT_APP_ADMIN_API_KEY || '';
@@ -15,11 +17,14 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
   const [modalError, setModalError] = useState('');
   const [modalLoading, setModalLoading] = useState(false);
   const [modalSuccess, setModalSuccess] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     fetchOrders();
     // eslint-disable-next-line
-  }, [token]);
+  }, [token]); // Only fetch once, FE paginates
 
   async function fetchOrders() {
     setLoading(true);
@@ -33,8 +38,10 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
         },
       });
       const data = await res.json();
-      if (res.ok && data.orders) {
-        setOrders(data.orders);
+      if (res.ok && (data.orders || data.items)) {
+        const allOrders = data.orders || data.items || [];
+        setTotal(allOrders.length);
+        setOrders(allOrders);
       } else {
         setError(data.error || 'Siparişler alınamadı.');
       }
@@ -97,12 +104,15 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
     setModalLoading(false);
   };
 
+  // Slice orders for current page
+  const paginatedOrders = orders.slice((page - 1) * perPage, page * perPage);
+
   return (
     <div className="container-fluid px-0">
+      <PageLoadingSpinner show={loading} fullscreen />
       <AdminNavbar onLogout={onLogout} />
       <div className="container py-4">
         <h4 className="mb-3">Fatura Bekleyen Siparişler</h4>
-        {loading && <div className="alert alert-info">Yükleniyor...</div>}
         {error && <div className="alert alert-danger">{error}</div>}
         {orders.length > 0 && (
           <table className="table table-bordered">
@@ -117,7 +127,7 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
               </tr>
             </thead>
             <tbody>
-              {orders.map(order => (
+              {paginatedOrders.map(order => (
                 <tr key={order.order_id}>
                   <td>{order.order_id}</td>
                   <td>{order.company_name || '-'}</td>
@@ -135,6 +145,15 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
           </table>
         )}
         {(!loading && orders.length === 0 && !error) && <div className="alert alert-success">Fatura bekleyen sipariş yok.</div>}
+        {orders.length > 0 && (
+          <AdminPagination
+            page={page}
+            perPage={perPage}
+            total={total}
+            onPageChange={setPage}
+            onPerPageChange={v => { setPerPage(v); setPage(1); }}
+          />
+        )}
       </div>
       {/* Modal for invoice entry */}
       {showModal && (
