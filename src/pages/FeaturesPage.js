@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 function FeaturesPage() {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const navigate = useNavigate();
 
   return (

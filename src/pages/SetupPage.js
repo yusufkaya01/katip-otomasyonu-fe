@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 function SetupPage() {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   return (
     <>

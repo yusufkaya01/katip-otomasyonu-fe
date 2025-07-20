@@ -48,7 +48,7 @@ function InfoIcon({ text, bold }) {
 }
 
 function PricingPage() {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
 
   return (
     <>

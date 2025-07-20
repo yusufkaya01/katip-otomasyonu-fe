@@ -8,7 +8,7 @@ function HomePage() {
   const [modalImg, setModalImg] = useState(null);
   const [modalAlt, setModalAlt] = useState('');
   const [hovered, setHovered] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false); // Remove setLoading
   const navigate = useNavigate();
 
   const openModal = (src, alt) => {
