@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import { useAuth } from '../context/AuthContext';
@@ -84,6 +84,36 @@ function IsletmemPage() {
     }
     return msg;
   };
+
+  // Helper: fetch pending orders
+  const fetchPendingOrders = useCallback(() => {
+    setPendingLoading(true);
+    setPendingError('');
+    fetch(`${API_BASE_URL}/osgb/orders/pending`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data.pendingOrders)) {
+          setPendingOrders(data.pendingOrders);
+        } else {
+          setPendingOrders([]);
+        }
+      })
+      .catch(() => setPendingError('Bekleyen siparişler alınamadı.'))
+      .finally(() => setPendingLoading(false));
+  }, [API_BASE_URL, API_KEY, user]);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    if (!user || !user.accessToken) return;
+    fetchPendingOrders();
+  }, [user, API_KEY, API_BASE_URL, fetchPendingOrders]);
 
   // Fetch pending orders on mount (new logic for new API response)
   useEffect(() => {
@@ -440,6 +470,22 @@ function IsletmemPage() {
     }
   }, [showPendingBankDetails, bankIbans.length, user, API_KEY, API_BASE_URL]);
 
+  // Re-fetch after EFT/Havale order created
+  useEffect(() => {
+    if (orderStep === 3 && orderResult && paymentMethod === 'cash') {
+      fetchPendingOrders();
+    }
+    // eslint-disable-next-line
+  }, [orderStep, orderResult, paymentMethod]);
+
+  // Re-fetch after card payment success
+  useEffect(() => {
+    if (paymentResultStatus === 'success') {
+      fetchPendingOrders();
+    }
+    // eslint-disable-next-line
+  }, [paymentResultStatus]);
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -533,14 +579,89 @@ function IsletmemPage() {
             <div className="fw-bold mb-2">Bekleyen Lisans Uzatma Siparişiniz Var</div>
             <ul className="mb-2">
               {pendingOrders.map((order, i) => (
-                <li key={order.order_id || i}>
-                  {order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'} ile {order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '12.000 TL'} / {order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : ''} - Bekliyor
+                <li key={order.order_id || i} className="d-flex align-items-center justify-content-between gap-2">
+                  <span>
+                    {order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'} ile {order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '12.000 TL'} / {order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : ''} - Bekliyor
+                  </span>
                 </li>
               ))}
             </ul>
-            <button className="btn btn-outline-danger btn-sm mb-2" onClick={() => setShowPendingBankDetails(true)}>
-              Banka Bilgilerini Göster
-            </button>
+            <div className="d-flex gap-2 mb-2">
+              <button className="btn btn-primary btn-sm" onClick={() => setShowPendingBankDetails(true)}>
+                Banka Bilgilerini Göster
+              </button>
+              {pendingOrders.some(order => !order.is_paid && order.status !== 'cancelled' && order.status !== 'failed') && (
+                <button
+                  className="btn btn-success btn-sm"
+                  style={{whiteSpace:'nowrap'}}
+                  onClick={async () => {
+                    const order = pendingOrders.find(o => !o.is_paid && o.status !== 'cancelled' && o.status !== 'failed');
+                    if (!order) return;
+                    try {
+                      const res = await fetch(`${API_BASE_URL}/osgb/orders/${order.order_id}/pay-with-card`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'x-api-key': API_KEY,
+                          'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
+                        },
+                        body: JSON.stringify({})
+                      });
+                      const data = await res.json();
+                      if (res.ok && data.success && data.iyzico && data.iyzico.paymentPageUrl) {
+                        window.open(data.iyzico.paymentPageUrl, '_blank', 'noopener');
+                        // Show payment modal and start polling for status
+                        setCardOrderId(order.order_id);
+                        setShowPaymentResult(true);
+                        setPaymentResultStatus('waiting');
+                        setPaymentResultMsg('Ödeme sayfası yeni sekmede açıldı. Lütfen ödemenizi tamamlayınız...');
+                        let attempts = 0;
+                        const maxAttempts = 40; // ~2 minutes
+                        let stopped = false;
+                        async function poll() {
+                          while (attempts < maxAttempts && !stopped) {
+                            try {
+                              const pollRes = await fetch(`${API_BASE_URL}/osgb/orders/${order.order_id}`, {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'x-api-key': API_KEY,
+                                  'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
+                                }
+                              });
+                              const pollData = await pollRes.json();
+                              if (pollRes.ok && pollData.order) {
+                                if (pollData.order.is_paid) {
+                                  setPaymentResultStatus('success');
+                                  setPaymentResultMsg('Ödeme başarıyla tamamlandı. Lisansınız uzatıldı.');
+                                  stopped = true;
+                                  fetchPendingOrders(); // Refresh orders
+                                }
+                              }
+                            } catch (err) {
+                              // ignore poll errors
+                            }
+                            attempts++;
+                            await new Promise(r => setTimeout(r, 3000));
+                          }
+                          if (!stopped) {
+                            setPaymentResultStatus('timeout');
+                            setPaymentResultMsg('Ödeme tamamlanmadı veya zaman aşımına uğradı. Lütfen tekrar deneyin veya destek ile iletişime geçin.');
+                          }
+                        }
+                        poll();
+                      } else {
+                        alert(data.message || 'Kart ile ödeme başlatılamadı. Sipariş zaten ödenmiş veya iptal edilmiş olabilir.');
+                      }
+                    } catch (err) {
+                      alert('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
+                    }
+                  }}
+                >
+                  Kart İle Öde
+                </button>
+              )}
+            </div>
             {/* Modal for pending bank details */}
             {showPendingBankDetails && (
               <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
@@ -627,7 +748,7 @@ function IsletmemPage() {
         )}
         <div className="d-flex align-items-center justify-content-between mb-4">
           <h2 className="mb-0">İşletmem</h2>
-          <button className="btn btn-outline-danger" onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('cash'); }} disabled={pendingOrders.length > 0}>
+          <button className="btn btn-primary" onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('cash'); }} disabled={pendingOrders.length > 0}>
             Lisans Süremi Uzat
           </button>
         </div>

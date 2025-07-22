@@ -1,0 +1,69 @@
+# Frontend Integration: Retry Card Payment for Pending Orders (Iyzico)
+
+## New API Endpoint
+
+**POST** `/api/osgb/orders/:orderId/pay-with-card`
+- Allows the user to pay for an existing pending order with a card (Iyzico), even if the order was originally created with a different payment method (e.g., cash).
+- If the order is not paid/cancelled/failed, the backend will update its payment method to 'card' (if needed) and start the Iyzico payment process for this order.
+- Returns the Iyzico payment page URL for the FE to redirect the user.
+
+### Request Example
+```
+POST /api/osgb/orders/ORDER_ID/pay-with-card
+Headers: { Authorization: Bearer <jwt>, x-api-key: ... }
+Body: {}
+```
+
+### Response Example (Success)
+```
+{
+  "success": true,
+  "order": { ... },
+  "iyzico": {
+    "token": "...",
+    "paymentPageUrl": "https://sandbox-..."
+  }
+}
+```
+
+### Response Example (Failure)
+```
+{
+  "success": false,
+  "message": "Order is already paid."
+}
+```
+
+## FE Flow
+1. When showing pending orders, offer a "Pay with Card" button for each order that is unpaid, uncancelled, and unfailed.
+2. On click, call the new endpoint with the orderId.
+3. If successful, redirect the user to the returned `iyzico.paymentPageUrl`.
+4. After payment, the Iyzico callback will update the order status. FE can poll `/api/osgb/orders/:orderId` or `/api/osgb/orders/status/:orderId` to show the result.
+
+## Notes
+- The backend will handle license expiry checks and payment method updates automatically.
+- No duplicate orders will be created for retries; the same order is reused.
+- If the order is already paid/cancelled/failed, the endpoint will return an error.
+- This endpoint is protected by JWT and API key, just like other order endpoints.
+
+---
+
+For questions or UI suggestions, contact the backend team.
+"
+so if there is any pending order in isletmem page customer can also pay via cars, leets impletement this first (button name = Kart İle Öde)
+----
+another fix required:
+after succesfull card payment we should update isletmem page, so customers will no longer see warns
+---
+another fix requeired:
+lets also do this ; after eft havale selected and order created we should re-fetch the pending, so customers can see the changes quickly?
+
+---
+another fix:
+move Kart ile öde button on right side of the banka bilgi göster button,
+bnka bilgileri button should be a blue colored white text, on hover lighter blue
+kart ile öde button should be green colored, white text, on hover lighter green
+lisans süremi uzat button should be blue and white text, on hover lighter green
+
+colors should be pastel kinda colors
+
