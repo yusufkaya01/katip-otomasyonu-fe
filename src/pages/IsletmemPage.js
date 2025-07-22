@@ -943,6 +943,15 @@ function IsletmemPage() {
               </button>
             </div>
           )}
+          {/* License Expiration Date Display */}
+          {user.licenseExpirationDate && (
+            <div className="mb-2 d-flex align-items-center">
+              <strong style={{ minWidth: 140 }}>Lisans Bitiş Tarihi:</strong>
+              <span className="mx-2" style={{ fontFamily: 'monospace' }}>
+                {new Date(user.licenseExpirationDate).toLocaleString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          )}
           {/* Şirket Ünvanı */}
           <div className="mb-2 d-flex align-items-center">
             <strong style={{ minWidth: 140 }}>Şirket Ünvanı:</strong>
