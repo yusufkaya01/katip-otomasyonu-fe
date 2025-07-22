@@ -85,19 +85,28 @@ function IsletmemPage() {
     return msg;
   };
 
+  // Helper: fetch pending orders (reusable)
+  async function fetchPendingOrdersApi({ apiBaseUrl, apiKey, accessToken }) {
+    const res = await fetch(`${apiBaseUrl}/osgb/orders/pending`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'Authorization': accessToken ? `Bearer ${accessToken}` : ''
+      }
+    });
+    return res.json();
+  }
+
   // Helper: fetch pending orders
   const fetchPendingOrders = useCallback(() => {
     setPendingLoading(true);
     setPendingError('');
-    fetch(`${API_BASE_URL}/osgb/orders/pending`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
-      }
+    fetchPendingOrdersApi({
+      apiBaseUrl: API_BASE_URL,
+      apiKey: API_KEY,
+      accessToken: user?.accessToken
     })
-      .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data.pendingOrders)) {
           setPendingOrders(data.pendingOrders);
@@ -114,31 +123,6 @@ function IsletmemPage() {
     if (!user || !user.accessToken) return;
     fetchPendingOrders();
   }, [user, API_KEY, API_BASE_URL, fetchPendingOrders]);
-
-  // Fetch pending orders on mount (new logic for new API response)
-  useEffect(() => {
-    if (!user || !user.accessToken) return;
-    setPendingLoading(true);
-    setPendingError('');
-    fetch(`${API_BASE_URL}/osgb/orders/pending`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'Authorization': `Bearer ${user.accessToken}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data && Array.isArray(data.pendingOrders)) {
-          setPendingOrders(data.pendingOrders);
-        } else {
-          setPendingOrders([]);
-        }
-      })
-      .catch(() => setPendingError('Bekleyen siparişler alınamadı.'))
-      .finally(() => setPendingLoading(false));
-  }, [user, API_KEY, API_BASE_URL]);
 
   const handleEditClick = (key) => {
     if (!(key === 'phone' || key === 'email')) return;
