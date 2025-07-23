@@ -23,7 +23,6 @@ function IsletmemPage() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [showLicense, setShowLicense] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
   const [showExtendModal, setShowExtendModal] = useState(false);
@@ -664,11 +663,11 @@ function IsletmemPage() {
                           style={{fontSize:'1.1em'}}
                           onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
                         >
-                          <i className="bi bi-clipboard"></i>
+                          <i className="bi bi-copy"></i>
                         </button>
                       </div>
                       <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
-                        Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
+                        Lütfen EFT/havale açıklamasına aşağıdakini yazınız:<br/>
                         <span style={{display:'inline-block',marginTop:6}}>
                           <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
                             Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
@@ -678,19 +677,7 @@ function IsletmemPage() {
                               style={{fontSize:'1.1em'}}
                               onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
                             >
-                              <i className="bi bi-clipboard"></i>
-                            </button>
-                          </span>
-                          <div>veya</div>
-                          <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
-                            Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
-                            <button
-                              className="btn btn-link p-0 text-danger ms-1"
-                              title="Kopyala"
-                              style={{fontSize:'1.1em'}}
-                              onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
-                            >
-                              <i className="bi bi-clipboard"></i>
+                              <i className="bi bi-copy"></i>
                             </button>
                           </span>
                         </span>
@@ -710,7 +697,7 @@ function IsletmemPage() {
                                   style={{fontSize:'1.1em'}}
                                   onClick={() => navigator.clipboard.writeText(iban.iban)}
                                 >
-                                  <i className="bi bi-clipboard"></i>
+                                  <i className="bi bi-copy"></i>
                                 </button>
                               </div>
                               {i < arr.length - 1 && (
@@ -806,11 +793,11 @@ function IsletmemPage() {
                                 style={{fontSize:'1.1em'}}
                                 onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
                               >
-                                <i className="bi bi-clipboard"></i>
+                                <i className="bi bi-copy"></i>
                               </button>
                             </div>
                             <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
-                              Lütfen EFT/havale açıklamasına aşağıdakilerden birini yazınız:<br/>
+                              Lütfen EFT/havale açıklamasına aşağıdakini yazınız:<br/>
                               <span style={{display:'inline-block',marginTop:6}}>
                                 <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
                                   Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
@@ -820,19 +807,7 @@ function IsletmemPage() {
                                     style={{fontSize:'1.1em'}}
                                     onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
                                   >
-                                    <i className="bi bi-clipboard"></i>
-                                  </button>
-                                </span>
-                                <div>veya</div>
-                                <span className="d-flex align-items-center justify-content-center gap-2 mt-1">
-                                  Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.licenseKey}</span>
-                                  <button
-                                    className="btn btn-link p-0 text-danger ms-1"
-                                    title="Kopyala"
-                                    style={{fontSize:'1.1em'}}
-                                    onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.licenseKey}`)}
-                                  >
-                                    <i className="bi bi-clipboard"></i>
+                                    <i className="bi bi-copy"></i>
                                   </button>
                                 </span>
                               </span>
@@ -856,7 +831,7 @@ function IsletmemPage() {
                                       style={{fontSize:'1.1em'}}
                                       onClick={() => navigator.clipboard.writeText(iban.iban)}
                                     >
-                                      <i className="bi bi-clipboard"></i>
+                                      <i className="bi bi-copy"></i>
                                     </button>
                                   </div>
                                   {i < arr.length - 1 && (
@@ -900,7 +875,7 @@ function IsletmemPage() {
                 title="Kopyala"
                 onClick={() => navigator.clipboard.writeText(user.customer_id)}
               >
-                <i className="bi bi-clipboard"></i>
+                <i className="bi bi-copy"></i>
               </button>
             </div>
           )}
@@ -909,21 +884,14 @@ function IsletmemPage() {
             <div className="mb-2 d-flex align-items-center">
               <strong style={{ minWidth: 140 }}>Lisans Anahtarı:</strong>
               <span className="mx-2" style={{ letterSpacing: '1px', fontFamily: 'monospace' }}>
-                {showLicense ? user.licenseKey : '•'.repeat(user.licenseKey.length)}
+                {user.licenseKey}
               </span>
               <button
                 className="btn btn-link p-0 text-danger mx-1"
                 title="Kopyala"
                 onClick={() => navigator.clipboard.writeText(user.licenseKey)}
               >
-                <i className="bi bi-clipboard"></i>
-              </button>
-              <button
-                className="btn btn-link p-0 text-secondary"
-                title={showLicense ? 'Gizle' : 'Göster'}
-                onClick={() => setShowLicense(v => !v)}
-              >
-                <i className={`bi bi-eye${showLicense ? '-slash' : ''}`}></i>
+                <i className="bi bi-copy"></i>
               </button>
             </div>
           )}
