@@ -719,10 +719,99 @@ function IsletmemPage() {
         )}
         <div className="d-flex align-items-center justify-content-between mb-4">
           <h2 className="mb-0">İşletmem</h2>
-          <button className="btn btn-primary" onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('cash'); }} disabled={pendingOrders.length > 0}>
-            Lisans Süremi Uzat
+          <button 
+            className="btn" 
+            style={{
+              background: 'linear-gradient(135deg, #dc3545 0%, #c82333 50%, #dc3545 100%)',
+              backgroundSize: '200% 200%',
+              border: 'none',
+              color: 'white',
+              fontWeight: '600',
+              fontSize: '0.95rem',
+              padding: '12px 28px',
+              borderRadius: '12px',
+              boxShadow: '0 8px 25px rgba(220, 53, 69, 0.3), 0 4px 12px rgba(0, 0, 0, 0.1)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              position: 'relative',
+              overflow: 'hidden',
+              textTransform: 'none',
+              letterSpacing: '0.3px',
+              animation: 'shimmer 2.5s ease-in-out infinite, pulse 2s ease-in-out infinite'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-3px) scale(1.02)';
+              e.target.style.boxShadow = '0 15px 35px rgba(220, 53, 69, 0.4), 0 8px 20px rgba(0, 0, 0, 0.15)';
+              e.target.style.backgroundPosition = '100% 0%';
+              e.target.style.filter = 'brightness(1.1)';
+              e.target.style.animation = 'shimmer 1s ease-in-out infinite';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0) scale(1)';
+              e.target.style.boxShadow = '0 8px 25px rgba(220, 53, 69, 0.3), 0 4px 12px rgba(0, 0, 0, 0.1)';
+              e.target.style.backgroundPosition = '0% 50%';
+              e.target.style.filter = 'brightness(1)';
+              e.target.style.animation = 'shimmer 2.5s ease-in-out infinite, pulse 2s ease-in-out infinite';
+            }}
+            onMouseDown={(e) => {
+              e.target.style.transform = 'translateY(-1px) scale(0.98)';
+            }}
+            onMouseUp={(e) => {
+              e.target.style.transform = 'translateY(-3px) scale(1.02)';
+            }}
+            onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('cash'); }} 
+            disabled={pendingOrders.length > 0}
+          >
+            <span style={{
+              position: 'relative',
+              zIndex: 2
+            }}>
+              Lisans Süremi Uzat
+            </span>
+            <span style={{
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+              animation: 'beam 3s ease-in-out infinite',
+              zIndex: 1
+            }}></span>
           </button>
         </div>
+        <style>{`
+          @keyframes shimmer {
+            0%, 100% { 
+              background-position: 0% 50%;
+              box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3), 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            50% { 
+              background-position: 100% 50%;
+              box-shadow: 0 10px 30px rgba(220, 53, 69, 0.4), 0 6px 16px rgba(0, 0, 0, 0.12);
+            }
+          }
+          @keyframes beam {
+            0% { 
+              left: -100%;
+              opacity: 0;
+            }
+            50% { 
+              opacity: 1;
+            }
+            100% { 
+              left: 100%;
+              opacity: 0;
+            }
+          }
+          @keyframes pulse {
+            0%, 100% { 
+              transform: scale(1);
+            }
+            50% { 
+              transform: scale(1.1);
+            }
+          }
+        `}</style>
         {/* License Extension Modal */}
         {showExtendModal && (
           <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
@@ -976,18 +1065,32 @@ function IsletmemPage() {
             </div>
           ))}
           {/* Only Vergi Dairesi and Vergi Kimlik No in the red box, now at the bottom */}
-          <div className="mb-3 p-3 rounded border border-2 border-danger position-relative" style={{borderStyle:'dashed', minHeight: 80}}>
-            {/* Vergi Dairesi */}
-            <div className="mb-2 d-flex align-items-center">
-              <strong style={{ minWidth: 140 }}>Vergi Dairesi:</strong>
-              <span className="mx-2">{user.tax_office}</span>
+          {user.tax_office && user.tax_number ? (
+            <div className="mb-3 p-3 rounded border border-2 border-danger position-relative" style={{borderStyle:'dashed', minHeight: 80}}>
+              {/* Vergi Dairesi */}
+              <div className="mb-2 d-flex align-items-center">
+                <strong style={{ minWidth: 140 }}>Vergi Dairesi:</strong>
+                <span className="mx-2">{user.tax_office}</span>
+              </div>
+              {/* Vergi Kimlik No */}
+              <div className="mb-2 d-flex align-items-center">
+                <strong style={{ minWidth: 140 }}>Vergi Kimlik No:</strong>
+                <span className="mx-2">{user.tax_number}</span>
+              </div>
             </div>
-            {/* Vergi Kimlik No */}
-            <div className="mb-2 d-flex align-items-center">
-              <strong style={{ minWidth: 140 }}>Vergi Kimlik No:</strong>
-              <span className="mx-2">{user.tax_number}</span>
+          ) : (
+            <div className="mb-3 p-3 rounded" style={{backgroundColor: '#fffbf0', border: '1px solid #f7e98e', color: '#6c5d03'}}>
+              <div className="d-flex align-items-center">
+                <i className="bi bi-clock me-2" style={{color: '#e6ac00'}}></i>
+                <div>
+                  <strong>Belgeleriniz İnceleniyor</strong>
+                  <div className="mt-1" style={{fontSize: '0.9em'}}>
+                    Kayıt aşamasında gönderdiğiniz belgeleriniz kontrol ediliyor. Kontrol tamamlandıktan sonra fatura bilgileriniz burada görüntülenecektir.
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
           {error && <div className="alert alert-danger py-2">{error}</div>}
           {success && <div className="alert alert-success py-2">{success}</div>}
           {emailVerified === 0 && (
