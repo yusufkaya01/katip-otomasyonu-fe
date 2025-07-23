@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
+import { useAuth } from '../context/AuthContext';
 
 function RegisterPage() {
+  const { login } = useAuth();
   // Stepper/modal state
   const [step, setStep] = useState(1);
   // Step 1 state
@@ -23,6 +25,7 @@ function RegisterPage() {
   const [step2GeneralError, setStep2GeneralError] = useState('');
   const [emailCodeSent, setEmailCodeSent] = useState(false);
   const [sendingCode, setSendingCode] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const [registering, setRegistering] = useState(false);
   // Agreements
   const [agreements, setAgreements] = useState({ terms: false, privacy: false, kvkk: false, commercial: false });
@@ -82,14 +85,23 @@ function RegisterPage() {
     setStep1Error({});
     setStep1GeneralError('');
     let errors = {};
-    if (!licenseKey || licenseKey.length !== 10) errors.licenseKey = 'Lisans anahtarı 10 karakter olmalıdır.';
+    
+    // Comprehensive validation
+    if (!licenseKey || licenseKey.trim() === '') {
+      errors.licenseKey = 'Lisans anahtarı zorunludur.';
+    } else if (licenseKey.length !== 10) {
+      errors.licenseKey = 'Lisans anahtarı 10 karakter olmalıdır.';
+    }
+    
     if (!vergiLevhasi) errors.vergiLevhasi = 'Vergi levhası zorunludur.';
     if (!yetkiBelgesi) errors.yetkiBelgesi = 'OSGB yetki belgesi zorunludur.';
+    
     if (Object.keys(errors).length > 0) {
       setStep1Error(errors);
       scrollToFirstError(errors, fieldRefs);
       return;
     }
+    
     setPageLoading(true);
     const formData = new FormData();
     formData.append('licenseKey', licenseKey);
@@ -142,6 +154,7 @@ function RegisterPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setEmailCodeSent(true);
+        setCountdown(30); // Start 30 second countdown
       } else {
         let msg = data.message || data.error || 'Bir hata oluştu.';
         if (msg.includes('already registered')) msg = 'Bu e-posta ile zaten kayıtlı bir kullanıcı var.';
@@ -163,21 +176,49 @@ function RegisterPage() {
     setStep2GeneralError('');
     setShowAgreementWarning(false);
     let errors = {};
-    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errors.email = 'Geçerli bir e-posta adresi giriniz.';
-    if (!emailCode || !/^\d{6}$/.test(emailCode)) errors.emailCode = 'E-posta kodu 6 haneli olmalıdır.';
-    if (!password || password.length < 8 || password.length > 16) errors.password = 'Şifre 8-16 karakter olmalıdır.';
-    if (!passwordConfirm) errors.passwordConfirm = 'Şifre (Tekrar) zorunludur.';
-    if (password !== passwordConfirm) errors.passwordConfirm = 'Şifreler eşleşmiyor.';
-    if (!phone || !/^\d{10}$/.test(phone)) errors.phone = 'Telefon numarası 10 haneli olmalıdır.';
+    
+    // Comprehensive validation - check all required fields
+    if (!email || email.trim() === '') {
+      errors.email = 'E-posta adresi zorunludur.';
+    } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      errors.email = 'Geçerli bir e-posta adresi giriniz.';
+    }
+    
+    if (!emailCode || emailCode.trim() === '') {
+      errors.emailCode = 'E-posta onay kodu zorunludur.';
+    } else if (!/^\d{6}$/.test(emailCode)) {
+      errors.emailCode = 'E-posta kodu 6 haneli olmalıdır.';
+    }
+    
+    if (!password || password.trim() === '') {
+      errors.password = 'Şifre zorunludur.';
+    } else if (password.length < 8 || password.length > 16) {
+      errors.password = 'Şifre 8-16 karakter olmalıdır.';
+    }
+    
+    if (!passwordConfirm || passwordConfirm.trim() === '') {
+      errors.passwordConfirm = 'Şifre (Tekrar) zorunludur.';
+    } else if (password !== passwordConfirm) {
+      errors.passwordConfirm = 'Şifreler eşleşmiyor.';
+    }
+    
+    if (!phone || phone.trim() === '') {
+      errors.phone = 'Telefon numarası zorunludur.';
+    } else if (!/^\d{10}$/.test(phone)) {
+      errors.phone = 'Telefon numarası 10 haneli olmalıdır.';
+    }
+    
     if (!agreements.terms) errors.terms = 'Kullanım Koşulları onaylanmalıdır.';
     if (!agreements.privacy) errors.privacy = 'Gizlilik Sözleşmesi onaylanmalıdır.';
     if (!agreements.kvkk) errors.kvkk = 'KVKK Açık Rıza onaylanmalıdır.';
+    
     if (Object.keys(errors).length > 0) {
       setStep2Error(errors);
       setShowAgreementWarning(true);
       scrollToFirstError(errors, fieldRefs);
       return;
     }
+    
     setRegistering(true);
     try {
       const res = await fetch(`${API_BASE_URL}/osgb/register-step2`, {
@@ -191,7 +232,51 @@ function RegisterPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        window.location.href = '/giris';
+        console.log('Registration successful! Attempting auto-login...');
+        
+        // Add a small delay to ensure registration is fully processed
+        setTimeout(async () => {
+          try {
+            const loginRes = await fetch(`${API_BASE_URL}/osgb/login`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': process.env.REACT_APP_USER_API_KEY
+              },
+              body: JSON.stringify({ email, password })
+            });
+            
+            console.log('Auto-login response status:', loginRes.status);
+            
+            if (loginRes.status === 200) {
+              const loginData = await loginRes.json();
+              console.log('Auto-login successful, logging in user');
+              
+              // Store licenseKey in user if present (same as LoginPage)
+              const userWithLicense = loginData.licenseKey ? 
+                { ...loginData.user, licenseKey: loginData.licenseKey } : 
+                loginData.user;
+              
+              login({ 
+                user: userWithLicense, 
+                accessToken: loginData.accessToken, 
+                refreshToken: loginData.refreshToken 
+              });
+              
+              // Redirect to user dashboard
+              console.log('Redirecting to /isletmem');
+              window.location.href = '/isletmem';
+            } else {
+              console.log('Auto-login failed, redirecting to login page');
+              const loginError = await loginRes.json();
+              console.log('Login error:', loginError);
+              window.location.href = '/giris';
+            }
+          } catch (error) {
+            console.log('Auto-login error:', error);
+            window.location.href = '/giris';
+          }
+        }, 1000); // Wait 1 second before attempting login
       } else {
         let msg = data.message || data.error || 'Bir hata oluştu.';
         if (data.details && Array.isArray(data.details)) {
@@ -230,6 +315,19 @@ function RegisterPage() {
     }
   }, [password, passwordConfirm, step2Error.passwordConfirm]);
 
+  // Countdown effect for email code button
+  React.useEffect(() => {
+    let interval = null;
+    if (countdown > 0) {
+      interval = setInterval(() => {
+        setCountdown(countdown => countdown - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [countdown]);
+
   // Scroll to first error helper
   function scrollToFirstError(errors, refs) {
     const order = [
@@ -263,110 +361,120 @@ function RegisterPage() {
   return (
     <>
       <PageLoadingSpinner show={pageLoading} fullscreen />
-      <div className="container py-5" style={{maxWidth: 540}}>
+      {/* Registration form width - easily adjustable */}
+      <div className="container py-5" style={{maxWidth: 640}}>
         <div className="mb-4 text-center">
           <h2>Kayıt Ol</h2>
         </div>
         {step === 1 && (
-          <form onSubmit={handleStep1} className="mb-4">
-            <div className="mb-3">
-              <label className="form-label">Lütfen sizinle paylaşılmış olan lisans anahtarını giriniz</label>
-              <input
-                type="text"
-                className={`form-control${step1Error.licenseKey ? ' is-invalid' : ''}`}
-                value={licenseKey}
-                onChange={e => setLicenseKey(e.target.value.slice(0, 10))}
-                maxLength={10}
-                ref={fieldRefs.licenseKey}
-                autoFocus
-                required
-              />
-              {step1Error.licenseKey && <div className="invalid-feedback">{step1Error.licenseKey}</div>}
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Vergi levhanızı yükleyiniz</label>
-              <div className="input-group">
-                <label className="input-group-text" htmlFor="vergiLevhasiInput">Dosya Seç</label>
-                <input
-                  type="file"
-                  className={`form-control${step1Error.vergiLevhasi ? ' is-invalid' : ''}`}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  id="vergiLevhasiInput"
-                  style={{display:'none'}}
-                  onChange={handleVergiLevhasiChange}
-                  ref={fieldRefs.vergiLevhasi}
-                  required
-                />
+          <div style={{backgroundColor: '#fdf2f2', padding: '2rem', borderRadius: '8px', border: '1px solid #fecaca'}}>
+            <form onSubmit={handleStep1} className="mb-4">
+              <div className="mb-3">
+                <label className="form-label">Lütfen sizinle paylaşılmış olan lisans anahtarını giriniz</label>
                 <input
                   type="text"
-                  className="form-control bg-white"
-                  value={vergiLevhasi ? vergiLevhasi.name : 'Dosya seçilmedi'}
-                  readOnly
-                  tabIndex={-1}
-                  style={{cursor:'default'}}
+                  className={`form-control${step1Error.licenseKey ? ' is-invalid' : ''}`}
+                  value={licenseKey}
+                  onChange={e => setLicenseKey(e.target.value.slice(0, 10))}
+                  maxLength={10}
+                  ref={fieldRefs.licenseKey}
+                  autoFocus
+                  title="Lütfen bu alanı doldurun."
+                  onInvalid={e => e.target.setCustomValidity('Lütfen lisans anahtarını giriniz.')}
+                  onInput={e => e.target.setCustomValidity('')}
                 />
+                {step1Error.licenseKey && <div className="invalid-feedback">{step1Error.licenseKey}</div>}
               </div>
-              <div className="form-text">Maksimum dosya boyutu: 10 MB</div>
-              {step1Error.vergiLevhasi && <div className="invalid-feedback d-block">{step1Error.vergiLevhasi}</div>}
-            </div>
-            <div className="mb-3">
-              <label className="form-label">OSGB yetki belgenizi yükleyiniz</label>
-              <div className="input-group">
-                <label className="input-group-text" htmlFor="yetkiBelgesiInput">Dosya Seç</label>
-                <input
-                  type="file"
-                  className={`form-control${step1Error.yetkiBelgesi ? ' is-invalid' : ''}`}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  id="yetkiBelgesiInput"
-                  style={{display:'none'}}
-                  onChange={handleYetkiBelgesiChange}
-                  ref={fieldRefs.yetkiBelgesi}
-                  required
-                />
-                <input
-                  type="text"
-                  className="form-control bg-white"
-                  value={yetkiBelgesi ? yetkiBelgesi.name : 'Dosya seçilmedi'}
-                  readOnly
-                  tabIndex={-1}
-                  style={{cursor:'default'}}
-                />
+              <div className="mb-3">
+                <label className="form-label">Vergi levhanızı yükleyiniz</label>
+                <div className="input-group">
+                  <label className="input-group-text" htmlFor="vergiLevhasiInput">Dosya Seç</label>
+                  <input
+                    type="file"
+                    className={`form-control${step1Error.vergiLevhasi ? ' is-invalid' : ''}`}
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    id="vergiLevhasiInput"
+                    style={{display:'none'}}
+                    onChange={handleVergiLevhasiChange}
+                    ref={fieldRefs.vergiLevhasi}
+                    title="Lütfen dosya seçiniz."
+                    onInvalid={e => e.target.setCustomValidity('Lütfen vergi levhası dosyasını seçiniz.')}
+                    onInput={e => e.target.setCustomValidity('')}
+                  />
+                  <input
+                    type="text"
+                    className="form-control bg-white"
+                    value={vergiLevhasi ? vergiLevhasi.name : 'Dosya seçilmedi'}
+                    readOnly
+                    tabIndex={-1}
+                    style={{cursor:'default'}}
+                  />
+                </div>
+                <div className="form-text">Maksimum dosya boyutu: 10 MB</div>
+                {step1Error.vergiLevhasi && <div className="invalid-feedback d-block">{step1Error.vergiLevhasi}</div>}
               </div>
-              <div className="form-text">Maksimum dosya boyutu: 10 MB</div>
-              {step1Error.yetkiBelgesi && <div className="invalid-feedback d-block">{step1Error.yetkiBelgesi}</div>}
-            </div>
-            {step1GeneralError && <div className="alert alert-danger py-2">{step1GeneralError}</div>}
-            <button type="submit" className="btn btn-danger w-100">Devam Et</button>
-          </form>
+              <div className="mb-3">
+                <label className="form-label">OSGB yetki belgenizi yükleyiniz</label>
+                <div className="input-group">
+                  <label className="input-group-text" htmlFor="yetkiBelgesiInput">Dosya Seç</label>
+                  <input
+                    type="file"
+                    className={`form-control${step1Error.yetkiBelgesi ? ' is-invalid' : ''}`}
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    id="yetkiBelgesiInput"
+                    style={{display:'none'}}
+                    onChange={handleYetkiBelgesiChange}
+                    ref={fieldRefs.yetkiBelgesi}
+                    title="Lütfen dosya seçiniz."
+                    onInvalid={e => e.target.setCustomValidity('Lütfen OSGB yetki belgesi dosyasını seçiniz.')}
+                    onInput={e => e.target.setCustomValidity('')}
+                  />
+                  <input
+                    type="text"
+                    className="form-control bg-white"
+                    value={yetkiBelgesi ? yetkiBelgesi.name : 'Dosya seçilmedi'}
+                    readOnly
+                    tabIndex={-1}
+                    style={{cursor:'default'}}
+                  />
+                </div>
+                <div className="form-text">Maksimum dosya boyutu: 10 MB</div>
+                {step1Error.yetkiBelgesi && <div className="invalid-feedback d-block">{step1Error.yetkiBelgesi}</div>}
+              </div>
+              {step1GeneralError && <div className="alert alert-danger py-2">{step1GeneralError}</div>}
+              <button type="submit" className="btn btn-danger w-100">Devam Et</button>
+            </form>
+          </div>
         )}
         {step === 2 && companyInfo && (
-          <form onSubmit={handleStep2}>
-            <div className="mb-3">
-              <div className="alert" style={{background:'#e6f0fa', border:'1px solid #b3d1f2', color:'#174a7c', borderRadius:8}}>
-                <div style={{fontWeight:'bold', fontSize:'1.1rem', letterSpacing:'0.5px', textTransform:'uppercase', marginBottom:8, textAlign:'center'}}>
-                  Şirket Bilgileriniz
-                </div>
-                <div style={{marginBottom:10}}>
-                  <div style={{fontWeight:'bold'}}>Şirket Adı</div>
-                  <div style={{borderBottom:'1px solid #b3d1f2', paddingBottom:6, marginBottom:6}}>{companyInfo.company_name}</div>
-                </div>
-                <div style={{marginBottom:10}}>
-                  <div style={{fontWeight:'bold'}}>OSGB Yetki Belgesi Numaranız</div>
-                  <div style={{borderBottom:'1px solid #b3d1f2', paddingBottom:6, marginBottom:6}}>{companyInfo.osgb_id}</div>
-                </div>
-                <div style={{marginBottom:10}}>
-                  <div style={{fontWeight:'bold'}}>İl / İlçe</div>
-                  <div style={{borderBottom:'1px solid #b3d1f2', paddingBottom:6, marginBottom:6}}>{companyInfo.city} / {companyInfo.district}</div>
-                </div>
-                <div>
-                  <div style={{fontWeight:'bold'}}>Adres</div>
-                  <div>{companyInfo.address}</div>
+          <div style={{backgroundColor: '#fdf2f2', padding: '2rem', borderRadius: '8px', border: '1px solid #fecaca'}}>
+            <form onSubmit={handleStep2}>
+              <div className="mb-3">
+                <div className="alert" style={{background:'#e6f0fa', border:'1px solid #b3d1f2', color:'#174a7c', borderRadius:8}}>
+                  <div style={{fontWeight:'bold', fontSize:'1.1rem', letterSpacing:'0.5px', textTransform:'uppercase', marginBottom:8, textAlign:'center'}}>
+                    Şirket Bilgileriniz
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <div style={{fontWeight:'bold'}}>Şirket Adı</div>
+                    <div style={{borderBottom:'1px solid #b3d1f2', paddingBottom:6, marginBottom:6}}>{companyInfo.company_name}</div>
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <div style={{fontWeight:'bold'}}>OSGB Yetki Belgesi Numaranız</div>
+                    <div style={{borderBottom:'1px solid #b3d1f2', paddingBottom:6, marginBottom:6}}>{companyInfo.osgb_id}</div>
+                  </div>
+                  <div style={{marginBottom:10}}>
+                    <div style={{fontWeight:'bold'}}>İl / İlçe</div>
+                    <div style={{borderBottom:'1px solid #b3d1f2', paddingBottom:6, marginBottom:6}}>{companyInfo.city} / {companyInfo.district}</div>
+                  </div>
+                  <div>
+                    <div style={{fontWeight:'bold'}}>Adres</div>
+                    <div>{companyInfo.address}</div>
+                  </div>
                 </div>
               </div>
-            </div>
             <div className="mb-3">
               <div className="row g-2 align-items-end">
-                <div className="col-7" style={{display:'flex', flexDirection:'column', justifyContent:'flex-end'}}>
+                <div className="col-12">
                   <label className="form-label mb-1">E-posta</label>
                   <input
                     type="email"
@@ -374,16 +482,26 @@ function RegisterPage() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     ref={fieldRefs.email}
-                    required
                     maxLength={60}
                     style={{marginBottom: step2Error.email ? 0 : undefined}}
+                    title="Lütfen bu alanı doldurun."
+                    onInvalid={e => {
+                      if (e.target.validity.valueMissing) {
+                        e.target.setCustomValidity('Lütfen e-posta adresinizi giriniz.');
+                      } else if (e.target.validity.typeMismatch) {
+                        e.target.setCustomValidity('Lütfen geçerli bir e-posta adresi giriniz (örn: kullanici@email.com).');
+                      } else {
+                        e.target.setCustomValidity('Lütfen geçerli bir e-posta adresi giriniz.');
+                      }
+                    }}
+                    onInput={e => e.target.setCustomValidity('')}
                   />
                   {/* Reserve space for error to prevent layout shift */}
                   <div style={{height: 22}}>
                     {step2Error.email && <div className="invalid-feedback d-block" style={{position:'static', padding:0, margin:0}}>{step2Error.email}</div>}
                   </div>
                 </div>
-                <div className="col-5" style={{display:'flex', flexDirection:'column', justifyContent:'flex-end'}}>
+                <div className="col-7" style={{display:'flex', flexDirection:'column', justifyContent:'flex-end'}}>
                   <label className="form-label mb-1">E-posta Onay Kodu</label>
                   <input
                     type="text"
@@ -392,19 +510,25 @@ function RegisterPage() {
                     onChange={e => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     ref={fieldRefs.emailCode}
                     maxLength={6}
-                    required
                     inputMode="numeric"
                     autoComplete="off"
+                    title="Lütfen bu alanı doldurun."
+                    onInvalid={e => e.target.setCustomValidity('Lütfen e-posta onay kodunu giriniz.')}
+                    onInput={e => e.target.setCustomValidity('')}
                   />
                   <div style={{height: 22}}>
                     {step2Error.emailCode && <div className="invalid-feedback d-block" style={{position:'static', padding:0, margin:0}}>{step2Error.emailCode}</div>}
-                    {emailCodeSent && !step2Error.emailCode && <div className="form-text text-success" style={{padding:0, margin:0}} >Kod e-posta adresinize gönderildi.</div>}
+                    {emailCodeSent && !step2Error.emailCode && <div className="form-text text-success" style={{padding:0, margin:0, fontWeight: 900}} >Kod e-posta adresinize gönderildi.</div>}
                   </div>
                 </div>
-                <div className="col-12 mt-1">
-                  <button type="button" className="btn btn-onay-gonder w-100" onClick={handleSendEmailCode} disabled={sendingCode}>
-                    {sendingCode ? 'Gönderiliyor...' : 'Onay Kodu Gönder'}
+                <div className="col-5" style={{display:'flex', flexDirection:'column', justifyContent:'flex-end'}}>
+                  <label className="form-label mb-1" style={{visibility: 'hidden'}}>Placeholder</label>
+                  <button type="button" className="btn btn-onay-gonder" onClick={handleSendEmailCode} disabled={sendingCode || countdown > 0}>
+                    {sendingCode ? 'Gönderiliyor...' : 
+                     countdown > 0 ? `Tekrar Onay Kodu Gönder (${countdown}s)` :
+                     emailCodeSent ? 'Tekrar Onay Kodu Gönder' : 'E-Posta Onay Kodu Gönder'}
                   </button>
+                  <div style={{height: 22}}></div>
                 </div>
               </div>
             </div>
@@ -420,8 +544,10 @@ function RegisterPage() {
                     ref={fieldRefs.password}
                     minLength={8}
                     maxLength={16}
-                    required
                     autoComplete="new-password"
+                    title="Lütfen bu alanı doldurun."
+                    onInvalid={e => e.target.setCustomValidity('Lütfen şifrenizi giriniz.')}
+                    onInput={e => e.target.setCustomValidity('')}
                   />
                   <button
                     type="button"
@@ -447,8 +573,10 @@ function RegisterPage() {
                     ref={fieldRefs.passwordConfirm}
                     minLength={8}
                     maxLength={16}
-                    required
                     autoComplete="new-password"
+                    title="Lütfen bu alanı doldurun."
+                    onInvalid={e => e.target.setCustomValidity('Lütfen şifrenizi tekrar giriniz.')}
+                    onInput={e => e.target.setCustomValidity('')}
                   />
                   <button
                     type="button"
@@ -481,8 +609,10 @@ function RegisterPage() {
                   ref={fieldRefs.phone}
                   maxLength={10}
                   minLength={10}
-                  required
                   placeholder="5XXXXXXXXX"
+                  title="Lütfen bu alanı doldurun."
+                  onInvalid={e => e.target.setCustomValidity('Lütfen telefon numaranızı giriniz.')}
+                  onInput={e => e.target.setCustomValidity('')}
                 />
               </div>
               {step2Error.phone && <div className="invalid-feedback d-block">{step2Error.phone}</div>}
@@ -491,7 +621,7 @@ function RegisterPage() {
             {/* Agreements */}
             <div className="mt-4 mb-2">
               {/* Kullanım Koşulları */}
-              <div className={`form-check mb-2${step2Error.terms ? ' border border-danger rounded p-2' : ''}`} ref={fieldRefs.terms}>
+              <div className={`form-check mb-2${step2Error.terms ? ' border border-danger rounded p-2' : ''}`} ref={fieldRefs.terms} style={{marginLeft: '0.5rem'}}>
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -516,7 +646,7 @@ function RegisterPage() {
                 {step2Error.terms && <div className="text-danger mt-1">{step2Error.terms}</div>}
               </div>
               {/* Gizlilik Sözleşmesi */}
-              <div className={`form-check mb-2${step2Error.privacy ? ' border border-danger rounded p-2' : ''}`} ref={fieldRefs.privacy}>
+              <div className={`form-check mb-2${step2Error.privacy ? ' border border-danger rounded p-2' : ''}`} ref={fieldRefs.privacy} style={{marginLeft: '0.5rem'}}>
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -541,7 +671,7 @@ function RegisterPage() {
                 {step2Error.privacy && <div className="text-danger mt-1">{step2Error.privacy}</div>}
               </div>
               {/* KVKK Açık Rıza */}
-              <div className={`form-check mb-2${step2Error.kvkk ? ' border border-danger rounded p-2' : ''}`} ref={fieldRefs.kvkk}>
+              <div className={`form-check mb-2${step2Error.kvkk ? ' border border-danger rounded p-2' : ''}`} ref={fieldRefs.kvkk} style={{marginLeft: '0.5rem'}}>
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -566,7 +696,7 @@ function RegisterPage() {
                 {step2Error.kvkk && <div className="text-danger mt-1">{step2Error.kvkk}</div>}
               </div>
               {/* Ticari Elektronik İleti Onayı (optional) */}
-              <div className="form-check mb-2">
+              <div className="form-check mb-2" style={{marginLeft: '0.5rem'}}>
                 <input
                   className="form-check-input"
                   type="checkbox"
@@ -591,6 +721,7 @@ function RegisterPage() {
               {registering ? 'Kayıt Olunuyor...' : 'Kaydı Tamamla'}
             </button>
           </form>
+        </div>
         )}
         {/* Agreement Modal */}
         {agreementModal.open && (
@@ -621,15 +752,35 @@ function RegisterPage() {
         )}
         <style>{`
           .btn-onay-gonder {
-            background:rgb(54, 148, 255) !important;
+            background: #6c757d !important;
             color: #fff !important;
-            font-weight: bold;
+            font-weight: 500;
             border: none;
+            font-size: 0.85rem;
+            padding: 0.375rem 0.5rem;
             transition: background 0.2s, color 0.2s;
+            white-space: nowrap;
           }
           .btn-onay-gonder:hover, .btn-onay-gonder:focus {
-            background: #b3d1f2 !important;
-            color: #111 !important;
+            background: #5a6268 !important;
+            color: #fff !important;
+          }
+          .btn-onay-gonder:disabled {
+            background: #6c757d !important;
+            opacity: 0.65;
+          }
+          .input-group-text {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border-color: #dc3545 !important;
+            font-weight: 500;
+            transition: background-color 0.2s, border-color 0.2s;
+          }
+          .input-group-text:hover {
+            background-color: #bb2d3b !important;
+            border-color: #bb2d3b !important;
+            color: white !important;
+            cursor: pointer;
           }
         `}</style>
       </div>
