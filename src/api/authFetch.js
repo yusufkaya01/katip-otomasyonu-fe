@@ -40,9 +40,9 @@ export default async function authFetch(url, options = {}, auth) {
         response = await fetch(url, { ...options, headers: retryHeaders });
       }
     } else {
-      // Refresh failed, logout user
-      if (auth.logout) auth.logout();
-      // Optionally, redirect to login page here
+      // Refresh failed - DON'T automatically logout here, let the calling code decide
+      // This makes it more resilient like admin pages
+      // Return the original 401 response so calling code can handle appropriately
     }
   }
   return response;

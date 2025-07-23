@@ -26,7 +26,7 @@ function IsletmemPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
   const [showExtendModal, setShowExtendModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentMethod, setPaymentMethod] = useState('card');
   const [orderStep, setOrderStep] = useState(1); // 1: select, 2: confirm
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderError, setOrderError] = useState('');
@@ -52,29 +52,47 @@ function IsletmemPage() {
   const didFetchRef = useRef(false);
 
   useEffect(() => {
+    // Wait for AuthContext to finish loading
     if (loading) return;
+    
+    // If no user after loading is complete, redirect to login
     if (!user || !user.accessToken) {
       navigate('/giris', { replace: true });
       return;
     }
+    
+    // Set email verification status based on existing user data
+    if (user.email_verified !== undefined) {
+      setEmailVerified(user.email_verified);
+    }
+    
+    // Prevent multiple fetches
     if (didFetchRef.current) return;
     didFetchRef.current = true;
-    // Use authFetch for profile
+    
+    // Optional profile fetch to get latest data - completely safe, never causes logout
     authFetch(`${API_BASE_URL}/osgb/profile`, { method: 'GET' }, { accessToken: user.accessToken })
       .then(res => {
-        if (!res.ok) throw new Error('Kullanıcı oturumu geçersiz veya süresi dolmuş.');
-        return res.json();
+        if (res.ok) {
+          return res.json();
+        } else {
+          // For any error, just continue with existing data - NEVER logout
+          return null;
+        }
       })
       .then(data => {
-        const updatedUser = { ...user, ...data.user, accessToken: user.accessToken };
-        updateUser(updatedUser);
-        setEmailVerified(data.user.email_verified);
+        if (data && data.user) {
+          const updatedUser = { ...user, ...data.user, accessToken: user.accessToken };
+          updateUser(updatedUser);
+          setEmailVerified(data.user.email_verified);
+        }
+        // If no data, continue with existing user (graceful degradation)
       })
-      .catch(() => {
-        logout();
-        navigate('/giris', { replace: true });
+      .catch((err) => {
+        // For any network/fetch errors, just continue - NEVER logout
+        // Silently fail to keep console clean in production
       });
-  }, [navigate, API_KEY, user, updateUser, logout, loading, API_BASE_URL]);
+  }, [navigate, user, loading, API_BASE_URL, API_KEY, updateUser]);
 
   // Map backend error to Turkish for pending order
   const getOrderErrorMessage = (msg) => {
@@ -121,7 +139,8 @@ function IsletmemPage() {
   useEffect(() => {
     if (!user || !user.accessToken) return;
     fetchPendingOrders();
-  }, [user, API_KEY, API_BASE_URL, fetchPendingOrders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.accessToken]); // Only depend on accessToken, not the full user object
 
   const handleEditClick = (key) => {
     if (!(key === 'phone' || key === 'email')) return;
@@ -161,19 +180,25 @@ function IsletmemPage() {
         body: JSON.stringify(payload)
       }, { accessToken: user.accessToken, refreshToken: user.refreshToken, updateAccessToken: updateUser, logout });
       if (res.status === 200) {
-        // After successful update, fetch latest profile
-        const profileRes = await authFetch(`${API_BASE_URL}/osgb/profile`, { method: 'GET', headers: { 'x-api-key': API_KEY } }, { accessToken: user.accessToken });
-        if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          const updatedUser = { ...user, ...profileData.user, accessToken: user.accessToken };
-          updateUser(updatedUser);
-          setEmailVerified(profileData.user.email_verified);
-          setSuccess('Bilgileriniz başarıyla güncellendi.');
+        // After successful update, try to fetch latest profile (optional)
+        try {
+          const profileRes = await authFetch(`${API_BASE_URL}/osgb/profile`, { method: 'GET', headers: { 'x-api-key': API_KEY } }, { accessToken: user.accessToken });
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            const updatedUser = { ...user, ...profileData.user, accessToken: user.accessToken };
+            updateUser(updatedUser);
+            setEmailVerified(profileData.user.email_verified);
+            setSuccess('Bilgileriniz başarıyla güncellendi.');
+            setConfirming(false);
+          } else {
+            // Don't logout for profile fetch failures after successful update
+            setSuccess('Bilgileriniz başarıyla güncellendi. Yeni bilgileri görmek için sayfayı yenileyebilirsiniz.');
+            setConfirming(false);
+          }
+        } catch (err) {
+          // Don't logout for profile fetch errors after successful update
+          setSuccess('Bilgileriniz başarıyla güncellendi. Yeni bilgileri görmek için sayfayı yenileyebilirsiniz.');
           setConfirming(false);
-        } else {
-          setError('Profil güncellendi ancak tekrar giriş yapmanız gerekiyor.');
-          logout();
-          navigate('/giris', { replace: true });
         }
       } else {
         const data = await res.json();
@@ -714,7 +739,10 @@ function IsletmemPage() {
                 </div>
               </div>
             )}
-            <div className="small">Yeni bir sipariş oluşturmak için önce mevcut siparişi tamamlayın.</div>
+            <div className="small d-flex align-items-center">
+              <i className="bi bi-info-circle me-2 text-primary"></i>
+              Yeni bir sipariş oluşturmak için önce mevcut siparişi tamamlayın.
+            </div>
           </div>
         )}
         <div className="d-flex align-items-center justify-content-between mb-4">
@@ -758,7 +786,7 @@ function IsletmemPage() {
             onMouseUp={(e) => {
               e.target.style.transform = 'translateY(-3px) scale(1.02)';
             }}
-            onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('cash'); }} 
+            onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('card'); }} 
             disabled={pendingOrders.length > 0}
           >
             <span style={{
@@ -832,12 +860,12 @@ function IsletmemPage() {
                         <label className="form-label">Ödeme Yöntemi</label>
                         <div className="d-flex gap-3">
                           <div className="form-check">
-                            <input className="form-check-input" type="radio" id="pay-cash" name="paymentMethod" value="cash" checked={paymentMethod==='cash'} onChange={()=>setPaymentMethod('cash')} />
-                            <label className="form-check-label" htmlFor="pay-cash">EFT/Havale</label>
-                          </div>
-                          <div className="form-check">
                             <input className="form-check-input" type="radio" id="pay-card" name="paymentMethod" value="card" checked={paymentMethod==='card'} onChange={()=>setPaymentMethod('card')} />
                             <label className="form-check-label" htmlFor="pay-card">Kredi Kartı</label>
+                          </div>
+                          <div className="form-check">
+                            <input className="form-check-input" type="radio" id="pay-cash" name="paymentMethod" value="cash" checked={paymentMethod==='cash'} onChange={()=>setPaymentMethod('cash')} />
+                            <label className="form-check-label" htmlFor="pay-cash">EFT/Havale</label>
                           </div>
                         </div>
                       </div>
@@ -1067,6 +1095,9 @@ function IsletmemPage() {
           {/* Only Vergi Dairesi and Vergi Kimlik No in the red box, now at the bottom */}
           {user.tax_office && user.tax_number ? (
             <div className="mb-3 p-3 rounded border border-2 border-danger position-relative" style={{borderStyle:'dashed', minHeight: 80}}>
+              <div className="fw-bold mb-3 text-danger" style={{fontSize: '1.05rem'}}>
+                Fatura Bilgileriniz
+              </div>
               {/* Vergi Dairesi */}
               <div className="mb-2 d-flex align-items-center">
                 <strong style={{ minWidth: 140 }}>Vergi Dairesi:</strong>

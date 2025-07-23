@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
 
@@ -16,11 +17,13 @@ export function AuthProvider({ children }) {
     const storedUser = localStorage.getItem('osgbUser');
     const storedAccessToken = localStorage.getItem('osgbAccessToken');
     const storedRefreshToken = localStorage.getItem('osgbRefreshToken');
+    
     let parsedUser = null;
     if (storedUser) {
       try {
         parsedUser = JSON.parse(storedUser);
       } catch (e) {
+        console.warn('AuthContext: Failed to parse stored user:', e);
         parsedUser = null;
       }
     }
@@ -35,10 +38,14 @@ export function AuthProvider({ children }) {
     setAccessToken(storedAccessToken || null);
     setRefreshToken(storedRefreshToken || null);
     setLoading(false);
+    setInitialized(true);
   }, []);
 
-  // When user or tokens change, update localStorage
+  // When user or tokens change, update localStorage (but only after initialization)
   useEffect(() => {
+    // Don't update localStorage during initial restoration
+    if (!initialized) return;
+    
     if (user) {
       localStorage.setItem('osgbUser', JSON.stringify(user));
     } else {
@@ -54,7 +61,7 @@ export function AuthProvider({ children }) {
     } else {
       localStorage.removeItem('osgbRefreshToken');
     }
-  }, [user, accessToken, refreshToken]);
+  }, [user, accessToken, refreshToken, initialized]);
 
   // Login: set user and tokens
   const login = ({ user: userObj, accessToken, refreshToken }) => {
@@ -79,7 +86,7 @@ export function AuthProvider({ children }) {
         });
       }
     } catch (e) {
-      // Ignore errors, always clear tokens
+      // Ignore logout API errors, always clear tokens
     } finally {
       setUser(null);
       setAccessToken(null);
