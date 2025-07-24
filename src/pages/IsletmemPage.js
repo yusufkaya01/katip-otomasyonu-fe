@@ -45,6 +45,7 @@ function IsletmemPage() {
   const [showPaymentResult, setShowPaymentResult] = useState(false);
   const [paymentResultStatus, setPaymentResultStatus] = useState('waiting'); // 'waiting', 'success', 'error', 'timeout'
   const [paymentResultMsg, setPaymentResultMsg] = useState('');
+  const [paymentIframeUrl, setPaymentIframeUrl] = useState('');
   const [copyFeedback, setCopyFeedback] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
@@ -267,6 +268,7 @@ function IsletmemPage() {
     setCardOrderId(null);
     setCardStatus(null);
     setCardStatusError('');
+    setPaymentIframeUrl('');
     try {
       // Build returnUrl for card payments
       let body = { payment_method: paymentMethod };
@@ -286,16 +288,16 @@ function IsletmemPage() {
       });
       const data = await res.json();
       if (res.ok && data.success !== false) {
-        // Card payment: open iyzico in new tab and poll for status
+        // Card payment: embed iyzico in modal iframe and poll for status
         if (paymentMethod === 'card' && data.iyzico && data.iyzico.paymentPageUrl) {
           const orderId = data.order?.order_id || data.order_id || data.iyzico.orderId || null;
           setCardOrderId(orderId);
           setShowPaymentResult(true);
           setShowExtendModal(false); // Close the order modal for best UX
           setPaymentResultStatus('waiting');
-          setPaymentResultMsg('Ödeme sayfası yeni sekmede açıldı. Lütfen ödemenizi tamamlayınız...');
-          // Open iyzico in new tab
-          window.open(data.iyzico.paymentPageUrl, '_blank', 'noopener');
+          setPaymentResultMsg('Ödeme formu yükleniyor...');
+          // Set payment URL for iframe
+          setPaymentIframeUrl(data.iyzico.paymentPageUrl);
           // Start polling for payment status
           let attempts = 0;
           const maxAttempts = 40; // ~2 minutes
@@ -317,24 +319,29 @@ function IsletmemPage() {
                   if (data.status === 'paid') {
                     setPaymentResultStatus('success');
                     setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                    setPaymentIframeUrl('');
                     return;
                   } else if (data.status === 'failed') {
                     setPaymentResultStatus('error');
                     setPaymentResultMsg(data.failureReason || 'Ödeme işlemi başarısız oldu. Lütfen kart bilgilerinizi ve bakiyenizi kontrol edin veya bankanız ile iletişime geçin.');
+                    setPaymentIframeUrl('');
                     return;
                   } // else pending: continue polling
                 } else if (res.ok && data.order && data.order.is_paid) {
                   setPaymentResultStatus('success');
                   setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                  setPaymentIframeUrl('');
                   return;
                 } else if (res.status === 404) {
                   setPaymentResultStatus('error');
                   setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
+                  setPaymentIframeUrl('');
                   return;
                 }
               } catch (err) {
                 setPaymentResultStatus('error');
                 setPaymentResultMsg('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
+                setPaymentIframeUrl('');
                 return;
               }
               attempts++;
@@ -343,6 +350,7 @@ function IsletmemPage() {
             if (!stopped) {
               setPaymentResultStatus('timeout');
               setPaymentResultMsg('Ödeme tamamlanmadı veya zaman aşımına uğradı. Lütfen tekrar deneyin veya destek ile iletişime geçin.');
+              setPaymentIframeUrl('');
             }
           }
           poll();
@@ -437,24 +445,29 @@ function IsletmemPage() {
               if (data.status === 'paid') {
                 setPaymentResultStatus('success');
                 setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                setPaymentIframeUrl('');
                 return;
               } else if (data.status === 'failed') {
                 setPaymentResultStatus('error');
                 setPaymentResultMsg(data.failureReason || 'Ödeme işlemi başarısız oldu. Lütfen kart bilgilerinizi ve bakiyenizi kontrol edin veya bankanız ile iletişime geçin.');
+                setPaymentIframeUrl('');
                 return;
               } // else pending: continue polling
             } else if (res.ok && data.order && data.order.is_paid) {
               setPaymentResultStatus('success');
               setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+              setPaymentIframeUrl('');
               return;
             } else if (res.status === 404) {
               setPaymentResultStatus('error');
               setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
+              setPaymentIframeUrl('');
               return;
             }
           } catch (err) {
             setPaymentResultStatus('error');
             setPaymentResultMsg('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
+            setPaymentIframeUrl('');
             return;
           }
           attempts++;
@@ -463,6 +476,7 @@ function IsletmemPage() {
         if (!stopped) {
           setPaymentResultStatus('timeout');
           setPaymentResultMsg('Ödeme tamamlanmadı veya zaman aşımına uğradı. Lütfen tekrar deneyin veya destek ile iletişime geçin.');
+          setPaymentIframeUrl('');
         }
       }
       poll();
@@ -533,23 +547,43 @@ function IsletmemPage() {
       <div className="container py-5" style={{ maxWidth: 600 }}>
         {/* Payment Result Modal */}
         {showPaymentResult && (
-          <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
-            <div className="modal-dialog modal-dialog-centered">
+          <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)' }}>
+            <div className="modal-dialog modal-dialog-centered modal-lg">
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Ödeme Sonucu</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowPaymentResult(false)}></button>
+                  <h5 className="modal-title">Ödeme</h5>
+                  <button type="button" className="btn-close" onClick={() => {
+                    setShowPaymentResult(false);
+                    setPaymentIframeUrl('');
+                  }}></button>
                 </div>
                 <div className="modal-body text-center">
-                  {paymentResultStatus === 'waiting' && (
+                  {paymentResultStatus === 'waiting' && paymentIframeUrl && (
                     <>
                       <div className="mb-3">
-                        <div className="spinner-border text-danger" role="status">
-                          <span className="visually-hidden">Yükleniyor...</span>
+                        <div className="text-muted mb-2">Ödeme bilgilerinizi aşağıdaki formda güvenle girebilirsiniz:</div>
+                        <iframe
+                          src={paymentIframeUrl}
+                          style={{
+                            width: '100%',
+                            height: '600px',
+                            border: '1px solid #ddd',
+                            borderRadius: '8px'
+                          }}
+                          title="Ödeme Formu"
+                          allow="payment"
+                          sandbox="allow-forms allow-scripts allow-same-origin allow-top-navigation"
+                        />
+                      </div>
+                      <div className="alert alert-info">
+                        <div className="d-flex align-items-center justify-content-center gap-2">
+                          <div className="spinner-border spinner-border-sm text-primary" role="status">
+                            <span className="visually-hidden">Yükleniyor...</span>
+                          </div>
+                          <span>Ödeme durumunuz otomatik olarak kontrol ediliyor...</span>
                         </div>
                       </div>
-                      <div>{paymentResultMsg}</div>
-                      <button className="btn btn-outline-success btn-sm mt-3" onClick={async () => {
+                      <button className="btn btn-outline-success btn-sm" onClick={async () => {
                         if (!cardOrderId) return;
                         setPaymentResultMsg('Ödeme durumu kontrol ediliyor...');
                         try {
@@ -562,16 +596,26 @@ function IsletmemPage() {
                             }
                           });
                           const data = await res.json();
-                          if (res.ok && data.order) {
-                            if (data.order.is_paid) {
+                          if (res.ok && data.status) {
+                            if (data.status === 'paid') {
                               setPaymentResultStatus('success');
                               setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                              setPaymentIframeUrl('');
+                            } else if (data.status === 'failed') {
+                              setPaymentResultStatus('error');
+                              setPaymentResultMsg(data.failureReason || 'Ödeme işlemi başarısız oldu. Lütfen kart bilgilerinizi ve bakiyenizi kontrol edin veya bankanız ile iletişime geçin.');
+                              setPaymentIframeUrl('');
                             } else {
-                              setPaymentResultMsg('Ödeme henüz tamamlanmamış. Lütfen tekrar deneyin.');
+                              setPaymentResultMsg('Ödeme henüz tamamlanmamış. Lütfen ödeme formunu kullanarak işleminizi tamamlayın.');
                             }
+                          } else if (res.ok && data.order && data.order.is_paid) {
+                            setPaymentResultStatus('success');
+                            setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
+                            setPaymentIframeUrl('');
                           } else if (res.status === 404) {
                             setPaymentResultStatus('error');
                             setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
+                            setPaymentIframeUrl('');
                           } else {
                             setPaymentResultMsg('Ödeme durumu alınamadı. Lütfen tekrar deneyin.');
                           }
@@ -581,6 +625,16 @@ function IsletmemPage() {
                       }}>
                         Ödeme Durumunu Manuel Kontrol Et
                       </button>
+                    </>
+                  )}
+                  {paymentResultStatus === 'waiting' && !paymentIframeUrl && (
+                    <>
+                      <div className="mb-3">
+                        <div className="spinner-border text-danger" role="status">
+                          <span className="visually-hidden">Yükleniyor...</span>
+                        </div>
+                      </div>
+                      <div>{paymentResultMsg}</div>
                     </>
                   )}
                   {paymentResultStatus === 'success' && (
@@ -664,12 +718,12 @@ function IsletmemPage() {
                       });
                       const data = await res.json();
                       if (res.ok && data.success && data.iyzico && data.iyzico.paymentPageUrl) {
-                        window.open(data.iyzico.paymentPageUrl, '_blank', 'noopener');
-                        // Show payment modal and start polling for status
+                        // Show payment modal with iframe and start polling for status
                         setCardOrderId(order.order_id);
                         setShowPaymentResult(true);
                         setPaymentResultStatus('waiting');
-                        setPaymentResultMsg('Ödeme sayfası yeni sekmede açıldı. Lütfen ödemenizi tamamlayınız...');
+                        setPaymentResultMsg('Ödeme formu yükleniyor...');
+                        setPaymentIframeUrl(data.iyzico.paymentPageUrl);
                         let attempts = 0;
                         const maxAttempts = 40; // ~2 minutes
                         let stopped = false;
@@ -689,6 +743,7 @@ function IsletmemPage() {
                                 if (pollData.order.is_paid) {
                                   setPaymentResultStatus('success');
                                   setPaymentResultMsg('Ödeme başarıyla tamamlandı. Lisansınız uzatıldı.');
+                                  setPaymentIframeUrl('');
                                   stopped = true;
                                   fetchPendingOrders(); // Refresh orders
                                 }
@@ -702,6 +757,7 @@ function IsletmemPage() {
                           if (!stopped) {
                             setPaymentResultStatus('timeout');
                             setPaymentResultMsg('Ödeme tamamlanmadı veya zaman aşımına uğradı. Lütfen tekrar deneyin veya destek ile iletişime geçin.');
+                            setPaymentIframeUrl('');
                           }
                         }
                         poll();
@@ -727,8 +783,11 @@ function IsletmemPage() {
                       <button type="button" className="btn-close" onClick={() => setShowPendingBankDetails(false)}></button>
                     </div>
                     <div className="modal-body">
-                      <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
-                        Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
+                      <div className="mb-3 text-center" style={{fontWeight:'bold'}}>
+                        Lütfen EFT/havale ödemelerinde alıcı adı ve açıklamasını aşağıdaki şekilde yazınız:
+                      </div>
+                      <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2" style={{fontSize:'0.9em'}}>
+                        <span className="text-danger">Alıcı Adı:</span> <span className="text-primary">Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.</span>
                         <button
                           className="btn btn-link p-0 text-danger ms-1"
                           title="Kopyala"
@@ -738,23 +797,19 @@ function IsletmemPage() {
                           <i className="bi bi-copy"></i>
                         </button>
                       </div>
-                      <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
-                        Lütfen EFT/havale açıklamasına aşağıdakini yazınız:<br/>
-                        <span style={{display:'inline-block',marginTop:6}}>
-                          <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                            Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
-                            <button
-                              className="btn btn-link p-0 text-danger ms-1"
-                              title="Kopyala"
-                              style={{fontSize:'1.1em'}}
-                              onClick={() => handleCopy(`Katip Otomasyonu ${user.customer_id}`, 'Ödeme açıklaması')}
-                            >
-                              <i className="bi bi-copy"></i>
-                            </button>
-                          </span>
-                        </span>
+                      <div className="mb-3 text-center fw-bold d-flex align-items-center justify-content-center gap-2" style={{fontSize:'0.9em'}}>
+                        <span className="text-danger">EFT/havale açıklaması:</span> 
+                        <span className="text-primary" style={{fontFamily:'monospace'}}>Katip Otomasyonu {user.customer_id}</span>
+                        <button
+                          className="btn btn-link p-0 text-danger ms-1"
+                          title="Kopyala"
+                          style={{fontSize:'1.1em'}}
+                          onClick={() => handleCopy(`Katip Otomasyonu ${user.customer_id}`, 'EFT/havale açıklaması')}
+                        >
+                          <i className="bi bi-copy"></i>
+                        </button>
                       </div>
-                      <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
+                      <div className="mb-2" style={{fontSize:'0.9em'}}>Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
                       <div>
                         {bankIbans.length > 0 ? (
                           bankIbans.map((iban, i, arr) => (
@@ -840,7 +895,7 @@ function IsletmemPage() {
               position: 'relative',
               zIndex: 2
             }}>
-              Lisans Süremi Uzat
+              Satın Al - Lisans Süremi Uzat
             </span>
             <span style={{
               position: 'absolute',
@@ -949,8 +1004,11 @@ function IsletmemPage() {
                         <div className="fw-bold mb-2">Siparişiniz başarıyla oluşturuldu.</div>
                         {paymentMethod === 'cash' && (
                           <div className="alert alert-info small">
-                            <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2">
-                              Alıcı Adı: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.
+                            <div className="mb-3 text-center" style={{fontWeight:'bold'}}>
+                              Lütfen EFT/havale ödemelerinde alıcı adı ve açıklamasını aşağıdaki şekilde yazınız:
+                            </div>
+                            <div className="mb-2 text-center fw-bold d-flex align-items-center justify-content-center gap-2" style={{fontSize:'0.9em'}}>
+                              <span className="text-danger">Alıcı Adı:</span> <span className="text-primary">Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.</span>
                               <button
                                 className="btn btn-link p-0 text-danger ms-1"
                                 title="Kopyala"
@@ -960,23 +1018,19 @@ function IsletmemPage() {
                                 <i className="bi bi-copy"></i>
                               </button>
                             </div>
-                            <div className="mb-2 text-danger text-center" style={{fontWeight:'bold'}}>
-                              Lütfen EFT/havale açıklamasına aşağıdakini yazınız:<br/>
-                              <span style={{display:'inline-block',marginTop:6}}>
-                                <span className="d-flex align-items-center justify-content-center gap-2 mb-1">
-                                  Katip Otomasyonu <span style={{fontFamily:'monospace'}}>{user.customer_id}</span>
-                                  <button
-                                    className="btn btn-link p-0 text-danger ms-1"
-                                    title="Kopyala"
-                                    style={{fontSize:'1.1em'}}
-                                    onClick={() => handleCopy(`Katip Otomasyonu ${user.customer_id}`, 'Ödeme açıklaması')}
-                                  >
-                                    <i className="bi bi-copy"></i>
-                                  </button>
-                                </span>
-                              </span>
+                            <div className="mb-3 text-center fw-bold d-flex align-items-center justify-content-center gap-2" style={{fontSize:'0.9em'}}>
+                              <span className="text-danger">EFT/havale açıklaması:</span> 
+                              <span className="text-primary" style={{fontFamily:'monospace'}}>Katip Otomasyonu {user.customer_id}</span>
+                              <button
+                                className="btn btn-link p-0 text-danger ms-1"
+                                title="Kopyala"
+                                style={{fontSize:'1.1em'}}
+                                onClick={() => handleCopy(`Katip Otomasyonu ${user.customer_id}`, 'EFT/havale açıklaması')}
+                              >
+                                <i className="bi bi-copy"></i>
+                              </button>
                             </div>
-                            <div className="mb-2">Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
+                            <div className="mb-2" style={{fontSize:'0.9em'}}>Aşağıdaki banka hesaplarına EFT/Havale ile ödeme yapabilirsiniz:</div>
                             <div>
                               {(orderResult.ibans && orderResult.ibans.length > 0
                                 ? orderResult.ibans

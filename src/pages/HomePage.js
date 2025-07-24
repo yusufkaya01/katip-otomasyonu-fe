@@ -48,17 +48,17 @@ function HomePage() {
         <section className="text-center mb-5" style={{ marginTop: '2.5rem' }}>
           <h2 className="mb-4">Katip Otomasyonu Nedir?</h2>
           <p className="lead mb-4">
-            Katip Otomasyonu, isgkatip platformunda sözleşme güncellemelerini ve yönetimini otomatikleştiren, güvenli ve hızlı bir Chrome eklentisidir. Tüm işlemlerinizde zaman kazanın ve hatasız yönetim sağlayın.
+            Katip Otomasyonu, İSG Katip platformunda sözleşme güncellemelerini ve yönetimini otomatikleştiren, güvenli ve hızlı bir Chrome eklentisidir. Tüm işlemlerinizde zaman kazanın ve hatasız yönetim sağlayın.
           </p>
         </section>
         {/* Centered slogans */}
         <section className="d-flex justify-content-center align-items-center flex-column mb-5">
           <ul className="list-group mb-0 mx-auto feature-list-animated" style={{ maxWidth: 400, textAlign: 'center' }}>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>3 gün ücretsiz deneyin!</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>7 gün ücretsiz deneyin!</li>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Tek tuşla güncellenmesi gereken sözleşmeleri güncelleyin</li>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tuşla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Kalan personel dakikalarınızı anında görüntüleyin ve Excel formatında indirin</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Firmalarınızın atama ve onay durumlarını Excel formatında rapor oluşturarak renklendirilmiş şekilde takip edin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Tüm firmalarınızın atama, işyeri onayı ve İSG profesyoneli onay durumlarını renklendirilmiş Excel formatındaki raporu tek tıkla oluşturup, firma bazında kolayca takip edin.</li>
           </ul>
         </section>
         <section>
