@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { path: '/', label: 'Ana Sayfa' },
-  { path: '/fiyat', label: 'Fiyat Listesi' },
+  { path: '/fiyat', label: 'Fiyatlandırma' },
   { path: '/ozellikler', label: 'Özellikler' },
   { path: '/kurulum', label: 'Kurulum' },
   { path: '/sss', label: 'SSS' },
