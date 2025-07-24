@@ -184,7 +184,7 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
               <tr>
                 <th>Sipariş No</th>
                 <th>Şirket Ünvanı</th>
-                <th>Tutar</th>
+                <th>Kalan</th>
                 <th>Oluşturulma</th>
                 <th>Durum</th>
                 <th>İşlem</th>
@@ -195,7 +195,7 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
                 <tr key={order.order_id}>
                   <td>{order.order_id}</td>
                   <td>{order.company_name || '-'}</td>
-                  <td>{order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '-'}</td>
+                  <td>{order.remaining_balance ? `${order.remaining_balance} TL` : '-'}</td>
                   <td>{order.created_at ? new Date(order.created_at).toLocaleString('tr-TR') : ''}</td>
                   <td>{order.is_paid ? 'Ödendi' : 'Ödeme Bekliyor'}</td>
                   <td>

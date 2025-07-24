@@ -162,7 +162,7 @@ export default function AdminPendingOrdersPage({ token, onLogout }) {
                     <td>{order.is_confirmed ? 'Onaylandı' : 'Bekliyor'}</td>
                     <td>
                       <button className="btn btn-success btn-sm" onClick={() => handleConfirm(order.order_id)} disabled={confirmLoading===order.order_id}>
-                        {confirmLoading===order.order_id ? 'Onaylanıyor...' : 'Onayla'}
+                        {confirmLoading===order.order_id ? 'Lisans Başlatılıyor...' : 'Lisansı Başlat'}
                       </button>
                       <button className="btn btn-outline-info btn-sm ms-2" onClick={() => openDiscountModal(order)}>
                         İndirim Ekle/Güncelle

@@ -15,8 +15,8 @@ export default function AdminNavbar({ onLogout }) {
         <div className="collapse navbar-collapse" id="adminNavbarNav">
           <ul className="navbar-nav ms-auto align-items-center gap-2">
             <li className="nav-item">
-              <NavLink to="/admin" end className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
-                Bekleyen Siparişler
+              <NavLink to="/admin/missing-tax-info" className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
+                Fatura Bilgisi Kontrol
               </NavLink>
             </li>
             <li className="nav-item">
@@ -25,18 +25,18 @@ export default function AdminNavbar({ onLogout }) {
               </NavLink>
             </li>
             <li className="nav-item">
+              <NavLink to="/admin" end className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
+                Ödeme Almadan Lisans Onayı
+              </NavLink>
+            </li>
+            <li className="nav-item">
               <NavLink to="/admin/pending-invoices" className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
-                Fatura Bekleyen Siparişler
+                Fatura Bekleyenler
               </NavLink>
             </li>
             <li className="nav-item">
               <NavLink to="/admin/customers" className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
                 Tüm Müşteriler
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/admin/missing-tax-info" className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
-                Eksik Vergi Bilgili Şirketler
               </NavLink>
             </li>
             <li className="nav-item">

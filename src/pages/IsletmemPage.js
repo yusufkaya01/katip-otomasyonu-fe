@@ -45,6 +45,7 @@ function IsletmemPage() {
   const [showPaymentResult, setShowPaymentResult] = useState(false);
   const [paymentResultStatus, setPaymentResultStatus] = useState('waiting'); // 'waiting', 'success', 'error', 'timeout'
   const [paymentResultMsg, setPaymentResultMsg] = useState('');
+  const [copyFeedback, setCopyFeedback] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
@@ -244,6 +245,18 @@ function IsletmemPage() {
     }
     return '';
   }
+
+  // Helper function for copy operations with feedback
+  const handleCopy = async (text, label) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyFeedback(`${label} kopyalandı!`);
+      setTimeout(() => setCopyFeedback(''), 2000);
+    } catch (err) {
+      setCopyFeedback('Kopyalama başarısız!');
+      setTimeout(() => setCopyFeedback(''), 2000);
+    }
+  };
 
   // License extension order handler
   const handleCreateOrder = async () => {
@@ -503,6 +516,20 @@ function IsletmemPage() {
   return (
     <>
       <PageLoadingSpinner show={loading} fullscreen />
+      {/* Copy Feedback Toast */}
+      {copyFeedback && (
+        <div 
+          className="position-fixed top-50 start-50 translate-middle" 
+          style={{zIndex: 10000}}
+        >
+          <div className="toast show bg-success text-white border-0 shadow-lg" role="alert" style={{minWidth: '300px'}}>
+            <div className="toast-body d-flex align-items-center justify-content-center py-3">
+              <i className="bi bi-check-circle-fill me-2" style={{fontSize: '1.2em'}}></i>
+              <span className="fw-semibold">{copyFeedback}</span>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="container py-5" style={{ maxWidth: 600 }}>
         {/* Payment Result Modal */}
         {showPaymentResult && (
@@ -584,26 +611,46 @@ function IsletmemPage() {
         {pendingError && <div className="alert alert-danger">{pendingError}</div>}
         {pendingOrders.length > 0 && (
           <div className="alert alert-warning mb-4">
-            <div className="fw-bold mb-2">Bekleyen Lisans Uzatma Siparişiniz Var</div>
-            <ul className="mb-2">
-              {pendingOrders.map((order, i) => (
-                <li key={order.order_id || i} className="d-flex align-items-center justify-content-between gap-2">
-                  <span>
-                    {order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'} ile {order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '12.000 TL'} / {order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : ''} - Bekliyor
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <div className="fw-bold mb-3">Bekleyen Lisans Uzatma Siparişiniz Var</div>
+            {pendingOrders.map((order, i) => (
+              <div key={order.order_id || i} className="mb-3 p-3 bg-light rounded border">
+                <div className="row">
+                  <div className="col-md-6">
+                    <div className="d-flex justify-content-between">
+                      <span className="fw-semibold">Sipariş No:</span>
+                      <span>{order.order_id || '-'}</span>
+                    </div>
+                    <div className="d-flex justify-content-between">
+                      <span className="fw-semibold">Ödeme Yöntemi:</span>
+                      <span>{order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'}</span>
+                    </div>
+                    <div className="d-flex justify-content-between">
+                      <span className="fw-semibold">Tarih:</span>
+                      <span>{order.created_at ? new Date(order.created_at).toLocaleDateString('tr-TR') : '-'}</span>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="d-flex justify-content-between">
+                      <span className="fw-semibold">Ödeme Bekleyen Tutar:</span>
+                      <span className="text-danger fw-bold">{order.remaining_balance ? `${order.remaining_balance} TL` : (order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '12.000 TL')}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 text-center">
+                  <span className="badge bg-warning text-dark">Ödeme Bekliyor</span>
+                </div>
+              </div>
+            ))}
             <div className="d-flex gap-2 mb-2">
               <button className="btn btn-primary btn-sm" onClick={() => setShowPendingBankDetails(true)}>
                 Banka Bilgilerini Göster
               </button>
-              {pendingOrders.some(order => !order.is_paid && order.status !== 'cancelled' && order.status !== 'failed') && (
+              {pendingOrders.some(order => !order.is_paid && order.status !== 'cancelled' && order.status !== 'failed' && (!order.paid_amount || order.paid_amount === 0)) && (
                 <button
                   className="btn btn-success btn-sm"
                   style={{whiteSpace:'nowrap'}}
                   onClick={async () => {
-                    const order = pendingOrders.find(o => !o.is_paid && o.status !== 'cancelled' && o.status !== 'failed');
+                    const order = pendingOrders.find(o => !o.is_paid && o.status !== 'cancelled' && o.status !== 'failed' && (!o.paid_amount || o.paid_amount === 0));
                     if (!order) return;
                     try {
                       const res = await fetch(`${API_BASE_URL}/osgb/orders/${order.order_id}/pay-with-card`, {
@@ -686,7 +733,7 @@ function IsletmemPage() {
                           className="btn btn-link p-0 text-danger ms-1"
                           title="Kopyala"
                           style={{fontSize:'1.1em'}}
-                          onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
+                          onClick={() => handleCopy('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.', 'Alıcı adı')}
                         >
                           <i className="bi bi-copy"></i>
                         </button>
@@ -700,7 +747,7 @@ function IsletmemPage() {
                               className="btn btn-link p-0 text-danger ms-1"
                               title="Kopyala"
                               style={{fontSize:'1.1em'}}
-                              onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
+                              onClick={() => handleCopy(`Katip Otomasyonu ${user.customer_id}`, 'Ödeme açıklaması')}
                             >
                               <i className="bi bi-copy"></i>
                             </button>
@@ -720,7 +767,7 @@ function IsletmemPage() {
                                   className="btn btn-link p-0 text-danger ms-2"
                                   title="Kopyala"
                                   style={{fontSize:'1.1em'}}
-                                  onClick={() => navigator.clipboard.writeText(iban.iban)}
+                                  onClick={() => handleCopy(iban.iban, `${iban.bank} IBAN`)}
                                 >
                                   <i className="bi bi-copy"></i>
                                 </button>
@@ -908,7 +955,7 @@ function IsletmemPage() {
                                 className="btn btn-link p-0 text-danger ms-1"
                                 title="Kopyala"
                                 style={{fontSize:'1.1em'}}
-                                onClick={() => navigator.clipboard.writeText('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.')}
+                                onClick={() => handleCopy('Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.', 'Alıcı adı')}
                               >
                                 <i className="bi bi-copy"></i>
                               </button>
@@ -922,7 +969,7 @@ function IsletmemPage() {
                                     className="btn btn-link p-0 text-danger ms-1"
                                     title="Kopyala"
                                     style={{fontSize:'1.1em'}}
-                                    onClick={() => navigator.clipboard.writeText(`Katip Otomasyonu ${user.customer_id}`)}
+                                    onClick={() => handleCopy(`Katip Otomasyonu ${user.customer_id}`, 'Ödeme açıklaması')}
                                   >
                                     <i className="bi bi-copy"></i>
                                   </button>
@@ -946,7 +993,7 @@ function IsletmemPage() {
                                       className="btn btn-link p-0 text-danger ms-2"
                                       title="Kopyala"
                                       style={{fontSize:'1.1em'}}
-                                      onClick={() => navigator.clipboard.writeText(iban.iban)}
+                                      onClick={() => handleCopy(iban.iban, `${iban.bank} IBAN`)}
                                     >
                                       <i className="bi bi-copy"></i>
                                     </button>
@@ -990,7 +1037,7 @@ function IsletmemPage() {
               <button
                 className="btn btn-link p-0 text-danger mx-1"
                 title="Kopyala"
-                onClick={() => navigator.clipboard.writeText(user.customer_id)}
+                onClick={() => handleCopy(user.customer_id, 'Müşteri numarası')}
               >
                 <i className="bi bi-copy"></i>
               </button>
@@ -1006,7 +1053,7 @@ function IsletmemPage() {
               <button
                 className="btn btn-link p-0 text-danger mx-1"
                 title="Kopyala"
-                onClick={() => navigator.clipboard.writeText(user.licenseKey)}
+                onClick={() => handleCopy(user.licenseKey, 'Lisans anahtarı')}
               >
                 <i className="bi bi-copy"></i>
               </button>
