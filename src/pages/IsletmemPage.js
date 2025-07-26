@@ -47,6 +47,7 @@ function IsletmemPage() {
   const [paymentResultMsg, setPaymentResultMsg] = useState('');
   const [paymentIframeUrl, setPaymentIframeUrl] = useState('');
   const [copyFeedback, setCopyFeedback] = useState('');
+  const [countdownSeconds, setCountdownSeconds] = useState(5);
   const navigate = useNavigate();
   const location = useLocation();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
@@ -250,11 +251,36 @@ function IsletmemPage() {
   // Helper function for copy operations with feedback
   const handleCopy = async (text, label) => {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopyFeedback(`${label} kopyalandı!`);
+      // Check if the clipboard API is available
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (!successful) {
+          throw new Error('Copy command failed');
+        }
+      }
+      setCopyFeedback({ 
+        message: `${label} kopyalandı!`, 
+        success: true 
+      });
       setTimeout(() => setCopyFeedback(''), 2000);
     } catch (err) {
-      setCopyFeedback('Kopyalama başarısız!');
+      console.error('Copy failed:', err);
+      setCopyFeedback({ 
+        message: 'Kopyalama başarısız!', 
+        success: false 
+      });
       setTimeout(() => setCopyFeedback(''), 2000);
     }
   };
@@ -484,6 +510,32 @@ function IsletmemPage() {
     }
   }, [location.search, API_BASE_URL, API_KEY, user]);
 
+  // Auto-redirect to payment page after 5 seconds
+  useEffect(() => {
+    if (paymentResultStatus === 'waiting' && paymentIframeUrl) {
+      setCountdownSeconds(5); // Reset countdown
+      const timer = setTimeout(() => {
+        window.location.href = paymentIframeUrl;
+      }, 5000);
+      
+      // Update countdown every second
+      const countdownInterval = setInterval(() => {
+        setCountdownSeconds(prev => {
+          if (prev <= 1) {
+            clearInterval(countdownInterval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      return () => {
+        clearTimeout(timer);
+        clearInterval(countdownInterval);
+      };
+    }
+  }, [paymentResultStatus, paymentIframeUrl]);
+
   // Fetch bank IBANs when showing pending bank details modal, if not already loaded
   useEffect(() => {
     if (showPendingBankDetails && bankIbans.length === 0 && user && user.accessToken) {
@@ -536,10 +588,10 @@ function IsletmemPage() {
           className="position-fixed top-50 start-50 translate-middle" 
           style={{zIndex: 10000}}
         >
-          <div className="toast show bg-success text-white border-0 shadow-lg" role="alert" style={{minWidth: '300px'}}>
+          <div className={`toast show border-0 shadow-lg ${copyFeedback.success ? 'bg-success text-white' : 'bg-danger text-white'}`} role="alert" style={{minWidth: '300px'}}>
             <div className="toast-body d-flex align-items-center justify-content-center py-3">
-              <i className="bi bi-check-circle-fill me-2" style={{fontSize: '1.2em'}}></i>
-              <span className="fw-semibold">{copyFeedback}</span>
+              <i className={`me-2 ${copyFeedback.success ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'}`} style={{fontSize: '1.2em'}}></i>
+              <span className="fw-semibold">{copyFeedback.message}</span>
             </div>
           </div>
         </div>
@@ -561,70 +613,44 @@ function IsletmemPage() {
                   {paymentResultStatus === 'waiting' && paymentIframeUrl && (
                     <>
                       <div className="mb-3">
-                        <div className="text-muted mb-2">Ödeme bilgilerinizi aşağıdaki formda güvenle girebilirsiniz:</div>
-                        <iframe
-                          src={paymentIframeUrl}
-                          style={{
-                            width: '100%',
-                            height: '600px',
-                            border: '1px solid #ddd',
-                            borderRadius: '8px'
-                          }}
-                          title="Ödeme Formu"
-                          allow="payment"
-                          sandbox="allow-forms allow-scripts allow-same-origin allow-top-navigation"
-                        />
-                      </div>
-                      <div className="alert alert-info">
-                        <div className="d-flex align-items-center justify-content-center gap-2">
-                          <div className="spinner-border spinner-border-sm text-primary" role="status">
-                            <span className="visually-hidden">Yükleniyor...</span>
+                        <div className="alert alert-info text-center">
+                          <div className="d-flex align-items-center justify-content-center mb-3">
+                            <i className="bi bi-shield-check me-2 text-primary" style={{fontSize: '1.2rem'}}></i>
+                            <strong>Güvenli Ödeme Sayfasına Yönlendiriliyorsunuz</strong>
                           </div>
-                          <span>Ödeme durumunuz otomatik olarak kontrol ediliyor...</span>
+                          
+                          <div className="d-flex align-items-center justify-content-center mb-3">
+                            <img 
+                              src="/iyzico-logo.svg" 
+                              alt="iyzico" 
+                              style={{height: '32px', opacity: 0.8}}
+                              className="me-2"
+                            />
+                            <span className="small" style={{color: '#0c5460', fontWeight: '500'}}>
+                              güvenli ödeme sistemi
+                            </span>
+                          </div>
+                          
+                          <div className="small mb-4" style={{color: '#0c5460'}}>
+                            Ödemeniz iyzico'nun güvenli sunucularında işlenir. Kart bilgileriniz tamamen korunur.
+                          </div>
+                          <div className="d-flex align-items-center justify-content-center mb-2">
+                            <div className="spinner-border text-primary me-3" role="status" style={{width: '1.5rem', height: '1.5rem'}}>
+                              <span className="visually-hidden">Yükleniyor...</span>
+                            </div>
+                            <span className="fw-semibold">{countdownSeconds} saniye içinde yönlendirileceksiniz...</span>
+                          </div>
+                        </div>
+                        
+                        <div className="alert alert-warning text-center">
+                          <div className="d-flex align-items-center justify-content-center">
+                            <i className="bi bi-info-circle me-2 text-warning" style={{fontSize: '1.1rem'}}></i>
+                          </div>
+                          <div className="small mt-2" style={{color: '#664d03'}}>
+                            Ödeme tamamlandıktan sonra bu sayfaya otomatik olarak geri döneceksiniz.
+                          </div>
                         </div>
                       </div>
-                      <button className="btn btn-outline-success btn-sm" onClick={async () => {
-                        if (!cardOrderId) return;
-                        setPaymentResultMsg('Ödeme durumu kontrol ediliyor...');
-                        try {
-                          const res = await fetch(`${API_BASE_URL}/osgb/orders/${cardOrderId}`, {
-                            method: 'GET',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'x-api-key': API_KEY,
-                              'Authorization': user?.accessToken ? `Bearer ${user.accessToken}` : ''
-                            }
-                          });
-                          const data = await res.json();
-                          if (res.ok && data.status) {
-                            if (data.status === 'paid') {
-                              setPaymentResultStatus('success');
-                              setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
-                              setPaymentIframeUrl('');
-                            } else if (data.status === 'failed') {
-                              setPaymentResultStatus('error');
-                              setPaymentResultMsg(data.failureReason || 'Ödeme işlemi başarısız oldu. Lütfen kart bilgilerinizi ve bakiyenizi kontrol edin veya bankanız ile iletişime geçin.');
-                              setPaymentIframeUrl('');
-                            } else {
-                              setPaymentResultMsg('Ödeme henüz tamamlanmamış. Lütfen ödeme formunu kullanarak işleminizi tamamlayın.');
-                            }
-                          } else if (res.ok && data.order && data.order.is_paid) {
-                            setPaymentResultStatus('success');
-                            setPaymentResultMsg('Ödemeniz başarıyla tamamlandı!');
-                            setPaymentIframeUrl('');
-                          } else if (res.status === 404) {
-                            setPaymentResultStatus('error');
-                            setPaymentResultMsg('Sipariş bulunamadı. Lütfen destek ile iletişime geçin.');
-                            setPaymentIframeUrl('');
-                          } else {
-                            setPaymentResultMsg('Ödeme durumu alınamadı. Lütfen tekrar deneyin.');
-                          }
-                        } catch (err) {
-                          setPaymentResultMsg('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
-                        }
-                      }}>
-                        Ödeme Durumunu Manuel Kontrol Et
-                      </button>
                     </>
                   )}
                   {paymentResultStatus === 'waiting' && !paymentIframeUrl && (
@@ -941,6 +967,21 @@ function IsletmemPage() {
               transform: scale(1.1);
             }
           }
+          
+          /* Payment iframe specific styles */
+          #payment-iframe-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          }
+          
+          /* Clean iframe styling without global scaling */
+          #payment-iframe-container iframe {
+            border-radius: 8px !important;
+          }
+          
+          /* Try to prevent Bootstrap/parent CSS from affecting iframe */
+          .modal-body #payment-iframe-container * {
+            font-family: inherit !important;
+          }
         `}</style>
         {/* License Extension Modal */}
         {showExtendModal && (
@@ -989,7 +1030,11 @@ function IsletmemPage() {
                             <span>{paymentMethod === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'}</span>
                           </li>
                         </ul>
-                        <div className="alert alert-warning small">Siparişi onayladığınızda ödeme adımına yönlendirileceksiniz.</div>
+                        {paymentMethod === 'card' ? (
+                          <div className="alert alert-warning small">Siparişi onayladığınızda ödeme adımına yönlendirileceksiniz.</div>
+                        ) : (
+                          <div className="alert alert-info small">Siparişi onayladığınızda banka bilgileri gösterilecektir.</div>
+                        )}
                       </div>
                       {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
                       <div className="d-flex justify-content-between">
