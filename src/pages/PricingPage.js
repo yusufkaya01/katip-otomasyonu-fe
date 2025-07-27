@@ -139,13 +139,10 @@ function PricingPage() {
                   }}></div>
                   <div className="text-center" style={{position: 'relative', zIndex: 2}}>
                     <div style={{fontSize: '0.75rem', fontWeight: '500', letterSpacing: '0.5px', opacity: 0.9, marginBottom: '4px'}}>
-                      ÖZEL FİYAT DÖNEMİ
+                      %20 İNDİRİMLİ ÖZEL FİYAT DÖNEMİ
                     </div>
                     <div style={{fontSize: '0.9rem', fontWeight: '600'}}>
                       30 Eylül 2025 tarihine kadar geçerlidir
-                    </div>
-                    <div style={{fontSize: '0.7rem', opacity: 0.8, marginTop: '2px'}}>
-                      Bu tarihten sonra fiyat artışı uygulanacaktır
                     </div>
                   </div>
                 </div>
