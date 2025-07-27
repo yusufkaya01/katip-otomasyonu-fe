@@ -55,10 +55,10 @@ function HomePage() {
         <section className="d-flex justify-content-center align-items-center flex-column mb-5">
           <ul className="list-group mb-0 mx-auto feature-list-animated" style={{ maxWidth: 400, textAlign: 'center' }}>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>7 gün ücretsiz deneyin!</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Tek tuşla güncellenmesi gereken sözleşmeleri güncelleyin</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tuşla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Kalan personel dakikalarınızı anında görüntüleyin ve Excel formatında indirin</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Tüm firmalarınızın atama, işyeri onayı ve İSG profesyoneli onay durumlarını renklendirilmiş Excel formatındaki raporu tek tıkla oluşturup, firma bazında kolayca takip edin.</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Tek tıkla güncellenmesi gereken sözleşmeleri güncelleyin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tıkla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Tek tıkla personel dakikalarını detaylı kategorilerle görüntüleyin ve Excel raporunu indirin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Tüm firmalarınızın atama, işyeri onayı ve İSG profesyoneli onay durumlarını renklendirilmiş Excel formatındaki raporu tek tıkla oluşturup, firma bazında kolayca takip edin</li>
           </ul>
         </section>
         <section>

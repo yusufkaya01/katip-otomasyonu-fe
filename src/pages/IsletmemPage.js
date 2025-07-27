@@ -1130,71 +1130,73 @@ function IsletmemPage() {
         <div className="card p-4 shadow-sm">
           {/* Customer ID Display */}
           {user.customer_id && (
-            <div className="mb-2 d-flex align-items-center">
-              <strong style={{ minWidth: 140 }}>Müşteri Numarası:</strong>
-              <span className="mx-2" style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>{user.customer_id}</span>
-              <button
-                className="btn btn-link p-0 text-danger mx-1"
-                title="Kopyala"
-                onClick={() => handleCopy(user.customer_id, 'Müşteri numarası')}
-              >
-                <i className="bi bi-copy"></i>
-              </button>
+            <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+              <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>Müşteri Numarası:</strong>
+              <span className="mx-md-2 d-flex align-items-center" style={{ fontFamily: 'monospace', letterSpacing: '1px', wordBreak: 'break-all', overflowWrap: 'break-word' }}>
+                <span style={{ marginRight: '8px' }}>{user.customer_id}</span>
+                <button
+                  className="btn btn-link p-0 text-danger"
+                  title="Kopyala"
+                  onClick={() => handleCopy(user.customer_id, 'Müşteri numarası')}
+                >
+                  <i className="bi bi-copy"></i>
+                </button>
+              </span>
             </div>
           )}
           {/* License Key Display */}
           {user.licenseKey && (
-            <div className="mb-2 d-flex align-items-center">
-              <strong style={{ minWidth: 140 }}>Lisans Anahtarı:</strong>
-              <span className="mx-2" style={{ letterSpacing: '1px', fontFamily: 'monospace' }}>
-                {user.licenseKey}
+            <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+              <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>Lisans Anahtarı:</strong>
+              <span className="mx-md-2 d-flex align-items-center" style={{ letterSpacing: '1px', fontFamily: 'monospace', wordBreak: 'break-all', overflowWrap: 'break-word' }}>
+                <span style={{ marginRight: '8px' }}>{user.licenseKey}</span>
+                <button
+                  className="btn btn-link p-0 text-danger"
+                  title="Kopyala"
+                  onClick={() => handleCopy(user.licenseKey, 'Lisans anahtarı')}
+                >
+                  <i className="bi bi-copy"></i>
+                </button>
               </span>
-              <button
-                className="btn btn-link p-0 text-danger mx-1"
-                title="Kopyala"
-                onClick={() => handleCopy(user.licenseKey, 'Lisans anahtarı')}
-              >
-                <i className="bi bi-copy"></i>
-              </button>
             </div>
           )}
           {/* License Expiration Date Display */}
           {user.licenseExpirationDate && (
-            <div className="mb-2 d-flex align-items-center">
-              <strong style={{ minWidth: 140 }}>Lisans Bitiş Tarihi:</strong>
-              <span className="mx-2" style={{ fontFamily: 'monospace' }}>
+            <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+              <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>Lisans Bitiş Tarihi:</strong>
+              <span className="mx-md-2" style={{ fontFamily: 'monospace', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                 {new Date(user.licenseExpirationDate).toLocaleString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
           )}
           {/* Şirket Ünvanı */}
-          <div className="mb-2 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>Şirket Ünvanı:</strong>
-            <span className="mx-2">{user.company_name}</span>
+          <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+            <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>Şirket Ünvanı:</strong>
+            <span className="mx-md-2" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{user.company_name}</span>
           </div>
           {/* Şehir */}
-          <div className="mb-2 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>Şehir:</strong>
-            <span className="mx-2">{user.city}</span>
+          <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+            <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>Şehir:</strong>
+            <span className="mx-md-2" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{user.city}</span>
           </div>
           {/* İlçe */}
-          <div className="mb-2 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>İlçe:</strong>
-            <span className="mx-2">{user.district}</span>
+          <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+            <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>İlçe:</strong>
+            <span className="mx-md-2" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{user.district}</span>
           </div>
           {/* Adres */}
-          <div className="mb-2 d-flex align-items-center">
-            <strong style={{ minWidth: 140 }}>Adres:</strong>
-            <span className="mx-2">{user.address}</span>
+          <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+            <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>Adres:</strong>
+            <span className="mx-md-2" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{user.address}</span>
           </div>
           {/* Only show edit for phone and email */}
           {['phone', 'email'].map(key => (
-            <div key={key} className="mb-3 d-flex align-items-center">
-              <strong style={{ minWidth: 140 }}>{key === 'phone' ? 'Telefon' : 'E-posta'}:</strong>
+            <div key={key} className="mb-3 d-flex align-items-start flex-column flex-md-row">
+              <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>{key === 'phone' ? 'Telefon' : 'E-posta'}:</strong>
               {editField === key && confirming ? (
                 <>
                   {key === 'phone' ? (
-                    <div style={{ width: 250 }}>
+                    <div style={{ width: '100%', maxWidth: 250 }}>
                       <div className="input-group">
                         <span className="input-group-text">+90</span>
                         <input
@@ -1219,21 +1221,25 @@ function IsletmemPage() {
                   ) : (
                     <input
                       type="email"
-                      className="form-control mx-2"
+                      className="form-control mx-md-2"
                       value={editValue}
                       onChange={e => setEditValue(e.target.value)}
-                      style={{ maxWidth: 250 }}
+                      style={{ maxWidth: 250, width: '100%' }}
                     />
                   )}
-                  <button className="btn btn-success btn-sm mx-1" onClick={handleConfirm}>Evet</button>
-                  <button className="btn btn-secondary btn-sm" onClick={() => { setEditField(null); setConfirming(false); }}>Hayır</button>
+                  <div className="d-flex gap-1 mt-2 mt-md-0">
+                    <button className="btn btn-success btn-sm mx-1" onClick={handleConfirm}>Evet</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setEditField(null); setConfirming(false); }}>Hayır</button>
+                  </div>
                 </>
               ) : (
                 <>
-                  <span className="mx-2">{key === 'phone' ? `+90${user[key]}` : user[key]}</span>
-                  <button className="btn btn-link p-0 text-danger" onClick={() => handleEditClick(key)} title="Düzenle">
-                    <i className="bi bi-pencil"></i>
-                  </button>
+                  <span className="mx-md-2 d-flex align-items-center" style={{ wordBreak: 'break-all', overflowWrap: 'break-word', width: '100%' }}>
+                    <span style={{ marginRight: '8px' }}>{key === 'phone' ? `+90${user[key]}` : user[key]}</span>
+                    <button className="btn btn-link p-0 text-danger" onClick={() => handleEditClick(key)} title="Düzenle">
+                      <i className="bi bi-pencil"></i>
+                    </button>
+                  </span>
                 </>
               )}
             </div>
@@ -1245,14 +1251,14 @@ function IsletmemPage() {
                 Fatura Bilgileriniz
               </div>
               {/* Vergi Dairesi */}
-              <div className="mb-2 d-flex align-items-center">
-                <strong style={{ minWidth: 140 }}>Vergi Dairesi:</strong>
-                <span className="mx-2">{user.tax_office}</span>
+              <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+                <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>Vergi Dairesi:</strong>
+                <span className="mx-md-2" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{user.tax_office}</span>
               </div>
               {/* Vergi Kimlik No */}
-              <div className="mb-2 d-flex align-items-center">
-                <strong style={{ minWidth: 140 }}>Vergi Kimlik No:</strong>
-                <span className="mx-2">{user.tax_number}</span>
+              <div className="mb-2 d-flex align-items-start flex-column flex-md-row">
+                <strong className="mb-1 mb-md-0" style={{ minWidth: 140 }}>Vergi Kimlik No:</strong>
+                <span className="mx-md-2" style={{ fontFamily: 'monospace', wordBreak: 'break-all', overflowWrap: 'break-word' }}>{user.tax_number}</span>
               </div>
             </div>
           ) : (

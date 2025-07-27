@@ -193,7 +193,7 @@ function RegisterPage() {
     if (!password || password.trim() === '') {
       errors.password = 'Şifre zorunludur.';
     } else if (password.length < 8 || password.length > 16) {
-      errors.password = 'Şifre 8-16 karakter olmalıdır.';
+      errors.password = 'Şifre 8-16 karakter aralığından oluşmalıdır.';
     }
     
     if (!passwordConfirm || passwordConfirm.trim() === '') {
@@ -228,7 +228,7 @@ function RegisterPage() {
           'x-registration-step1-token': step1Token, // Always include the token from step 1
           ...(API_KEY ? { 'x-api-key': API_KEY } : {})
         },
-        body: JSON.stringify({ licenseKey, email, password, phone, emailCode })
+        body: JSON.stringify({ licenseKey, email, password, phone, emailCode, marketingEmailsConsent: agreements.commercial })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -283,7 +283,7 @@ function RegisterPage() {
           const fieldErrs = {};
           data.details.forEach(d => {
             if (d.param === 'email') fieldErrs.email = 'Geçerli bir e-posta adresi giriniz.';
-            if (d.param === 'password') fieldErrs.password = 'Şifre 8-16 karakter olmalıdır.';
+            if (d.param === 'password') fieldErrs.password = 'Şifre 8-16 karakter aralığından oluşmalıdır.';
             if (d.param === 'phone') fieldErrs.phone = 'Telefon numarası 10 haneli olmalıdır.';
             if (d.param === 'emailCode') fieldErrs.emailCode = 'E-posta kodu 6 haneli olmalıdır.';
           });
@@ -314,6 +314,18 @@ function RegisterPage() {
       });
     }
   }, [password, passwordConfirm, step2Error.passwordConfirm]);
+
+  // Dynamic password length check
+  React.useEffect(() => {
+    if (password && (password.length < 8 || password.length > 16)) {
+      setStep2Error(prev => ({ ...prev, password: 'Şifre 8-16 karakter aralığından oluşmalıdır.' }));
+    } else if (step2Error.password === 'Şifre 8-16 karakter aralığından oluşmalıdır.') {
+      setStep2Error(prev => {
+        const { password, ...rest } = prev;
+        return rest;
+      });
+    }
+  }, [password, step2Error.password]);
 
   // Countdown effect for email code button
   React.useEffect(() => {
@@ -472,68 +484,84 @@ function RegisterPage() {
                   </div>
                 </div>
               </div>
+            {/* E-posta field */}
             <div className="mb-3">
-              <div className="row g-2 align-items-end">
-                <div className="col-12">
-                  <label className="form-label mb-1">E-posta</label>
-                  <input
-                    type="email"
-                    className={`form-control${step2Error.email ? ' is-invalid' : ''}`}
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    ref={fieldRefs.email}
-                    maxLength={60}
-                    style={{marginBottom: step2Error.email ? 0 : undefined}}
-                    title="Lütfen bu alanı doldurun."
-                    onInvalid={e => {
-                      if (e.target.validity.valueMissing) {
-                        e.target.setCustomValidity('Lütfen e-posta adresinizi giriniz.');
-                      } else if (e.target.validity.typeMismatch) {
-                        e.target.setCustomValidity('Lütfen geçerli bir e-posta adresi giriniz (örn: kullanici@email.com).');
-                      } else {
-                        e.target.setCustomValidity('Lütfen geçerli bir e-posta adresi giriniz.');
-                      }
-                    }}
-                    onInput={e => e.target.setCustomValidity('')}
-                  />
-                  {/* Reserve space for error to prevent layout shift */}
-                  <div style={{height: 22}}>
-                    {step2Error.email && <div className="invalid-feedback d-block" style={{position:'static', padding:0, margin:0}}>{step2Error.email}</div>}
-                  </div>
-                </div>
-                <div className="col-7" style={{display:'flex', flexDirection:'column', justifyContent:'flex-end'}}>
-                  <label className="form-label mb-1">E-posta Onay Kodu</label>
-                  <input
-                    type="text"
-                    className={`form-control${step2Error.emailCode ? ' is-invalid' : ''}`}
-                    value={emailCode}
-                    onChange={e => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    ref={fieldRefs.emailCode}
-                    maxLength={6}
-                    inputMode="numeric"
-                    autoComplete="off"
-                    title="Lütfen bu alanı doldurun."
-                    onInvalid={e => e.target.setCustomValidity('Lütfen e-posta onay kodunu giriniz.')}
-                    onInput={e => e.target.setCustomValidity('')}
-                  />
-                  <div style={{height: 22}}>
-                    {step2Error.emailCode && <div className="invalid-feedback d-block" style={{position:'static', padding:0, margin:0}}>{step2Error.emailCode}</div>}
-                    {emailCodeSent && !step2Error.emailCode && <div className="form-text text-success" style={{padding:0, margin:0, fontWeight: 900}} >Kod e-posta adresinize gönderildi.</div>}
-                  </div>
-                </div>
-                <div className="col-5" style={{display:'flex', flexDirection:'column', justifyContent:'flex-end'}}>
-                  <label className="form-label mb-1" style={{visibility: 'hidden'}}>Placeholder</label>
-                  <button type="button" className="btn btn-onay-gonder" onClick={handleSendEmailCode} disabled={sendingCode || countdown > 0}>
-                    {sendingCode ? 'Gönderiliyor...' : 
-                     countdown > 0 ? `Tekrar Onay Kodu Gönder (${countdown}s)` :
-                     emailCodeSent ? 'Tekrar Onay Kodu Gönder' : 'E-Posta Onay Kodu Gönder'}
-                  </button>
-                  <div style={{height: 22}}></div>
-                </div>
+              <label className="form-label mb-1">E-posta</label>
+              <input
+                type="email"
+                className={`form-control${step2Error.email ? ' is-invalid' : ''}`}
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                ref={fieldRefs.email}
+                maxLength={60}
+                style={{marginBottom: step2Error.email ? 0 : undefined}}
+                title="Lütfen bu alanı doldurun."
+                onInvalid={e => {
+                  if (e.target.validity.valueMissing) {
+                    e.target.setCustomValidity('Lütfen e-posta adresinizi giriniz.');
+                  } else if (e.target.validity.typeMismatch) {
+                    e.target.setCustomValidity('Lütfen geçerli bir e-posta adresi giriniz (örn: kullanici@email.com).');
+                  } else {
+                    e.target.setCustomValidity('Lütfen geçerli bir e-posta adresi giriniz.');
+                  }
+                }}
+                onInput={e => e.target.setCustomValidity('')}
+              />
+              {/* Reserve space for error to prevent layout shift */}
+              <div style={{height: 22}}>
+                {step2Error.email && <div className="invalid-feedback d-block" style={{position:'static', padding:0, margin:0}}>{step2Error.email}</div>}
+              </div>
+            </div>
+
+            {/* E-posta Onay Kodu field with responsive button positioning */}
+            <div className="mb-3">
+              {/* Button above text on small screens */}
+              <div className="d-block d-md-none mb-2">
+                <button type="button" className="btn btn-onay-gonder w-100" onClick={handleSendEmailCode} disabled={sendingCode || countdown > 0}>
+                  {sendingCode ? 'Gönderiliyor...' : 
+                   countdown > 0 ? `Tekrar Onay Kodu Gönder (${countdown}s)` :
+                   emailCodeSent ? 'Tekrar Onay Kodu Gönder' : 'E-Posta Onay Kodu Gönder'}
+                </button>
+              </div>
+
+              {/* Label and button on same line for larger screens */}
+              <div className="d-none d-md-flex align-items-center gap-3 mb-1">
+                <label className="form-label mb-0">E-posta Onay Kodu</label>
+                <button type="button" className="btn btn-onay-gonder" onClick={handleSendEmailCode} disabled={sendingCode || countdown > 0}>
+                  {sendingCode ? 'Gönderiliyor...' : 
+                   countdown > 0 ? `Tekrar Onay Kodu Gönder (${countdown}s)` :
+                   emailCodeSent ? 'Tekrar Onay Kodu Gönder' : 'E-Posta Onay Kodu Gönder'}
+                </button>
+              </div>
+
+              {/* Label only for small screens */}
+              <div className="d-block d-md-none">
+                <label className="form-label mb-1">E-posta Onay Kodu</label>
+              </div>
+
+              {/* Input field */}
+              <input
+                type="text"
+                className={`form-control${step2Error.emailCode ? ' is-invalid' : ''}`}
+                value={emailCode}
+                onChange={e => setEmailCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                ref={fieldRefs.emailCode}
+                maxLength={6}
+                inputMode="numeric"
+                autoComplete="off"
+                title="Lütfen bu alanı doldurun."
+                onInvalid={e => e.target.setCustomValidity('Lütfen e-posta onay kodunu giriniz.')}
+                onInput={e => e.target.setCustomValidity('')}
+              />
+              
+              {/* Error and success messages */}
+              <div style={{height: 22}}>
+                {step2Error.emailCode && <div className="invalid-feedback d-block" style={{position:'static', padding:0, margin:0}}>{step2Error.emailCode}</div>}
+                {emailCodeSent && !step2Error.emailCode && <div className="form-text text-success" style={{padding:0, margin:0, fontWeight: 900}} >Kod e-posta adresinize gönderildi.</div>}
               </div>
             </div>
             <div className="row">
-              <div className="col-6">
+              <div className="col-12 col-md-6">
                 <label className="form-label">Şifre</label>
                 <div className="input-group">
                   <input
@@ -562,7 +590,7 @@ function RegisterPage() {
                 </div>
                 {step2Error.password && <div className="invalid-feedback d-block">{step2Error.password}</div>}
               </div>
-              <div className="col-6">
+              <div className="col-12 col-md-6 mt-3 mt-md-0">
                 <label className="form-label">Şifre (Tekrar)</label>
                 <div className="input-group">
                   <input
@@ -723,6 +751,45 @@ function RegisterPage() {
           </form>
         </div>
         )}
+        
+        {/* Demo request info section */}
+        <div className="mt-4 p-3 text-center" style={{
+          backgroundColor: '#e7f3ff', 
+          border: '1px solid #b3d9ff', 
+          borderRadius: '8px',
+          color: '#0c5aa6'
+        }}>
+          <div className="mb-2">
+            <i className="bi bi-info-circle-fill me-2" style={{fontSize: '16px', color: '#0c5aa6'}}></i>
+            <strong>Demo Talebi</strong>
+          </div>
+          <p className="mb-2">
+            Demo talebinde bulunmak için bizimle iletişim kurabilirsiniz.
+          </p>
+          <button 
+            type="button" 
+            className="btn btn-success d-flex align-items-center justify-content-center mx-auto"
+            style={{
+              backgroundColor: '#25d366',
+              borderColor: '#25d366',
+              fontWeight: '500',
+              borderRadius: '20px',
+              padding: '8px 20px'
+            }}
+            onClick={() => {
+              const message = "Merhaba, Katip Otomasyonu için demo talebinde bulunmak istiyorum. Bilgi verebilir misiniz?";
+              const phoneNumber = "905555555555"; // Replace with actual WhatsApp number
+              const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+              window.open(whatsappUrl, '_blank');
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 16 16" className="me-2">
+              <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.777-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.336-.445-.342-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+            </svg>
+            WhatsApp ile İletişim
+          </button>
+        </div>
+
         {/* Agreement Modal */}
         {agreementModal.open && (
           <div className="modal fade show" style={{display:'block', background:'rgba(0,0,0,0.5)'}} tabIndex="-1">

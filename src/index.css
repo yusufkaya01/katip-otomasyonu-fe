@@ -50,8 +50,30 @@ code {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: url('../public/filigran.png') no-repeat center center;
-  background-size: 600px auto;
+  background-size: 40vw auto;
   opacity: 0.07;
   pointer-events: none;
   z-index: 0;
+}
+
+/* Responsive filigran sizing */
+@media (max-width: 768px) {
+  .filigran-bg::before {
+    background-size: 60vw auto;
+    opacity: 0.05;
+  }
+}
+
+@media (max-width: 480px) {
+  .filigran-bg::before {
+    background-size: 70vw auto;
+    opacity: 0.04;
+  }
+}
+
+@media (min-width: 1200px) {
+  .filigran-bg::before {
+    background-size: 35vw auto;
+    opacity: 0.08;
+  }
 }

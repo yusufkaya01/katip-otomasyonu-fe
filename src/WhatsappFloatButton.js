@@ -6,15 +6,20 @@ const WHATSAPP_LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/6/6b/W
 
 function WhatsappFloatButton() {
   return (
-    <a
-      href={WHATSAPP_LINK}
-      className="whatsapp-float-btn"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="WhatsApp ile iletişime geç"
-    >
-      <img src={WHATSAPP_LOGO_URL} alt="WhatsApp" />
-    </a>
+    <div className="whatsapp-float-container">
+      <a
+        href={WHATSAPP_LINK}
+        className="whatsapp-float-btn"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="WhatsApp ile iletişime geç"
+      >
+        <span className="whatsapp-text">Bilgi ve Destek</span>
+        <div className="whatsapp-icon">
+          <img src={WHATSAPP_LOGO_URL} alt="WhatsApp" />
+        </div>
+      </a>
+    </div>
   );
 }
 

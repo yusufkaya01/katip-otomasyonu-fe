@@ -37,8 +37,24 @@ function AboutPage() {
             </div>
           </div>
         </div>
-        <div className="alert alert-light border mt-4" style={{ maxWidth: 400, margin: '0 auto' }}>
-          Genel destek için: <a href="mailto:info@katipotomasyonu.com">info@katipotomasyonu.com</a>
+        <div className="row g-4 justify-content-center">
+          <div className="col-md-6">
+            <div className="mt-4 p-3 rounded-3" style={{
+              background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
+              boxShadow: '0 4px 15px rgba(220, 53, 69, 0.3)'
+            }}>
+              <p className="mb-0 text-white d-flex align-items-center justify-content-center gap-2" style={{fontSize: '0.95rem', fontWeight: '500'}}>
+                <a href="mailto:info@katipotomasyonu.com" className="text-white text-decoration-none" title="E-posta gönder">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" style={{cursor: 'pointer'}}>
+                    <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.118V5.383zM14.803 12 10.2 8.911l-1.428.857a.5.5 0 0 1-.544 0L6.8 8.911 2.197 12A1 1 0 0 0 3 13h10a1 1 0 0 0 .803-1zM1 11.118l4.708-2.91L1 5.383v5.735z"/>
+                  </svg>
+                </a>
+                <span>
+                  Genel destek için: <strong>info@katipotomasyonu.com</strong>
+                </span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </>

@@ -1,37 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 function FeaturesPage() {
   const [loading] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <>
       <PageLoadingSpinner show={loading} fullscreen />
       <div className="filigran-bg position-relative">
-        {/* GIF fixed to right center, 30% smaller than before, now clickable */}
-        <img
-          src="/gifs/demo-promotion.gif"
-          alt="3 Gün Ücretsiz Deneyin Demo"
-          style={{
-            position: 'fixed',
-            top: '50%',
-            right: 0,
-            transform: 'translateY(-50%)',
-            maxWidth: 448, // 640 * 0.7
-            width: '28vw', // 40vw * 0.7
-            minWidth: 168, // 240 * 0.7
-            height: 'auto',
-            margin: 0,
-            zIndex: 100,
-            pointerEvents: 'auto',
-            cursor: 'pointer',
-            background: 'transparent',
-            boxShadow: 'none',
-          }}
-          onClick={() => navigate('/kayit')}
-        />
         <div className="container py-5">
           <h1 className="mb-4 text-center">Özellikler</h1>
           <ul className="list-group list-group-flush feature-list-animated mx-auto" style={{ maxWidth: 700 }}>
