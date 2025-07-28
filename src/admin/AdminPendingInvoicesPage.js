@@ -131,7 +131,15 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
                 <tr key={order.order_id}>
                   <td>{order.order_id}</td>
                   <td>{order.company_name || '-'}</td>
-                  <td>{order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '-'}</td>
+                  <td>{
+                    order.payment_method === 'card' && order.payment_amount 
+                      ? `${order.payment_amount} TL` 
+                      : order.amount_due 
+                        ? `${order.amount_due} TL` 
+                        : order.amount 
+                          ? `${order.amount} TL` 
+                          : '-'
+                  }</td>
                   <td>{order.created_at ? new Date(order.created_at).toLocaleString('tr-TR') : ''}</td>
                   <td>{order.is_invoice_created ? 'Fatura Oluşturuldu' : 'Fatura Bekliyor'}</td>
                   <td>
