@@ -24,3 +24,4 @@ function WhatsappFloatButton() {
 }
 
 export default WhatsappFloatButton;
+
