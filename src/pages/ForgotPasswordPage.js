@@ -15,6 +15,7 @@ function ForgotPasswordPage() {
   const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
   const location = useLocation();
 
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://customers.katipotomasyonu.com/api';
@@ -25,6 +26,15 @@ function ForgotPasswordPage() {
     const t = params.get('token');
     if (t) setToken(t);
   }, [location.search]);
+
+  // Check password match whenever passwords change
+  React.useEffect(() => {
+    if (confirmPassword.length > 0) {
+      setPasswordsMatch(newPassword === confirmPassword);
+    } else {
+      setPasswordsMatch(true); // Don't show error when confirm password is empty
+    }
+  }, [newPassword, confirmPassword]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,6 +64,13 @@ function ForgotPasswordPage() {
 
   const handleReset = async (e) => {
     e.preventDefault();
+    
+    // Check if passwords match before submitting
+    if (newPassword !== confirmPassword) {
+      setResetError('Şifreler eşleşmiyor. Lütfen kontrol ediniz.');
+      return;
+    }
+    
     setResetLoading(true);
     setResetError('');
     setResetSuccess(false);
@@ -116,7 +133,7 @@ function ForgotPasswordPage() {
               <div className="input-group">
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
-                  className="form-control"
+                  className={`form-control ${confirmPassword.length > 0 ? (passwordsMatch ? 'is-valid' : 'is-invalid') : ''}`}
                   id="confirmPassword"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
@@ -134,9 +151,19 @@ function ForgotPasswordPage() {
                   <i className={`bi ${showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'}`}></i>
                 </button>
               </div>
+              {confirmPassword.length > 0 && !passwordsMatch && (
+                <div className="invalid-feedback d-block">
+                  Şifreler eşleşmiyor.
+                </div>
+              )}
+              {confirmPassword.length > 0 && passwordsMatch && (
+                <div className="valid-feedback d-block">
+                  Şifreler eşleşiyor.
+                </div>
+              )}
             </div>
             {resetError && <div className="alert alert-danger">{resetError}</div>}
-            <button type="submit" className="btn btn-danger w-100" disabled={resetLoading}>
+            <button type="submit" className="btn btn-danger w-100" disabled={resetLoading || !passwordsMatch}>
               {resetLoading ? 'Sıfırlanıyor...' : 'Şifreyi Sıfırla'}
             </button>
           </form>
