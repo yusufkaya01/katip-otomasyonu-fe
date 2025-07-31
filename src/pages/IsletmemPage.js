@@ -48,6 +48,14 @@ function IsletmemPage() {
   const [paymentIframeUrl, setPaymentIframeUrl] = useState('');
   const [copyFeedback, setCopyFeedback] = useState('');
   const [countdownSeconds, setCountdownSeconds] = useState(5);
+  
+  // DSA (Distance Sales Agreement) states
+  const [showDSAModal, setShowDSAModal] = useState(false);
+  const [dsaAccepted, setDsaAccepted] = useState(false);
+  const [dsaContent, setDsaContent] = useState(null);
+  const [dsaLoading, setDsaLoading] = useState(false);
+  const [dsaError, setDsaError] = useState('');
+  
   const navigate = useNavigate();
   const location = useLocation();
   const API_KEY = process.env.REACT_APP_USER_API_KEY;
@@ -285,8 +293,75 @@ function IsletmemPage() {
     }
   };
 
-  // License extension order handler
-  const handleCreateOrder = async () => {
+  // Fetch DSA contract from API
+  const fetchDSA = async () => {
+    setDsaLoading(true);
+    setDsaError('');
+    try {
+      const res = await fetch(`${API_BASE_URL}/osgb/dsa`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY,
+          'Authorization': `Bearer ${user.accessToken}`
+        }
+      });
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      
+      const data = await res.json();
+      if (data.success && data.dsa) {
+        setDsaContent({
+          title: data.dsa.title || 'MESAFELI SATIŞ SÖZLEŞMESİ',
+          content: data.dsa.content
+        });
+      } else {
+        setDsaError(data.message || 'Mesafeli Satış Sözleşmesi yüklenemedi.');
+      }
+    } catch (err) {
+      console.error('DSA fetch error:', err);
+      setDsaError('Sözleşme bilgileri yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.');
+    } finally {
+      setDsaLoading(false);
+    }
+  };
+
+  // Open DSA modal and fetch content
+  const openDSAModal = () => {
+    setShowDSAModal(true);
+    setDsaAccepted(false);
+    fetchDSA();
+  };
+
+  // Close DSA modal
+  const closeDSAModal = () => {
+    setShowDSAModal(false);
+    setDsaContent(null);
+    setDsaError('');
+    setDsaAccepted(false);
+  };
+
+  // Accept DSA and close modal
+  const acceptDSAAndProceedOrder = () => {
+    setDsaAccepted(true);
+    setShowDSAModal(false);
+    setOrderError('');
+  };
+
+  // Handle order creation - validate DSA acceptance first
+  const handleCreateOrder = () => {
+    if (!dsaAccepted) {
+      setOrderError('Sipariş oluşturmak için Mesafeli Satış Sözleşmesi\'ni kabul etmelisiniz.');
+      return;
+    }
+    setOrderError('');
+    handleCreateOrderAfterDSA();
+  };
+
+  // License extension order handler (original, now called after DSA acceptance)
+  const handleCreateOrderAfterDSA = async () => {
     setOrderLoading(true);
     setOrderError('');
     setOrderResult(null);
@@ -914,7 +989,7 @@ function IsletmemPage() {
             onMouseUp={(e) => {
               e.target.style.transform = 'translateY(-3px) scale(1.02)';
             }}
-            onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('card'); }} 
+            onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('card'); setDsaAccepted(false); }} 
             disabled={pendingOrders.length > 0}
           >
             <span style={{
@@ -1013,7 +1088,7 @@ function IsletmemPage() {
                         </div>
                       </div>
                       {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
-                      <button className="btn btn-danger w-100" onClick={()=>setOrderStep(2)} disabled={orderLoading}>Sipariş Oluştur</button>
+                      <button className="btn btn-danger w-100" onClick={()=>{setOrderStep(2); setDsaAccepted(false); setOrderError('');}} disabled={orderLoading}>Sipariş Oluştur</button>
                     </>
                   )}
                   {orderStep === 2 && (
@@ -1030,6 +1105,44 @@ function IsletmemPage() {
                             <span>{paymentMethod === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'}</span>
                           </li>
                         </ul>
+                        
+                        {/* DSA Contract Acceptance */}
+                        <div className="mb-3 p-3 rounded border" style={{backgroundColor: '#f8e3a4ff', borderColor: '#ff0000ff'}}>
+                          <div className="form-check">
+                            <input
+                              className="form-check-input"
+                              type="checkbox"
+                              id="dsaAcceptance"
+                              checked={dsaAccepted}
+                              readOnly
+                              onClick={(e) => {
+                                if (!dsaAccepted) {
+                                  e.preventDefault();
+                                  openDSAModal();
+                                } else {
+                                  setDsaAccepted(false);
+                                }
+                              }}
+                              aria-required="true"
+                            />
+                            <label className="form-check-label" htmlFor="dsaAcceptance">
+                              <span className="fw-bold">Mesafeli Satış Sözleşmesi</span> (
+                                <button 
+                                  type="button" 
+                                  className="btn btn-link p-0 align-baseline" 
+                                  style={{textDecoration:'underline'}} 
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    openDSAModal();
+                                  }}
+                                >
+                                  Sözleşmeyi Oku
+                                </button>
+                              ) <span className="text-danger">*</span>
+                            </label>
+                          </div>
+                        </div>
+                        
                         {paymentMethod === 'card' ? (
                           <div className="alert alert-warning small">Siparişi onayladığınızda ödeme adımına yönlendirileceksiniz.</div>
                         ) : (
@@ -1038,7 +1151,7 @@ function IsletmemPage() {
                       </div>
                       {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
                       <div className="d-flex justify-content-between">
-                        <button className="btn btn-secondary" onClick={()=>setOrderStep(1)} disabled={orderLoading}>Geri</button>
+                        <button className="btn btn-secondary" onClick={()=>{setOrderStep(1); setDsaAccepted(false); setOrderError('');}} disabled={orderLoading}>Geri</button>
                         <button className="btn btn-danger" onClick={handleCreateOrder} disabled={orderLoading}>{orderLoading ? 'Oluşturuluyor...' : 'Siparişi Onayla'}</button>
                       </div>
                     </>
@@ -1299,6 +1412,65 @@ function IsletmemPage() {
           )}
         </div>
       </div>
+
+      {/* DSA (Distance Sales Agreement) Modal */}
+      {showDSAModal && (
+        <div className="modal fade show" style={{display:'block', background:'rgba(0,0,0,0.5)'}} tabIndex="-1">
+          <div className="modal-dialog modal-xl modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {dsaContent?.title || 'Mesafeli Satış Sözleşmesi'}
+                </h5>
+                <button type="button" className="btn-close" onClick={closeDSAModal}></button>
+              </div>
+              <div className="modal-body" style={{maxHeight: '60vh', overflowY: 'auto'}}>
+                {dsaLoading && (
+                  <div className="text-center py-4">
+                    <div className="spinner-border text-danger" role="status">
+                      <span className="visually-hidden">Sözleşme yükleniyor...</span>
+                    </div>
+                    <div className="mt-2">Sözleşme yükleniyor...</div>
+                  </div>
+                )}
+                
+                {dsaError && (
+                  <div className="alert alert-danger">
+                    {dsaError}
+                  </div>
+                )}
+                
+                {dsaContent && !dsaLoading && (
+                  <div style={{whiteSpace:'pre-line', fontFamily: 'Arial, sans-serif', fontSize: '0.9rem', lineHeight: '1.5'}}>
+                    {dsaContent.content}
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                {dsaContent && !dsaLoading && !dsaError && (
+                  <>
+                    <button type="button" className="btn btn-secondary" onClick={closeDSAModal}>
+                      Kapat
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-danger" 
+                      onClick={acceptDSAAndProceedOrder}
+                    >
+                      Okudum, Onaylıyorum
+                    </button>
+                  </>
+                )}
+                {(dsaLoading || dsaError) && (
+                  <button type="button" className="btn btn-secondary" onClick={closeDSAModal}>
+                    Kapat
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

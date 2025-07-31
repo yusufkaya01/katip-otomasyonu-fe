@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
+import ContractModal from '../components/ContractModal';
 import { useAuth } from '../context/AuthContext';
+import { useContractAcceptances } from '../hooks/useContracts';
 
 function RegisterPage() {
   const { login } = useAuth();
@@ -27,10 +29,20 @@ function RegisterPage() {
   const [sendingCode, setSendingCode] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [registering, setRegistering] = useState(false);
-  // Agreements
+  // Use contracts hook for dynamic contract management
+  const { 
+    contracts, 
+    updateAcceptance, 
+    getAcceptancePayload
+  } = useContractAcceptances(['terms_of_use', 'privacy_policy', 'kvkk_consent', 'marketing_consent']);
+  
+  // Legacy agreements state - will be replaced by contracts
   const [agreements, setAgreements] = useState({ terms: false, privacy: false, kvkk: false, commercial: false });
   const [agreementModal, setAgreementModal] = useState({ open: false, type: null });
   const [showAgreementWarning, setShowAgreementWarning] = useState(false);
+  
+  // Contract modal state
+  const [contractModal, setContractModal] = useState({ open: false, contract: null });
   // Refs for scroll-to-error
   const fieldRefs = {
     licenseKey: useRef(),
@@ -212,6 +224,13 @@ function RegisterPage() {
     if (!agreements.privacy) errors.privacy = 'Gizlilik Sözleşmesi onaylanmalıdır.';
     if (!agreements.kvkk) errors.kvkk = 'KVKK Açık Rıza onaylanmalıdır.';
     
+    // Temporarily disable new contracts validation to avoid conflicts
+    // TODO: Properly integrate contract acceptance tracking
+    // if (contracts && validateMandatoryAcceptances) {
+    //   const contractErrors = validateMandatoryAcceptances();
+    //   Object.assign(errors, contractErrors);
+    // }
+    
     if (Object.keys(errors).length > 0) {
       setStep2Error(errors);
       setShowAgreementWarning(true);
@@ -228,7 +247,18 @@ function RegisterPage() {
           'x-registration-step1-token': step1Token, // Always include the token from step 1
           ...(API_KEY ? { 'x-api-key': API_KEY } : {})
         },
-        body: JSON.stringify({ licenseKey, email, password, phone, emailCode, marketingEmailsConsent: agreements.commercial })
+        body: JSON.stringify({ 
+          licenseKey, 
+          email, 
+          password, 
+          phone, 
+          emailCode, 
+          marketingEmailsConsent: agreements.commercial,
+          // Include new contract acceptances
+          contractAcceptances: getAcceptancePayload ? getAcceptancePayload() : {},
+          registrationDate: new Date().toISOString(),
+          userAgent: navigator.userAgent
+        })
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -353,19 +383,89 @@ function RegisterPage() {
     }
   }
 
-  // Agreement modal logic
-  const agreementTexts = {
-    terms: `Kullanım Koşulları\n\nKatip Otomasyonu, yalnızca geçerli bir lisans anahtarı ile kullanılabilir. Kullanıcı, uzantıyı ve web sitesini yalnızca yasal amaçlarla ve isgkatip.csgb.gov.tr platformunda kullanmayı kabul eder. Uzantı ve web sitesi, isgkatip.csgb.gov.tr'nin kullanım koşullarına ve Türk mevzuatına aykırı şekilde kullanılamaz.\n\nKullanıcı, uzantının ve web sitesinin işlevlerini kötüye kullanmayacağını, başkalarının verilerine izinsiz erişmeyeceğini ve uzantıyı sadece kendi kurumunun işlemleri için kullanacağını taahhüt eder. Geliştirici (Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.), uzantının yanlış veya izinsiz kullanımından doğacak zararlardan sorumlu değildir.\n\nLisans anahtarının paylaşılması, çoğaltılması veya izinsiz kullanımı yasaktır. Tespit halinde lisans iptal edilir. Uzantı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından güncellenebilir veya sonlandırılabilir.\n\nUygulamayı kullanan veya lisans satın alan kullanıcılar, ilk kayıt sırasında talep edilen telefon numarası, şirket adı ve OSGB-ID bilgilerinin lisans doğrulama ve müşteri kaydı amacıyla saklanmasını kabul etmiş sayılır.\n\nDetaylı bilgi için info@arkaya.com.tr adresine başvurabilirsiniz.`,
-    privacy: `Gizlilik Sözleşmesi\n\nKatip Otomasyonu Chrome uzantısı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından işletilmektedir. Kullanıcıdan yalnızca gerekli minimum veriler (ör. lisans anahtarı, isgkatip oturum anahtarı) toplanır. Lisans doğrulama sırasında sadece lisans anahtarı sunucularımıza gönderilir; isgkatip oturum anahtarı veya başka herhangi bir kişisel bilgi sunucularımıza iletilmez.\n\nKişisel veriler (ad, soyad, T.C. kimlik no, işyeri bilgileri, sözleşme detayları) sadece kullanıcının kendi hesabı üzerinden, isgkatip.csgb.gov.tr ile iletişimde kullanılır ve uzantı tarafından harici olarak saklanmaz. Lisans doğrulama için yalnızca lisans anahtarı, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.'nin kontrolündeki harici bir sunucuya (ör. AWS) gönderilir.\n\nHiçbir kişisel veri, üçüncü şahıslarla paylaşılmaz, satılmaz veya ticari amaçla kullanılmaz. Kullanıcı verileri, uzantıdan kaldırıldığında veya uzantı silindiğinde, mevzuat gereği yasal saklama ve denetim yükümlülüklerimiz kapsamında pasif hale getirilir ancak silinmez; ilgili bilgiler yalnızca resmi makamların talebi ve denetimi için saklanır.\n\nKVKK kapsamında, kullanıcı verilerinin işlenmesi, saklanması ve silinmesi süreçleri açıkça belirtilir. Katip Otomasyonu, kullanıcıdan açık rıza almadan hiçbir kişisel veriyi işlemez veya saklamaz. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. Bu talepler için info@arkaya.com.tr adresine başvurulabilir.\n\nKatip Otomasyonu'nu ilk kez kullanan veya lisans satın alan müşterilerden; telefon numarası, şirket adı ve OSGB-ID gibi bilgiler alınır ve lisans doğrulama amacıyla güvenli şekilde saklanır. Uygulamayı kullanan veya lisans satın alan herkes, bu bilgilerin alınmasını ve saklanmasını kabul etmiş sayılır.\n\nVeri sorumlusu: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. | info@arkaya.com.tr\n\nHaklarınızı kullanmak için, taleplerinizi info@arkaya.com.tr adresine iletebilirsiniz. Detaylı bilgi ve diğer sözleşmeler için lütfen ilgili sayfaları ziyaret ediniz.`,
-    kvkk: `Açık Rıza Beyan (KVKK)\n\nKatip Otomasyonu, 6698 sayılı Kişisel Verilerin Korunması Kanunu'na (KVKK) tam uyumlu olarak geliştirilmiştir. Kişisel veriler, yalnızca uzantının ve web sitesinin işlevlerini yerine getirmek için ve kullanıcının açık rızası ile işlenir. Kişisel veriler, uzantı tarafından harici bir sunucuda saklanmaz, sadece geçici olarak kullanılır.\n\nLisans doğrulama sırasında iletilen lisans anahtarı, lisans kontrolü amacıyla işlenir ve Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. kontrolündeki harici bir sunucuda (ör. AWS) saklanır. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. info@arkaya.com.tr adresine başvurarak bu hakkını kullanabilir. Kişisel veriler, üçüncü şahıslarla paylaşılmaz. Veri güvenliği için gerekli tüm teknik ve idari tedbirler alınır.\n\nVeri sorumlusu: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. | info@arkaya.com.tr\n\nKayıt ve lisanslama sürecinde alınan telefon numarası, şirket adı ve OSGB-ID bilgileri, yalnızca lisans doğrulama ve müşteri kaydı amacıyla işlenir ve saklanır.\n\nHaklarınız ve başvuru yöntemleriniz için lütfen Gizlilik Sözleşmesi sayfasını inceleyiniz.`,
-    commercial: `Ticari Elektronik İleti Onayı\n\nKampanya, duyuru ve bilgilendirme amaçlı ticari elektronik iletiler (e-posta, SMS vb.) almak istiyorsanız bu kutucuğu işaretleyebilirsiniz. Onay vermeniz halinde, iletişim bilgileriniz yalnızca Katip Otomasyonu ve Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından kampanya ve bilgilendirme amaçlı kullanılacaktır. Onayınızı dilediğiniz zaman geri alabilirsiniz.\n\nDetaylı bilgi için info@arkaya.com.tr adresine başvurabilirsiniz.`
+  // Agreement modal logic (legacy) - enhanced with dynamic contracts
+  const getAgreementText = (type) => {
+    const contractMapping = {
+      'terms': 'terms_of_use',
+      'privacy': 'privacy_policy',
+      'kvkk': 'kvkk_consent',
+      'commercial': 'marketing_consent'
+    };
+    
+    const contractId = contractMapping[type];
+    if (contracts && contracts[contractId]) {
+      return contracts[contractId].content;
+    }
+    
+    // Fallback to static content
+    const agreementTexts = {
+      terms: `Kullanım Koşulları\n\nKatip Otomasyonu, yalnızca geçerli bir lisans anahtarı ile kullanılabilir. Kullanıcı, uzantıyı ve web sitesini yalnızca yasal amaçlarla ve isgkatip.csgb.gov.tr platformunda kullanmayı kabul eder. Uzantı ve web sitesi, isgkatip.csgb.gov.tr'nin kullanım koşullarına ve Türk mevzuatına aykırı şekilde kullanılamaz.\n\nKullanıcı, uzantının ve web sitesinin işlevlerini kötüye kullanmayacağını, başkalarının verilerine izinsiz erişmeyeceğini ve uzantıyı sadece kendi kurumunun işlemleri için kullanacağını taahhüt eder. Geliştirici (Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.), uzantının yanlış veya izinsiz kullanımından doğacak zararlardan sorumlu değildir.\n\nLisans anahtarının paylaşılması, çoğaltılması veya izinsiz kullanımı yasaktır. Tespit halinde lisans iptal edilir. Uzantı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından güncellenebilir veya sonlandırılabilir.\n\nUygulamayı kullanan veya lisans satın alan kullanıcılar, ilk kayıt sırasında talep edilen telefon numarası, şirket adı ve OSGB-ID bilgilerinin lisans doğrulama ve müşteri kaydı amacıyla saklanmasını kabul etmiş sayılır.\n\nDetaylı bilgi için info@arkaya.com.tr adresine başvurabilirsiniz.`,
+      privacy: `Gizlilik Sözleşmesi\n\nKatip Otomasyonu Chrome uzantısı ve web sitesi, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından işletilmektedir. Kullanıcıdan yalnızca gerekli minimum veriler (ör. lisans anahtarı, isgkatip oturum anahtarı) toplanır. Lisans doğrulama sırasında sadece lisans anahtarı sunucularımıza gönderilir; isgkatip oturum anahtarı veya başka herhangi bir kişisel bilgi sunucularımıza iletilmez.\n\nKişisel veriler (ad, soyad, T.C. kimlik no, işyeri bilgileri, sözleşme detayları) sadece kullanıcının kendi hesabı üzerinden, isgkatip.csgb.gov.tr ile iletişimde kullanılır ve uzantı tarafından harici olarak saklanmaz. Lisans doğrulama için yalnızca lisans anahtarı, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti.'nin kontrolündeki harici bir sunucuya (ör. AWS) gönderilir.\n\nHiçbir kişisel veri, üçüncü şahıslarla paylaşılmaz, satılmaz veya ticari amaçla kullanılmaz. Kullanıcı verileri, uzantıdan kaldırıldığında veya uzantı silindiğinde, mevzuat gereği yasal saklama ve denetim yükümlülüklerimiz kapsamında pasif hale getirilir ancak silinmez; ilgili bilgiler yalnızca resmi makamların talebi ve denetimi için saklanır.\n\nKVKK kapsamında, kullanıcı verilerinin işlenmesi, saklanması ve silinmesi süreçleri açıkça belirtilir. Katip Otomasyonu, kullanıcıdan açık rıza almadan hiçbir kişisel veriyi işlemez veya saklamaz. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. Bu talepler için info@arkaya.com.tr adresine başvurulabilir.\n\nKatip Otomasyonu'nu ilk kez kullanan veya lisans satın alan müşterilerden; telefon numarası, şirket adı ve OSGB-ID gibi bilgiler alınır ve lisans doğrulama amacıyla güvenli şekilde saklanır. Uygulamayı kullanan veya lisans satın alan herkes, bu bilgilerin alınmasını ve saklanmasını kabul etmiş sayılır.\n\nVeri sorumlusu: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. | info@arkaya.com.tr\n\nHaklarınızı kullanmak için, taleplerinizi info@arkaya.com.tr adresine iletebilirsiniz. Detaylı bilgi ve diğer sözleşmeler için lütfen ilgili sayfaları ziyaret ediniz.`,
+      kvkk: `Açık Rıza Beyan (KVKK)\n\nKatip Otomasyonu, 6698 sayılı Kişisel Verilerin Korunması Kanunu'na (KVKK) tam uyumlu olarak geliştirilmiştir. Kişisel veriler, yalnızca uzantının ve web sitesinin işlevlerini yerine getirmek için ve kullanıcının açık rızası ile işlenir. Kişisel veriler, uzantı tarafından harici bir sunucuda saklanmaz, sadece geçici olarak kullanılır.\n\nLisans doğrulama sırasında iletilen lisans anahtarı, lisans kontrolü amacıyla işlenir ve Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. kontrolündeki harici bir sunucuda (ör. AWS) saklanır. Kullanıcı, dilediği zaman verilerinin silinmesini talep edebilir. info@arkaya.com.tr adresine başvurarak bu hakkını kullanabilir. Kişisel veriler, üçüncü şahıslarla paylaşılmaz. Veri güvenliği için gerekli tüm teknik ve idari tedbirler alınır.\n\nVeri sorumlusu: Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. | info@arkaya.com.tr\n\nKayıt ve lisanslama sürecinde alınan telefon numarası, şirket adı ve OSGB-ID bilgileri, yalnızca lisans doğrulama ve müşteri kaydı amacıyla işlenir ve saklanır.\n\nHaklarınız ve başvuru yöntemleriniz için lütfen Gizlilik Sözleşmesi sayfasını inceleyiniz.`,
+      commercial: `Ticari Elektronik İleti Onayı\n\nKampanya, duyuru ve bilgilendirme amaçlı ticari elektronik iletiler (e-posta, SMS vb.) almak istiyorsanız bu kutucuğu işaretleyebilirsiniz. Onay vermeniz halinde, iletişim bilgileriniz yalnızca Katip Otomasyonu ve Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından kampanya ve bilgilendirme amaçlı kullanılacaktır. Onayınızı dilediğiniz zaman geri alabilirsiniz.\n\nDetaylı bilgi için info@arkaya.com.tr adresine başvurabilirsiniz.`
+    };
+    return agreementTexts[type];
+  };
+
+  const getAgreementTitle = (type) => {
+    const contractMapping = {
+      'terms': 'terms_of_use',
+      'privacy': 'privacy_policy',
+      'kvkk': 'kvkk_consent',
+      'commercial': 'marketing_consent'
+    };
+    
+    const contractId = contractMapping[type];
+    if (contracts && contracts[contractId]) {
+      return contracts[contractId].title;
+    }
+    
+    // Fallback titles
+    const fallbackTitles = {
+      'terms': 'Kullanım Koşulları',
+      'privacy': 'Gizlilik Sözleşmesi',
+      'kvkk': 'Açık Rıza Beyan (KVKK)',
+      'commercial': 'Ticari Elektronik İleti Onayı'
+    };
+    return fallbackTitles[type];
   };
   const openAgreementModal = (type) => setAgreementModal({ open: true, type });
   const closeAgreementModal = () => setAgreementModal({ open: false, type: null });
   const approveAgreement = () => {
     if (agreementModal.type) {
       setAgreements(a => ({ ...a, [agreementModal.type]: true }));
+      
+      // Also update the contracts system
+      const contractMapping = {
+        'terms': 'terms_of_use',
+        'privacy': 'privacy_policy',
+        'kvkk': 'kvkk_consent',
+        'commercial': 'marketing_consent'
+      };
+      const contractId = contractMapping[agreementModal.type];
+      if (contractId) {
+        updateAcceptance(contractId, true);
+      }
+      
       closeAgreementModal();
+    }
+  };
+
+  const closeContractModal = () => {
+    setContractModal({ open: false, contract: null });
+  };
+
+  const handleContractAccept = (contractId) => {
+    updateAcceptance(contractId, true);
+    // Also update legacy agreements for backward compatibility
+    const legacyMapping = {
+      'terms_of_use': 'terms',
+      'privacy_policy': 'privacy', 
+      'kvkk_consent': 'kvkk',
+      'marketing_consent': 'commercial'
+    };
+    if (legacyMapping[contractId]) {
+      setAgreements(a => ({ ...a, [legacyMapping[contractId]]: true }));
     }
   };
 
@@ -662,12 +762,13 @@ function RegisterPage() {
                       openAgreementModal('terms');
                     } else {
                       setAgreements(a => ({ ...a, terms: false }));
+                      updateAcceptance('terms_of_use', false);
                     }
                   }}
                   aria-required="true"
                 />
                 <label className="form-check-label" htmlFor="terms">
-                  <span className="fw-bold">Kullanım Koşulları</span> (
+                  <span className="fw-bold">{getAgreementTitle('terms')}</span> (
                     <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('terms')}>Sözleşmeyi Oku</button>
                   ) <span className="text-danger">*</span>
                 </label>
@@ -687,12 +788,13 @@ function RegisterPage() {
                       openAgreementModal('privacy');
                     } else {
                       setAgreements(a => ({ ...a, privacy: false }));
+                      updateAcceptance('privacy_policy', false);
                     }
                   }}
                   aria-required="true"
                 />
                 <label className="form-check-label" htmlFor="privacy">
-                  <span className="fw-bold">Gizlilik Sözleşmesi</span> (
+                  <span className="fw-bold">{getAgreementTitle('privacy')}</span> (
                     <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('privacy')}>Sözleşmeyi Oku</button>
                   ) <span className="text-danger">*</span>
                 </label>
@@ -712,12 +814,13 @@ function RegisterPage() {
                       openAgreementModal('kvkk');
                     } else {
                       setAgreements(a => ({ ...a, kvkk: false }));
+                      updateAcceptance('kvkk_consent', false);
                     }
                   }}
                   aria-required="true"
                 />
                 <label className="form-check-label" htmlFor="kvkk">
-                  <span className="fw-bold">Açık Rıza Beyan (KVKK)</span> (
+                  <span className="fw-bold">{getAgreementTitle('kvkk')}</span> (
                     <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('kvkk')}>Sözleşmeyi Oku</button>
                   ) <span className="text-danger">*</span>
                 </label>
@@ -730,10 +833,14 @@ function RegisterPage() {
                   type="checkbox"
                   id="commercial"
                   checked={agreements.commercial}
-                  onChange={() => setAgreements(a => ({ ...a, commercial: !a.commercial }))}
+                  onChange={() => {
+                    const newValue = !agreements.commercial;
+                    setAgreements(a => ({ ...a, commercial: newValue }));
+                    updateAcceptance('marketing_consent', newValue);
+                  }}
                 />
                 <label className="form-check-label" htmlFor="commercial">
-                  <span className="fw-bold">Ticari Elektronik İleti Onayı</span> (
+                  <span className="fw-bold">{getAgreementTitle('commercial')}</span> (
                     <button type="button" className="btn btn-link p-0 align-baseline" style={{textDecoration:'underline'}} onClick={() => openAgreementModal('commercial')}>Sözleşmeyi Oku</button>
                   ) <span className="text-secondary">(isteğe bağlı)</span>
                 </label>
@@ -797,15 +904,12 @@ function RegisterPage() {
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">
-                    {agreementModal.type === 'terms' && 'Kullanım Koşulları'}
-                    {agreementModal.type === 'privacy' && 'Gizlilik Sözleşmesi'}
-                    {agreementModal.type === 'kvkk' && 'Açık Rıza Beyan (KVKK)'}
-                    {agreementModal.type === 'commercial' && 'Ticari Elektronik İleti Onayı'}
+                    {getAgreementTitle(agreementModal.type)}
                   </h5>
                   <button type="button" className="btn-close" onClick={closeAgreementModal}></button>
                 </div>
                 <div className="modal-body" style={{maxHeight: '60vh', overflowY: 'auto'}}>
-                  <div style={{whiteSpace:'pre-line'}}>{agreementTexts[agreementModal.type]}</div>
+                  <div style={{whiteSpace:'pre-line'}}>{getAgreementText(agreementModal.type)}</div>
                 </div>
                 <div className="modal-footer">
                   {agreementModal.type !== 'commercial' ? (
@@ -817,6 +921,15 @@ function RegisterPage() {
             </div>
           </div>
         )}
+
+        {/* New Contract Modal */}
+        <ContractModal
+          contract={contractModal.contract}
+          isOpen={contractModal.open}
+          onClose={closeContractModal}
+          onAccept={handleContractAccept}
+          showAcceptButton={true}
+        />
         <style>{`
           .btn-onay-gonder {
             background: #6c757d !important;
