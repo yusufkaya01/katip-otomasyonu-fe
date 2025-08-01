@@ -4,8 +4,8 @@ import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 // Single pricing tier
 const PRICING = {
-  originalPrice: '24.000₺',
-  discountedPrice: '18.000₺',
+  originalPrice: '20.000₺',
+  discountedPrice: '15.000₺',
   description: 'Sınırsız Kullanım'
 };
 
@@ -61,11 +61,11 @@ function PricingPage() {
           </svg>
           {isMobile ? (
             <div style={{textAlign: 'center', lineHeight: 1.3}}>
-              <div>Kredi Kartına 6 taksite kadar</div>
+              <div>Kredi Kartına 3 taksite kadar</div>
               <div style={{color:'#198754', fontWeight: 'bold'}}>vade farkı yok!</div>
             </div>
           ) : (
-            <>Kredi Kartına 6 taksite kadar <span style={{color:'#198754'}}>vade farkı yok!</span></>
+            <>Kredi Kartına 3 taksite kadar <span style={{color:'#198754'}}>vade farkı yok!</span></>
           )}
         </div>
         <style>{`
