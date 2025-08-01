@@ -21,7 +21,7 @@ function AboutPage() {
               <div className="card-body d-flex flex-column align-items-center text-center">
                 <img src="https://media.licdn.com/dms/image/v2/D4E03AQHOn7ZA7qk13A/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1729455741506?e=1755734400&v=beta&t=AgG5fXzQXD9AozvyP9EUoUPvxecPEgmsQUBlMuZRylI" alt="Yusuf Kaya" className="rounded-circle mb-3" style={{ width: 80, height: 80, objectFit: 'cover' }} />
                 <h5 className="card-title mb-1">Yusuf Kaya</h5>
-                <p className="mb-1">Co-Founder | DevOps Engineer</p>
+                <p className="mb-1">Founder | DevOps & Cloud Engineer</p>
                 <div className="d-flex justify-content-center align-items-center gap-3 mb-2">
                   <a href="https://www.linkedin.com/in/yusufkayatr96/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center' }}>
                     <img src="https://upload.wikimedia.org/wikipedia/commons/8/81/LinkedIn_icon.svg" alt="LinkedIn" style={{ width: 32, height: 32, display: 'block' }} />

@@ -42,7 +42,12 @@ function HomePage() {
             background: 'transparent',
             boxShadow: 'none',
           }}
-          onClick={() => navigate('/kayit')}
+          onClick={() => {
+            const message = "Merhaba, Katip Otomasyonu için demo talebinde bulunmak istiyorum. Bilgi verebilir misiniz?";
+            const phoneNumber = "905555555555"; // Replace with actual WhatsApp number
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+          }}
         />
         {/* Centered intro section with h2 restored */}
         <section className="text-center mb-5" style={{ marginTop: '2.5rem' }}>
