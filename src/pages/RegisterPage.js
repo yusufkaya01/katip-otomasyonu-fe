@@ -873,7 +873,10 @@ function RegisterPage() {
             <strong>Demo Talebi</strong>
           </div>
           <p className="mb-2">
-            Ücertisiz 7 günlük demo talebinde bulunmak için bizimle iletişim kurabilirsiniz.
+            Ücretsiz 7 günlük demo talebinde bulunmak için bizimle iletişim kurabilirsiniz.
+          </p>
+          <p className="mb-2" style={{fontSize: '0.9rem', fontStyle: 'italic', opacity: 0.8}}>
+            * Her müşteri demo hakkını sadece bir kez kullanabilir.
           </p>
           <button 
             type="button" 

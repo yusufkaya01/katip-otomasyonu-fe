@@ -4,8 +4,8 @@ import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 // Single pricing tier
 const PRICING = {
-  originalPrice: '15.000₺',
-  discountedPrice: '12.000₺',
+  originalPrice: '24.000₺',
+  discountedPrice: '18.000₺',
   description: 'Sınırsız Kullanım'
 };
 
@@ -61,11 +61,11 @@ function PricingPage() {
           </svg>
           {isMobile ? (
             <div style={{textAlign: 'center', lineHeight: 1.3}}>
-              <div>Kredi Kartına 3 taksite kadar</div>
+              <div>Kredi Kartına 6 taksite kadar</div>
               <div style={{color:'#198754', fontWeight: 'bold'}}>vade farkı yok!</div>
             </div>
           ) : (
-            <>Kredi Kartına 3 taksite kadar <span style={{color:'#198754'}}>vade farkı yok!</span></>
+            <>Kredi Kartına 6 taksite kadar <span style={{color:'#198754'}}>vade farkı yok!</span></>
           )}
         </div>
         <style>{`
@@ -139,7 +139,7 @@ function PricingPage() {
                   }}></div>
                   <div className="text-center" style={{position: 'relative', zIndex: 2}}>
                     <div style={{fontSize: '0.75rem', fontWeight: '500', letterSpacing: '0.5px', opacity: 0.9, marginBottom: '4px'}}>
-                      %20 İNDİRİMLİ ÖZEL FİYAT DÖNEMİ
+                      %25 İNDİRİMLİ ÖZEL FİYAT DÖNEMİ
                     </div>
                     <div style={{fontSize: '0.9rem', fontWeight: '600'}}>
                       30 Eylül 2025 tarihine kadar geçerlidir
@@ -166,7 +166,7 @@ function PricingPage() {
                       fontWeight: '600',
                       fontSize: '0.9rem !important'
                     }}>
-                      20% İNDİRİM
+                      25% İNDİRİM
                     </div>
                   </div>
                   

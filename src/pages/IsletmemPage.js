@@ -787,7 +787,7 @@ function IsletmemPage() {
                   <div className="col-md-6">
                     <div className="d-flex justify-content-between">
                       <span className="fw-semibold">Ödeme Bekleyen Tutar:</span>
-                      <span className="text-danger fw-bold">{order.remaining_balance ? `${order.remaining_balance} TL` : (order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '12.000 TL')}</span>
+                      <span className="text-danger fw-bold">{order.remaining_balance ? `${order.remaining_balance} TL` : (order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '18.000 TL')}</span>
                     </div>
                   </div>
                 </div>
@@ -1072,7 +1072,7 @@ function IsletmemPage() {
                   {orderStep === 1 && (
                     <>
                       <div className="mb-3 text-center">
-                        <div className="fw-bold mb-2">Lisansınız <span className="text-danger">12.000 TL</span> karşılığında <span className="text-danger">366 gün</span> daha uzatılacaktır.</div>
+                        <div className="fw-bold mb-2">Lisansınız <span className="text-danger">18.000 TL</span> karşılığında <span className="text-danger">366 gün</span> daha uzatılacaktır.</div>
                         <div className="text-muted" style={{fontSize:'0.95em'}}>Sipariş sonrası lisansınız otomatik olarak uzatılır.</div>
                       </div>
                       <div className="mb-3">
@@ -1099,7 +1099,7 @@ function IsletmemPage() {
                         <ul className="list-group mb-3">
                           <li className="list-group-item d-flex justify-content-between align-items-center">
                             <span>Lisans Uzatma</span>
-                            <span>12.000 TL / 366 gün</span>
+                            <span>18.000 TL / 366 gün</span>
                           </li>
                           <li className="list-group-item d-flex justify-content-between align-items-center">
                             <span>Ödeme Yöntemi</span>

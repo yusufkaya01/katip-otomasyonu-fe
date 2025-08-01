@@ -117,7 +117,7 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
 
   const openDiscountModal = (order) => {
     setDiscountOrder(order);
-    setDiscountPercent(order.discount_percent || '');
+    setDiscountPercent(''); // Start empty instead of showing existing discount
     setDiscountReason(order.discount_reason || '');
     setDiscountError('');
     setDiscountSuccess('');
@@ -264,9 +264,37 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
               </div>
               <form onSubmit={handleDiscountSubmit}>
                 <div className="modal-body">
+                  {discountOrder && (
+                    <div className="mb-3 p-3 bg-light rounded">
+                      <div className="row">
+                        <div className="col-6">
+                          <strong>Orijinal Tutar:</strong><br />
+                          <span className="text-muted">{discountOrder.amount || discountOrder.remaining_balance || '18.000'} TL</span>
+                        </div>
+                        <div className="col-6">
+                          <strong>İndirimli Tutar:</strong><br />
+                          <span className="text-success fw-bold">
+                            {discountPercent && !isNaN(discountPercent) && Number(discountPercent) >= 0 && Number(discountPercent) <= 100
+                              ? ((Number(discountOrder.amount || discountOrder.remaining_balance || 18000) * (100 - Number(discountPercent)) / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL')
+                              : '0,00 TL'
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="mb-3">
                     <label className="form-label">İndirim Oranı (%)</label>
-                    <input type="number" className="form-control" value={discountPercent} onChange={e => setDiscountPercent(e.target.value)} min={0} max={100} required />
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      value={discountPercent} 
+                      onChange={e => setDiscountPercent(e.target.value)} 
+                      min={0} 
+                      max={100} 
+                      placeholder="İndirim oranını giriniz"
+                      required 
+                    />
                   </div>
                   <div className="mb-3">
                     <label className="form-label">İndirim Nedeni (isteğe bağlı)</label>
