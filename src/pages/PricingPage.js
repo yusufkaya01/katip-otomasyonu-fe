@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 // Single pricing tier
@@ -12,7 +11,6 @@ const PRICING = {
 function PricingPage() {
   const [loading] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleResize = () => {

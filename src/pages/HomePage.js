@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 
@@ -9,7 +8,6 @@ function HomePage() {
   const [modalAlt, setModalAlt] = useState('');
   const [hovered, setHovered] = useState('');
   const [loading] = useState(false); // Remove setLoading
-  const navigate = useNavigate();
 
   const openModal = (src, alt) => {
     setModalImg(src);
