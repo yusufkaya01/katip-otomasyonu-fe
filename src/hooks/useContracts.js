@@ -106,21 +106,32 @@ export const useContractAcceptances = (contractIds = []) => {
 
   useEffect(() => {
     if (contracts && contractIds.length > 0) {
-      const initialAcceptances = {};
-      contractIds.forEach(contractId => {
+      let needsInit = false;
+      for (const contractId of contractIds) {
         const contract = contracts[contractId];
-        if (contract) {
-          initialAcceptances[contractId] = {
-            accepted: false,
-            acceptedAt: '',
-            version: contract.version,
-            mandatory: contract.mandatory
-          };
+        if (!contract) continue;
+        if (!acceptances[contractId] || acceptances[contractId].version !== contract.version) {
+          needsInit = true;
+          break;
         }
-      });
-      setAcceptances(initialAcceptances);
+      }
+      if (needsInit) {
+        const initialAcceptances = { ...acceptances };
+        contractIds.forEach(contractId => {
+          const contract = contracts[contractId];
+          if (contract) {
+            initialAcceptances[contractId] = {
+              accepted: false,
+              acceptedAt: '',
+              version: contract.version,
+              mandatory: contract.mandatory
+            };
+          }
+        });
+        setAcceptances(initialAcceptances);
+      }
     }
-  }, [contracts, contractIds]);
+  }, [contracts, contractIds, acceptances]);
 
   const updateAcceptance = (contractId, accepted) => {
     setAcceptances(prev => ({

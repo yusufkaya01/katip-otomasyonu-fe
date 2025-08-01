@@ -57,16 +57,16 @@ function HomePage() {
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>7 gün ücretsiz deneyin!</li>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Tek tıkla güncellenmesi gereken sözleşmeleri güncelleyin</li>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tıkla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Tek tıkla personel dakikalarını detaylı kategorilerle görüntüleyin ve Excel raporunu indirin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Güncel personel dakikalarınızı; devam eden, onay bekleyen, blokeli olan ve atanabilir dakikaları personel bazında; Uzman, Hekim, ve Diğer Sağlık Personeli başlıkları halinde raporları görüntüleyip Excel olarak indirin</li>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Tüm firmalarınızın atama, işyeri onayı ve İSG profesyoneli onay durumlarını renklendirilmiş Excel formatındaki raporu tek tıkla oluşturup, firma bazında kolayca takip edin</li>
           </ul>
         </section>
         <section>
           <h2 className="mb-3 text-center">Ekran Görüntüleri</h2>
           <div className="row justify-content-center g-3">
-            <div className="col-12 col-md-6 text-center position-relative">
+            <div className="col-12 col-lg-4 col-md-6 text-center position-relative">
               <div
-                style={{ position: 'relative', display: 'inline-block', width: '100%', maxWidth: 500 }}
+                style={{ position: 'relative', display: 'inline-block', width: '100%', maxWidth: 400 }}
                 onMouseEnter={() => setHovered('chrome')}
                 onMouseLeave={() => setHovered('')}
               >
@@ -96,19 +96,51 @@ function HomePage() {
               </div>
               <div className="small mt-2">Chrome Web Mağazası Görünümü</div>
             </div>
-            <div className="col-12 col-md-6 text-center position-relative">
+            <div className="col-12 col-lg-4 col-md-6 text-center position-relative">
               <div
-                style={{ position: 'relative', display: 'inline-block', width: '100%', maxWidth: 500 }}
+                style={{ position: 'relative', display: 'inline-block', width: '100%', maxWidth: 400 }}
                 onMouseEnter={() => setHovered('main')}
                 onMouseLeave={() => setHovered('')}
               >
                 <img
                   src="/screenshots/extension-main-page.png"
-                  alt="Eklenti Ana Sayfa Görünümü"
+                  alt="Eklenti Lisans Girme Ekranı"
                   style={{ width: '100%', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer' }}
-                  onClick={() => openModal('/screenshots/extension-main-page.png', 'Eklenti Ana Sayfa Görünümü')}
+                  onClick={() => openModal('/screenshots/extension-main-page.png', 'Eklenti Lisans Girme Ekranı')}
                 />
                 {hovered === 'main' && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    background: 'rgba(0,0,0,0.5)',
+                    borderRadius: '50%',
+                    padding: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                  }}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  </span>
+                )}
+              </div>
+              <div className="small mt-2">Eklenti Lisans Girme Ekranı</div>
+            </div>
+            <div className="col-12 col-lg-4 col-md-6 text-center position-relative">
+              <div
+                style={{ position: 'relative', display: 'inline-block', width: '100%', maxWidth: 400 }}
+                onMouseEnter={() => setHovered('main2')}
+                onMouseLeave={() => setHovered('')}
+              >
+                <img
+                  src="/screenshots/extension-main-page-2.png"
+                  alt="Eklenti Ana Sayfa Görünümü"
+                  style={{ width: '100%', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', cursor: 'pointer' }}
+                  onClick={() => openModal('/screenshots/extension-main-page-2.png', 'Eklenti Ana Sayfa Görünümü')}
+                />
+                {hovered === 'main2' && (
                   <span style={{
                     position: 'absolute',
                     top: '50%',

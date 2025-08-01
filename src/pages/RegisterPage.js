@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
 import ContractModal from '../components/ContractModal';
@@ -7,6 +8,7 @@ import { useContractAcceptances } from '../hooks/useContracts';
 
 function RegisterPage() {
   const { login } = useAuth();
+  const navigate = useNavigate();
   // Stepper/modal state
   const [step, setStep] = useState(1);
   // Step 1 state
@@ -295,16 +297,16 @@ function RegisterPage() {
               
               // Redirect to user dashboard
               console.log('Redirecting to /isletmem');
-              window.location.href = '/isletmem';
+              navigate('/isletmem', { replace: true });
             } else {
               console.log('Auto-login failed, redirecting to login page');
               const loginError = await loginRes.json();
               console.log('Login error:', loginError);
-              window.location.href = '/giris';
+              navigate('/giris', { replace: true });
             }
           } catch (error) {
             console.log('Auto-login error:', error);
-            window.location.href = '/giris';
+            navigate('/giris', { replace: true });
           }
         }, 1000); // Wait 1 second before attempting login
       } else {
@@ -871,7 +873,7 @@ function RegisterPage() {
             <strong>Demo Talebi</strong>
           </div>
           <p className="mb-2">
-            Demo talebinde bulunmak için bizimle iletişim kurabilirsiniz.
+            Ücertisiz 7 günlük demo talebinde bulunmak için bizimle iletişim kurabilirsiniz.
           </p>
           <button 
             type="button" 

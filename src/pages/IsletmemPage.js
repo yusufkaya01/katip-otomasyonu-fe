@@ -958,8 +958,8 @@ function IsletmemPage() {
               border: 'none',
               color: 'white',
               fontWeight: '600',
-              fontSize: '0.95rem',
-              padding: '12px 28px',
+              fontSize: '0.8rem',
+              padding: '8px 16px',
               borderRadius: '12px',
               boxShadow: '0 8px 25px rgba(220, 53, 69, 0.3), 0 4px 12px rgba(0, 0, 0, 0.1)',
               transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
@@ -967,7 +967,8 @@ function IsletmemPage() {
               overflow: 'hidden',
               textTransform: 'none',
               letterSpacing: '0.3px',
-              animation: 'shimmer 2.5s ease-in-out infinite, pulse 2s ease-in-out infinite'
+              animation: 'shimmer 2.5s ease-in-out infinite, pulse 2s ease-in-out infinite',
+              whiteSpace: 'nowrap'
             }}
             onMouseEnter={(e) => {
               e.target.style.transform = 'translateY(-3px) scale(1.02)';
