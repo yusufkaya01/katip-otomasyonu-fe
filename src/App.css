@@ -85,6 +85,10 @@
   animation: featureHighlight 4s linear infinite;
   animation-delay: 6s;
 }
+.feature-list-animated .list-group-item:nth-child(8) {
+  animation: featureHighlight 4s linear infinite;
+  animation-delay: 7s;
+}
 
 @keyframes pulseGlow {
   0% { box-shadow: 0 0 16px 0 #fd7e14; }
