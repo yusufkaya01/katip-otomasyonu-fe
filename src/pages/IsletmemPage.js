@@ -31,9 +31,12 @@ function IsletmemPage() {
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderError, setOrderError] = useState('');
   const [orderResult, setOrderResult] = useState(null);
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
   const [pendingOrders, setPendingOrders] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [pendingError, setPendingError] = useState('');
+  const [pendingCardError, setPendingCardError] = useState('');
+  const [emailVerificationError, setEmailVerificationError] = useState('');
   const [bankIbans, setBankIbans] = useState([]);
   const [showPendingBankDetails, setShowPendingBankDetails] = useState(false);
   // Card payment status states
@@ -364,6 +367,8 @@ function IsletmemPage() {
   const handleCreateOrderAfterDSA = async () => {
     setOrderLoading(true);
     setOrderError('');
+    setEmailVerificationError('');
+    setIsMaintenanceMode(false);
     setOrderResult(null);
     setBankIbans([]);
     setCardOrderId(null);
@@ -482,7 +487,24 @@ function IsletmemPage() {
           setBankIbans(data.ibans);
         }
       } else {
-        setOrderError(getOrderErrorMessage(data.error || data.message || 'Sipariş oluşturulamadı.'));
+        // Check for email verification requirement first
+        if (data.emailNotVerified || res.status === 403) {
+          setEmailVerificationError(data.message || 'E-posta adresiniz doğrulanmamış. Sipariş verebilmek için önce e-posta adresinizi doğrulamanız gerekmektedir.');
+          setIsMaintenanceMode(false);
+          setOrderError('');
+          return;
+        }
+        // Check for maintenance mode specifically
+        if (data.isMaintenanceMode) {
+          setIsMaintenanceMode(true);
+          setPaymentMethod('cash'); // Auto-switch to EFT/Havale during maintenance
+          setOrderError(data.message || 'Kredi kartı ödeme sistemimiz bakımdadır, şu an yalnızca EFT/Havale yöntemi ile ödeme sipariş alabilmekteyiz. Bakımın ne zaman biteceğini öğrenmek için info@katipotomasyonu.com adresinden bize ulaşabilirsiniz.');
+          setEmailVerificationError('');
+        } else {
+          setIsMaintenanceMode(false);
+          setOrderError(getOrderErrorMessage(data.error || data.message || 'Sipariş oluşturulamadı.'));
+          setEmailVerificationError('');
+        }
       }
     } catch (err) {
       setOrderError('Sunucuya ulaşılamadı.');
@@ -787,7 +809,7 @@ function IsletmemPage() {
                   <div className="col-md-6">
                     <div className="d-flex justify-content-between">
                       <span className="fw-semibold">Ödeme Bekleyen Tutar:</span>
-                      <span className="text-danger fw-bold">{order.remaining_balance ? `${order.remaining_balance} TL` : (order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '18.000 TL')}</span>
+                      <span className="text-danger fw-bold">{order.remaining_balance ? `${order.remaining_balance} TL` : (order.amount_due ? `${order.amount_due} TL` : order.amount ? `${order.amount} TL` : '15.000 TL')}</span>
                     </div>
                   </div>
                 </div>
@@ -796,6 +818,14 @@ function IsletmemPage() {
                 </div>
               </div>
             ))}
+            {pendingCardError && (
+              <div className="alert alert-danger mt-3 mb-2">
+                <div className="d-flex align-items-start">
+                  <i className="bi bi-exclamation-triangle-fill text-danger me-2 mt-1"></i>
+                  <div>{pendingCardError}</div>
+                </div>
+              </div>
+            )}
             <div className="d-flex gap-2 mb-2">
               <button className="btn btn-primary btn-sm" onClick={() => setShowPendingBankDetails(true)}>
                 Banka Bilgilerini Göster
@@ -807,6 +837,7 @@ function IsletmemPage() {
                   onClick={async () => {
                     const order = pendingOrders.find(o => !o.is_paid && o.status !== 'cancelled' && o.status !== 'failed' && (!o.paid_amount || o.paid_amount === 0));
                     if (!order) return;
+                    setPendingCardError(''); // Clear previous errors
                     try {
                       const res = await fetch(`${API_BASE_URL}/osgb/orders/${order.order_id}/pay-with-card`, {
                         method: 'POST',
@@ -863,10 +894,19 @@ function IsletmemPage() {
                         }
                         poll();
                       } else {
-                        alert(data.message || 'Kart ile ödeme başlatılamadı. Sipariş zaten ödenmiş veya iptal edilmiş olabilir.');
+                        // Check for email verification requirement first
+                        if (data.emailNotVerified || res.status === 403) {
+                          setPendingCardError(data.message || 'E-posta adresiniz doğrulanmamış. Ödeme yapabilmek için önce e-posta adresinizi doğrulamanız gerekmektedir.');
+                        }
+                        // Check for maintenance mode
+                        else if (data.isMaintenanceMode) {
+                          setPendingCardError(data.message || 'Kredi kartı ödeme sistemimiz bakımdadır, şu an yalnızca EFT/Havale yöntemi ile ödeme sipariş alabilmekteyiz. Bakımın ne zaman biteceğini öğrenmek için info@katipotomasyonu.com adresinden bize ulaşabilirsiniz.');
+                        } else {
+                          setPendingCardError(data.message || 'Kart ile ödeme başlatılamadı. Sipariş zaten ödenmiş veya iptal edilmiş olabilir.');
+                        }
                       }
                     } catch (err) {
-                      alert('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
+                      setPendingCardError('Sunucuya ulaşılamadı. Lütfen tekrar deneyin.');
                     }
                   }}
                 >
@@ -990,7 +1030,7 @@ function IsletmemPage() {
             onMouseUp={(e) => {
               e.target.style.transform = 'translateY(-3px) scale(1.02)';
             }}
-            onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setOrderResult(null); setPaymentMethod('card'); setDsaAccepted(false); }} 
+            onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setEmailVerificationError(''); setOrderResult(null); setPaymentMethod('card'); setDsaAccepted(false); }} 
             disabled={pendingOrders.length > 0}
           >
             <span style={{
@@ -1066,13 +1106,13 @@ function IsletmemPage() {
               <div className="modal-content">
                 <div className="modal-header">
                   <h5 className="modal-title">Lisans Süresi Uzatma</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowExtendModal(false)}></button>
+                  <button type="button" className="btn-close" onClick={() => {setShowExtendModal(false); setEmailVerificationError('');}}></button>
                 </div>
                 <div className="modal-body">
                   {orderStep === 1 && (
                     <>
                       <div className="mb-3 text-center">
-                        <div className="fw-bold mb-2">Lisansınız <span className="text-danger">18.000 TL</span> karşılığında <span className="text-danger">366 gün</span> daha uzatılacaktır.</div>
+                        <div className="fw-bold mb-2">Lisansınız <span className="text-danger">15.000 TL</span> karşılığında <span className="text-danger">366 gün</span> daha uzatılacaktır.</div>
                         <div className="text-muted" style={{fontSize:'0.95em'}}>Sipariş sonrası lisansınız otomatik olarak uzatılır.</div>
                       </div>
                       <div className="mb-3">
@@ -1087,9 +1127,34 @@ function IsletmemPage() {
                             <label className="form-check-label" htmlFor="pay-cash">EFT/Havale</label>
                           </div>
                         </div>
+                        {isMaintenanceMode && (
+                          <div className="alert alert-warning mt-2 mb-2" style={{fontSize: '0.9em'}}>
+                            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Önemli:</strong> Kredi kartı ödeme sistemimiz şu anda bakımdadır. Lütfen EFT/Havale yöntemini seçiniz.
+                          </div>
+                        )}
                       </div>
+                      {emailVerificationError && (
+                        <div className="alert alert-danger mb-3">
+                          <div className="d-flex align-items-start">
+                            <i className="bi bi-exclamation-triangle-fill text-danger me-2 mt-1"></i>
+                            <div>
+                              <div className="fw-bold mb-2">E-posta Doğrulama Gerekli</div>
+                              <div className="mb-2">{emailVerificationError}</div>
+                              <button
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={handleResendVerification}
+                                disabled={resendLoading}
+                              >
+                                {resendLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder'}
+                              </button>
+                              {resendMessage && <div className="mt-2 small text-muted">{resendMessage}</div>}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
-                      <button className="btn btn-danger w-100" onClick={()=>{setOrderStep(2); setDsaAccepted(false); setOrderError('');}} disabled={orderLoading}>Sipariş Oluştur</button>
+                      <button className="btn btn-danger w-100" onClick={()=>{setOrderStep(2); setDsaAccepted(false); setOrderError(''); setEmailVerificationError('');}} disabled={orderLoading}>Sipariş Oluştur</button>
                     </>
                   )}
                   {orderStep === 2 && (
@@ -1150,9 +1215,28 @@ function IsletmemPage() {
                           <div className="alert alert-info small">Siparişi onayladığınızda banka bilgileri gösterilecektir.</div>
                         )}
                       </div>
+                      {emailVerificationError && (
+                        <div className="alert alert-danger mb-3">
+                          <div className="d-flex align-items-start">
+                            <i className="bi bi-exclamation-triangle-fill text-danger me-2 mt-1"></i>
+                            <div>
+                              <div className="fw-bold mb-2">E-posta Doğrulama Gerekli</div>
+                              <div className="mb-2">{emailVerificationError}</div>
+                              <button
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={handleResendVerification}
+                                disabled={resendLoading}
+                              >
+                                {resendLoading ? 'Gönderiliyor...' : 'Doğrulama E-postasını Tekrar Gönder'}
+                              </button>
+                              {resendMessage && <div className="mt-2 small text-muted">{resendMessage}</div>}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                       {orderError && <div className="alert alert-danger py-2">{orderError}</div>}
                       <div className="d-flex justify-content-between">
-                        <button className="btn btn-secondary" onClick={()=>{setOrderStep(1); setDsaAccepted(false); setOrderError('');}} disabled={orderLoading}>Geri</button>
+                        <button className="btn btn-secondary" onClick={()=>{setOrderStep(1); setDsaAccepted(false); setOrderError(''); setEmailVerificationError('');}} disabled={orderLoading}>Geri</button>
                         <button className="btn btn-danger" onClick={handleCreateOrder} disabled={orderLoading}>{orderLoading ? 'Oluşturuluyor...' : 'Siparişi Onayla'}</button>
                       </div>
                     </>
@@ -1233,7 +1317,7 @@ function IsletmemPage() {
                           </div>
                         )}
                       </div>
-                      <button className="btn btn-success w-100" onClick={()=>setShowExtendModal(false)}>Kapat</button>
+                      <button className="btn btn-success w-100" onClick={()=>{setShowExtendModal(false); setEmailVerificationError('');}}>Kapat</button>
                     </>
                   )}
                 </div>
@@ -1393,8 +1477,16 @@ function IsletmemPage() {
           {emailVerified === 0 && (
             <div className="alert alert-warning d-flex align-items-center" role="alert">
               <div>
-                E-posta adresiniz henüz doğrulanmadı. Lütfen e-postanızı kontrol edin ve doğrulama linkine tıklayın.
-                <br />
+                <div className="fw-bold mb-2">
+                  <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                  E-posta Doğrulama Gerekli
+                </div>
+                <div className="mb-2">
+                  E-posta adresiniz henüz doğrulanmadı. <strong>Sipariş verebilmek için önce e-posta adresinizi doğrulamanız gerekmektedir.</strong>
+                </div>
+                <div className="mb-2 text-muted small">
+                  Lütfen e-postanızı kontrol edin ve doğrulama linkine tıklayın.
+                </div>
                 <button
                   className="btn btn-outline-danger btn-sm mt-2"
                   onClick={handleResendVerification}
