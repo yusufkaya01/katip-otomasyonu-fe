@@ -4,7 +4,7 @@ import PageLoadingSpinner from '../components/PageLoadingSpinner';
 // Single pricing tier
 const PRICING = {
   originalPrice: '20.000₺',
-  discountedPrice: '15.000₺',
+  discountedPrice: '16.000₺',
   description: 'Sınırsız Kullanım'
 };
 
@@ -142,7 +142,7 @@ function PricingPage() {
                   }}></div>
                   <div className="text-center" style={{position: 'relative', zIndex: 2}}>
                     <div style={{fontSize: '0.75rem', fontWeight: '500', letterSpacing: '0.5px', opacity: 0.9, marginBottom: '4px'}}>
-                      %25 İNDİRİMLİ ÖZEL FİYAT DÖNEMİ
+                      %20 İNDİRİMLİ ÖZEL FİYAT DÖNEMİ
                     </div>
                     <div style={{fontSize: '0.9rem', fontWeight: '600'}}>
                       30 Eylül 2025 tarihine kadar geçerlidir
@@ -169,13 +169,22 @@ function PricingPage() {
                       fontWeight: '600',
                       fontSize: '0.9rem !important'
                     }}>
-                      25% İNDİRİM
+                      20% İNDİRİM
                     </div>
                   </div>
                   
                   {/* Current discounted price */}
-                  <div className="text-danger" style={{fontSize: '2.5rem', fontWeight: '700'}}>
-                    {PRICING.discountedPrice}
+                  <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
+                    <div className="badge bg-success px-2 py-1" style={{
+                      borderRadius: '15px',
+                      fontWeight: '600',
+                      fontSize: '0.75rem'
+                    }}>
+                      KDV DAHİL
+                    </div>
+                    <div className="text-danger" style={{fontSize: '2.5rem', fontWeight: '700'}}>
+                      {PRICING.discountedPrice}
+                    </div>
                   </div>
                 </div>
                 <p className="text-muted mb-3" style={{fontSize: '0.9rem'}}>
