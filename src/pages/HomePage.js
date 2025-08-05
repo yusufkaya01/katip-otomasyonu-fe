@@ -50,20 +50,31 @@ function HomePage() {
         {/* Centered intro section with h2 restored */}
         <section className="text-center mb-5" style={{ marginTop: '2.5rem' }}>
           <h2 className="mb-4">Katip Otomasyonu Nedir?</h2>
-          <p className="lead mb-4">
-            Katip Otomasyonu, İSG Katip platformunda sözleşme güncellemelerini ve yönetimini otomatikleştiren, güvenli ve hızlı bir Chrome eklentisidir. Tüm işlemlerinizde zaman kazanın ve hatasız yönetim sağlayın.
-          </p>
+          <div style={{ 
+            maxWidth: '650px', 
+            margin: '0 auto',
+            background: 'rgba(255, 235, 238, 0.7)',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 193, 207, 0.6)',
+            padding: '20px',
+            backdropFilter: 'blur(4px)'
+          }}>
+            <p className="lead mb-4">
+              Katip Otomasyonu, İSG Katip platformunda sözleşme güncellemelerini ve yönetimini otomatikleştiren, güvenli ve hızlı bir Chrome eklentisidir. Tüm işlemlerinizde zaman kazanın ve hatasız yönetim sağlayın.
+            </p>
+          </div>
         </section>
         
         {/* Google Security Badge */}
         <section className="text-center mb-5">
           <div className="d-flex justify-content-center align-items-center flex-wrap gap-4 p-3" style={{
-            background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+            background: 'rgba(248, 249, 250, 0.7)',
             borderRadius: '12px',
-            border: '1px solid #dee2e6',
+            border: '1px solid rgba(222, 226, 230, 0.6)',
             maxWidth: '600px',
             margin: '0 auto',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+            backdropFilter: 'blur(4px)'
           }}>
             <div className="d-flex flex-column align-items-center gap-2">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
