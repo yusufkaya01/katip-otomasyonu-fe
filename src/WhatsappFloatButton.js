@@ -1,6 +1,6 @@
 import './whatsapp-float.css';
 
-const WHATSAPP_NUMBER = '+905555555555';
+const WHATSAPP_NUMBER = '+905015448544';
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER.replace(/[^\d]/g, '')}`;
 const WHATSAPP_LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg';
 
