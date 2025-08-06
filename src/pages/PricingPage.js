@@ -118,18 +118,18 @@ function PricingPage() {
             }}>
               <div className="card-header bg-danger text-white py-3" style={{borderRadius: '20px 20px 0 0'}}>
                 <h4 className="mb-0 fw-bold">Katip Otomasyonu Lisansı</h4>
-                <p className="mb-0 text-white" style={{fontSize: '0.9rem'}}>
-                  <i className="bi bi-box-arrow-up-right me-1" style={{fontSize: '12px'}}></i>
+                <p className="mb-0 text-white" style={{fontSize: '1rem'}}>
+                  <i className="bi bi-box-arrow-up-right me-1" style={{fontSize: '14px'}}></i>
                   <a 
                     href="https://chromewebstore.google.com/detail/fclcdignmmaofcbgmjcdielmohplopem?utm_source=item-share-cb" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-white text-decoration-none"
-                    style={{borderBottom: '1px dotted rgba(255,255,255,0.7)'}}
+                    style={{borderBottom: '1px dotted rgba(255,255,255,0.7)', fontSize: '1.2rem', fontWeight: '600'}}
                   >
                     Chrome uzantısı
                   </a> lisans uzatma<br />
-                  Sınırsız kullanım ile tam kontrol
+                  <span style={{fontSize: '0.85rem'}}>Sınırsız kullanım ile tam kontrol</span>
                 </p>
               </div>
               <div className="card-body py-4">
