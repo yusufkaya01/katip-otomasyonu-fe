@@ -229,6 +229,37 @@ function PricingPage() {
         <div className="alert alert-warning mt-4 text-center" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
           <b>Yıllık lisans:</b> Satın alımdan itibaren 366 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır.
         </div>
+        
+        {/* Payment logos section for iyzico requirements */}
+        <div className="text-center mt-4 mb-4">
+          <div className="p-4 rounded-3" style={{
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #e9ecef',
+            maxWidth: '500px',
+            margin: '0 auto'
+          }}>
+            <div className="d-flex justify-content-center align-items-center gap-4 flex-wrap">
+              <img 
+                src="/iyzico-logo.svg" 
+                alt="iyzico ile öde" 
+                style={{height: '40px', maxWidth: '120px', objectFit: 'contain'}}
+              />
+              <img 
+                src="/mc_symbol.svg" 
+                alt="MasterCard" 
+                style={{height: '30px', maxWidth: '50px', objectFit: 'contain'}}
+              />
+              <img 
+                src="/Visa_Blue.png" 
+                alt="Visa" 
+                style={{height: '30px', maxWidth: '80px', objectFit: 'contain'}}
+              />
+            </div>
+            <div className="text-muted small mt-2" style={{fontSize: '0.8rem'}}>
+              Güvenli ödeme altyapısı
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
