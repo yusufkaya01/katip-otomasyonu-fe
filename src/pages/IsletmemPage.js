@@ -737,6 +737,20 @@ function IsletmemPage() {
                             </div>
                             <span className="fw-semibold">{countdownSeconds} saniye içinde yönlendirileceksiniz...</span>
                           </div>
+                          
+                          <div className="d-flex align-items-center justify-content-center mt-3">
+                            <img 
+                              src="/mc_symbol.svg" 
+                              alt="Mastercard" 
+                              style={{height: '24px', opacity: 0.7}}
+                              className="me-3"
+                            />
+                            <img 
+                              src="/Visa_Blue.png" 
+                              alt="Visa" 
+                              style={{height: '24px', opacity: 0.7}}
+                            />
+                          </div>
                         </div>
                         
                         <div className="alert alert-warning text-center">
