@@ -1178,7 +1178,7 @@ function IsletmemPage() {
                         <ul className="list-group mb-3">
                           <li className="list-group-item d-flex justify-content-between align-items-center">
                             <span>Lisans Uzatma</span>
-                            <span>18.000 TL / 366 gün</span>
+                            <span>16.000 TL / 366 gün</span>
                           </li>
                           <li className="list-group-item d-flex justify-content-between align-items-center">
                             <span>Ödeme Yöntemi</span>
