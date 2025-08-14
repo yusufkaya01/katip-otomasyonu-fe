@@ -10,6 +10,7 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copyFeedback, setCopyFeedback] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [invoiceId, setInvoiceId] = useState('');
@@ -107,8 +108,62 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
   // Slice orders for current page
   const paginatedOrders = orders.slice((page - 1) * perPage, page * perPage);
 
+  // Fallback copy using a hidden textarea (works on non-secure contexts)
+  const copyTextFallback = (text) => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.top = '-9999px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!ok;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Copy helper for clipboard with secure and fallback strategies
+  const handleCopy = async (text, label = 'Bilgi') => {
+    if (!text) return;
+    const done = (success) => {
+      setCopyFeedback({ success, message: success ? `${label} kopyalandı.` : `${label} kopyalanamadı.` });
+      setTimeout(() => setCopyFeedback(null), 1600);
+    };
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return done(true);
+      }
+      // Not secure or API missing: try fallback
+      const ok = copyTextFallback(text);
+      return done(ok);
+    } catch (_) {
+      const ok = copyTextFallback(text);
+      return done(ok);
+    }
+  };
+
   return (
     <div className="container-fluid px-0">
+      {copyFeedback && (
+        <div 
+          className="position-fixed top-50 start-50 translate-middle" 
+          style={{zIndex: 10000}}
+        >
+          <div className={`toast show border-0 shadow-lg ${copyFeedback.success ? 'bg-success text-white' : 'bg-danger text-white'}`} role="alert" style={{minWidth: '280px'}}>
+            <div className="toast-body d-flex align-items-center justify-content-center py-2">
+              <i className={`me-2 ${copyFeedback.success ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'}`} style={{fontSize: '1.05em'}}></i>
+              <span className="fw-semibold">{copyFeedback.message}</span>
+            </div>
+          </div>
+        </div>
+      )}
       <PageLoadingSpinner show={loading} fullscreen />
       <AdminNavbar onLogout={onLogout} />
       <div className="container py-4">
@@ -120,6 +175,9 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
               <tr>
                 <th>Sipariş No</th>
                 <th>Şirket Ünvanı</th>
+                <th>Ödeme Yöntemi</th>
+                <th>Vergi Dairesi</th>
+                <th>Vergi Kimlik No</th>
                 <th>Tutar</th>
                 <th>Oluşturulma</th>
                 <th>Durum</th>
@@ -131,6 +189,33 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
                 <tr key={order.order_id}>
                   <td>{order.order_id}</td>
                   <td>{order.company_name || '-'}</td>
+                  <td>{order.payment_method === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'}</td>
+      <td>
+                    <span>{order.tax_office || '-'}</span>
+                    {order.tax_office && (
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 ms-2 text-primary"
+                        title="Kopyala"
+        onClick={() => handleCopy(order.tax_office, 'Vergi Dairesi')}
+                      >
+                        <i className="bi bi-copy" />
+                      </button>
+                    )}
+                  </td>
+      <td>
+                    <span style={{ fontFamily: 'monospace' }}>{order.tax_number || '-'}</span>
+                    {order.tax_number && (
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 ms-2 text-primary"
+                        title="Kopyala"
+        onClick={() => handleCopy(order.tax_number, 'Vergi Kimlik No')}
+                      >
+                        <i className="bi bi-copy" />
+                      </button>
+                    )}
+                  </td>
                   <td>{
                     order.payment_method === 'card' && order.payment_amount 
                       ? `${order.payment_amount} TL` 
