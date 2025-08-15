@@ -178,6 +178,8 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
                 <th>Ödeme Yöntemi</th>
                 <th>Vergi Dairesi</th>
                 <th>Vergi Kimlik No</th>
+                <th>Adres</th>
+                <th>OSGB ID</th>
                 <th>Tutar</th>
                 <th>Oluşturulma</th>
                 <th>Durum</th>
@@ -215,6 +217,22 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
                         <i className="bi bi-copy" />
                       </button>
                     )}
+                  </td>
+                  <td>
+                    <span style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{order.address || '-'}</span>
+                    {order.address && (
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 ms-2 text-primary"
+                        title="Kopyala"
+                        onClick={() => handleCopy(order.address, 'Adres')}
+                      >
+                        <i className="bi bi-copy" />
+                      </button>
+                    )}
+                  </td>
+                  <td>
+                    <span style={{ fontFamily: 'monospace' }}>{order.osgb_id || '-'}</span>
                   </td>
                   <td>{
                     order.payment_method === 'card' && order.payment_amount 
