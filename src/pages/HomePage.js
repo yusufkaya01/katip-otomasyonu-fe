@@ -65,7 +65,18 @@ function HomePage() {
           </div>
         </section>
         
-        {/* Google Security Badge */}
+        {/* Centered slogans */}
+        <section className="d-flex justify-content-center align-items-center flex-column mb-5">
+          <ul className="list-group mb-0 mx-auto feature-list-animated" style={{ maxWidth: 400, textAlign: 'center' }}>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>7 gün ücretsiz deneyin!</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Tek tıkla güncellenmesi gereken sözleşmeleri güncelleyin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tıkla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Güncel personel dakikalarınızı; devam eden, onay bekleyen, blokeli olan ve atanabilir dakikaları personel bazında; Uzman, Hekim, ve Diğer Sağlık Personeli başlıkları halinde raporları görüntüleyip Excel olarak indirin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Tüm firmalarınızın atama, işyeri onayı ve İSG profesyoneli onay durumlarını renklendirilmiş Excel formatındaki raporu tek tıkla oluşturup, firma bazında kolayca takip edin</li>
+          </ul>
+        </section>
+
+        {/* Google Security Badge moved below the features list */}
         <section className="text-center mb-5">
           <div className="d-flex justify-content-center align-items-center flex-wrap gap-4 p-3" style={{
             background: 'rgba(248, 249, 250, 0.7)',
@@ -93,21 +104,17 @@ function HomePage() {
               </svg>
               <span className="fw-bold text-dark">Güvenlik</span>
               <span className="text-dark small text-center">Verileriniz %100 güvende</span>
+              <span className="fw-bold text-dark mt-2">Ödeme</span>
+              <div className="d-flex align-items-center justify-content-center gap-2 mt-2">
+                <img src="/iyzico-logo.svg" alt="iyzico" style={{ height: 26, opacity: 0.9 }} />
+                <img src="/mc_symbol.svg" alt="Mastercard" style={{ height: 24, opacity: 0.8 }} />
+                <img src="/Visa_Blue.png" alt="Visa" style={{ height: 20, opacity: 0.85 }} />
+              </div>
+              <span className="text-muted small">Güvenli ödeme altyapısı</span>
             </div>
           </div>
         </section>
-
-        {/* Centered slogans */}
-        <section className="d-flex justify-content-center align-items-center flex-column mb-5">
-          <ul className="list-group mb-0 mx-auto feature-list-animated" style={{ maxWidth: 400, textAlign: 'center' }}>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.1s' }}>7 gün ücretsiz deneyin!</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.3s' }}>Tek tıkla güncellenmesi gereken sözleşmeleri güncelleyin</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tıkla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Güncel personel dakikalarınızı; devam eden, onay bekleyen, blokeli olan ve atanabilir dakikaları personel bazında; Uzman, Hekim, ve Diğer Sağlık Personeli başlıkları halinde raporları görüntüleyip Excel olarak indirin</li>
-            <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Tüm firmalarınızın atama, işyeri onayı ve İSG profesyoneli onay durumlarını renklendirilmiş Excel formatındaki raporu tek tıkla oluşturup, firma bazında kolayca takip edin</li>
-          </ul>
-        </section>
-        <section>
+  <section>
           <h2 className="mb-3 text-center">Ekran Görüntüleri</h2>
           <div className="row justify-content-center g-3">
             <div className="col-12 col-lg-4 col-md-6 text-center position-relative">
