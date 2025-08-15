@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 
@@ -8,6 +8,113 @@ function HomePage() {
   const [modalAlt, setModalAlt] = useState('');
   const [hovered, setHovered] = useState('');
   const [loading] = useState(false); // Remove setLoading
+  const [references, setReferences] = useState([]);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const trackRef = useRef(null);
+  const [enableTransition, setEnableTransition] = useState(true);
+
+  // Load references from optional manifest; fallback to known files
+  useEffect(() => {
+    let cancelled = false;
+    const toBasename = (path) => {
+      try {
+        const q = path.split('?')[0].split('#')[0];
+        return q.substring(q.lastIndexOf('/') + 1);
+      } catch (_) { return path; }
+    };
+    const stripExt = (name) => name.replace(/\.[^.]+$/, '');
+    const encodeRefUrl = (path) => {
+      if (!path) return path;
+      // ensure path starts with /references/
+      let p = path.startsWith('/references/') ? path : `/references/${path.replace(/^\/?references\//, '')}`;
+      const parts = p.split('/');
+      const file = parts.pop();
+      const isEncoded = (s) => {
+        try { return s !== decodeURIComponent(s); } catch (_) { return true; }
+      };
+      const safeFile = isEncoded(file) ? file : encodeURIComponent(file);
+      return `${parts.join('/')}/${safeFile}`;
+    };
+    const parseFromUrl = (url) => {
+      const base = decodeURIComponent(toBasename(url));
+      const noExt = stripExt(base);
+      const idx = noExt.indexOf('_');
+      let city = '';
+      let company = noExt;
+      if (idx > -1) {
+        city = noExt.slice(0, idx);
+        company = noExt.slice(idx + 1);
+      }
+      return { url, city, name: company };
+    };
+    const normalizeList = (list) => {
+      return list.map((f) => {
+        if (typeof f === 'string') {
+          const url = encodeRefUrl(f);
+          return parseFromUrl(url);
+        }
+        if (f && typeof f === 'object') {
+          const raw = f.url ? f.url : (f.file ? f.file : '');
+          const url = encodeRefUrl(raw);
+          if (!url) return null;
+          const parsed = parseFromUrl(url);
+          return {
+            url,
+            city: f.city || parsed.city,
+            name: f.name || f.company || parsed.name,
+          };
+        }
+        return null;
+      }).filter(Boolean);
+    };
+  async function load() {
+      try {
+        const res = await fetch('/references/manifest.json', { cache: 'no-cache' });
+        if (res.ok) {
+          const list = await res.json();
+          if (!cancelled && Array.isArray(list) && list.length > 0) {
+            setReferences(normalizeList(list)); 
+            return;
+          }
+        }
+      } catch (_) { /* ignore */ }
+      if (!cancelled) {
+        setReferences([
+          'AFYONKARAHİSAR_BİLGE ORTAK İŞ SAĞLIĞI VE GÜVENLİĞİ BİRİMİ.svg',
+          'İSTANBUL_ZİNCİR ORTAK SAĞLIK GÜVENLİK BİRİMİ.png',
+        ].map((f) => parseFromUrl(encodeRefUrl(f))));
+      }
+    }
+  load();
+  // in dev, poll for updates every 5s to catch new files
+  const dev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+  const pollId = dev ? setInterval(() => load(), 5000) : null;
+  return () => { cancelled = true; if (pollId) clearInterval(pollId); };
+  }, []);
+
+  // Auto-slide every 1.5s. Show 3 at once, move by one.
+  useEffect(() => {
+    if (!references || references.length === 0) return;
+    const id = setInterval(() => {
+      setEnableTransition(true);
+      setSlideIndex((prev) => prev + 1);
+    }, 1500);
+    return () => clearInterval(id);
+  }, [references]);
+
+  // Seamless loop: when we reach the cloned tail, jump back without transition
+  useEffect(() => {
+    if (!references || references.length === 0) return;
+    const total = references.length;
+    if (slideIndex >= total) {
+      // after transition ends, disable transition and reset index
+      const t = setTimeout(() => {
+        setEnableTransition(false);
+        setSlideIndex(0);
+      }, 350);
+      return () => clearTimeout(t);
+    }
+  }, [slideIndex, references]);
 
   const openModal = (src, alt) => {
     setModalImg(src);
@@ -73,6 +180,7 @@ function HomePage() {
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.5s' }}>Tek tıkla asgari süreden fazla atanan sözleşmeleri güncelleyin</li>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.7s' }}>Güncel personel dakikalarınızı; devam eden, onay bekleyen, blokeli olan ve atanabilir dakikaları personel bazında; Uzman, Hekim, ve Diğer Sağlık Personeli başlıkları halinde raporları görüntüleyip Excel olarak indirin</li>
             <li className="list-group-item feature-bounce" style={{ animationDelay: '0.9s' }}>Tüm firmalarınızın atama, işyeri onayı ve İSG profesyoneli onay durumlarını renklendirilmiş Excel formatındaki raporu tek tıkla oluşturup, firma bazında kolayca takip edin</li>
+            <li className="list-group-item feature-bounce" style={{ animationDelay: '1.1s' }}>Hızlı Atama Asistanı ile ataması düşen sözleşmelerinizi hangi personelinizi atayacağınızı planlayarak tek tuşla hepsini aynı anda asgari sürelerilerine göre yeniden oluşturun.</li>
           </ul>
         </section>
 
@@ -212,6 +320,55 @@ function HomePage() {
                 )}
               </div>
               <div className="small mt-2">Eklenti Ana Sayfa Görünümü</div>
+            </div>
+          </div>
+        </section>
+        {/* Referanslarımız (References) */}
+        <section className="mb-5">
+          <h2 className="mb-3 text-center">Referanslarımız</h2>
+          <div className="d-flex justify-content-center">
+            <div style={{ width: '100%', maxWidth: 960, overflow: 'hidden' }}>
+              <div
+                ref={trackRef}
+                style={{
+                  display: 'flex',
+                  transition: enableTransition ? 'transform 0.35s ease' : 'none',
+                  transform: `translateX(-${(slideIndex) * (100/3)}%)`,
+                }}
+              >
+                {(() => {
+                  const items = references && references.length > 0 ? references : [];
+                  const clones = items.slice(0, 3);
+                  const display = [...items, ...clones];
+                  const itemStyle = { flex: '0 0 33.3333%', padding: '8px' };
+                  const imgBoxStyle = {
+                    height: 112,
+                    borderRadius: 8,
+                    background: 'rgba(255,255,255,0.85)',
+                    border: '1px solid rgba(220, 53, 69, 0.25)', // subtle red border
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  };
+                  const cityStyle = { textAlign: 'center', fontSize: 16, color: '#343a40', marginBottom: 4, fontWeight: 600 };
+                  const nameStyle = { textAlign: 'center', fontSize: 13.8, color: '#343a40', marginTop: 6, fontWeight: 600 };
+                  return display.map((item, i) => (
+                    <div key={`${item.url}-${i}`} style={itemStyle}>
+                      {item.city ? <div style={cityStyle}>{item.city}</div> : null}
+                      <div style={imgBoxStyle}>
+                        <img
+                          src={item.url}
+                          alt={item.name || 'referans'}
+                          style={{ maxHeight: 88, maxWidth: '90%', objectFit: 'contain' }}
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      </div>
+                      {item.name ? <div style={nameStyle}>{item.name}</div> : null}
+                    </div>
+                  ));
+                })()}
+              </div>
             </div>
           </div>
         </section>
