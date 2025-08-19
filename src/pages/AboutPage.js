@@ -56,6 +56,27 @@ function AboutPage() {
             </div>
           </div>
         </div>
+        <div className="row g-4 justify-content-center mt-4">
+          <div className="col-12 col-md-8 col-lg-6 text-center">
+            <a href="https://arkaya.com.tr" target="_blank" rel="noopener noreferrer">
+              <img 
+                src="/arkaya-logo.png" 
+                alt="Arkaya Arge Yazılım" 
+                className="img-fluid"
+                style={{ 
+                  maxWidth: '100%',
+                  width: '600px',
+                  height: 'auto', 
+                  cursor: 'pointer',
+                  transition: 'opacity 0.3s ease',
+                  opacity: 0.8
+                }}
+                onMouseEnter={(e) => e.target.style.opacity = 1}
+                onMouseLeave={(e) => e.target.style.opacity = 0.8}
+              />
+            </a>
+          </div>
+        </div>
       </div>
     </>
   );
