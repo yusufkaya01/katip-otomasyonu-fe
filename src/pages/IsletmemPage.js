@@ -180,7 +180,8 @@ function IsletmemPage() {
     // Only allow PATCH for phone and email
     let payload = {};
     if (editField === 'phone') {
-      payload = { phone: `+90${editValue}` };
+      // Send phone number without +90 prefix to backend
+      payload = { phone: editValue };
     } else if (editField === 'email') {
       payload = { email: editValue };
     } else {
