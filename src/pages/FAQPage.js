@@ -54,19 +54,19 @@ function FAQPage() {
             </h2>
             <div id="collapse4" className="accordion-collapse collapse" aria-labelledby="heading4" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Sadece lisans anahtarınız ve kayıt sırasında verdiğiniz telefon numarası, şirket adı ve OSGB-ID bilgileri güvenli şekilde saklanır. Kişisel verileriniz, KVKK kapsamında korunur ve üçüncü kişilerle paylaşılmaz.
+                Sadece lisans anahtarınız ve kayıt sırasında verdiğiniz telefon numarası, şirket adı ve OSGB bilgileri güvenli şekilde saklanır. Kişisel verileriniz, KVKK kapsamında korunur ve üçüncü kişilerle paylaşılmaz.
               </div>
             </div>
           </div>
           <div className="accordion-item">
             <h2 className="accordion-header" id="heading5">
               <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
-                Uzantıyı kaldırırsam verilerim silinir mi?
+                Uzantı verilerimi saklıyor mu veya bir yere gönderiyor mu?
               </button>
             </h2>
             <div id="collapse5" className="accordion-collapse collapse" aria-labelledby="heading5" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Uzantıyı kaldırdığınızda verileriniz mevzuat gereği yasal saklama ve denetim yükümlülükleri kapsamında pasif hale getirilir, ancak tamamen silinmez. Silinmesini talep edebilirsiniz.
+                Uzantı hiçbir verinizi kaydetmez ve başka bir sunucu ile paylaşmaz. Katip Otomasyonu uygulaması yalnızca elle yaptığınız işlemleri daha hızlı yapmanızı sağlar. Yalnızca lisans anahtarı, son kullanım tarihi gibi bilgilerin teyiti için lisans doğrulaması yapılır.
               </div>
             </div>
           </div>
