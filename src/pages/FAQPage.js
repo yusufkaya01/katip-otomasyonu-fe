@@ -90,7 +90,7 @@ function FAQPage() {
             </h2>
             <div id="collapse7" className="accordion-collapse collapse" aria-labelledby="heading7" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Evet. Tüm verileriniz güvenli sunucularda saklanır ve hiçbir şekilde üçüncü şahıslarla paylaşılmaz.
+                Evet. Uygulamamız Google Web Mağazası'nda yayınlandığı için düzenli olarak kod denetimlerinden geçmektedir. Güvenli olmadığı durumda Google uygulamanın mağazada yayınlanmasına izin vermez ve yayından kaldırır.
               </div>
             </div>
           </div>
@@ -114,7 +114,7 @@ function FAQPage() {
             </h2>
             <div id="collapse9" className="accordion-collapse collapse" aria-labelledby="heading9" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Tüm müşterilerimize satın alımlarından sonra fatura kesmekteyiz, kayıt esnasında fatura bilgilerinizi doğru yazdığınızdan emin olunuz. Kayıt sırasında hatalı bir bilgi girdiyseniz 'İşletmem' sayfasından bilgilerinizi güncelleyebilirsiniz.
+                Tüm müşterilerimize satın alımlarından sonra fatura kesmekteyiz, kayıt esnasında fatura bilgilerinizi doğru şekilde paylaştığınızdan emin olunuz. Kayıt sırasında vergi bilgilerinizi hatalı girdiyseniz bizden e-posta, Whatsapp ya da telefon yoluyla destek isteyerek bilgilerinizi güncelleyebilirsiniz.
               </div>
             </div>
           </div>
