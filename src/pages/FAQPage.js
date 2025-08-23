@@ -54,7 +54,7 @@ function FAQPage() {
             </h2>
             <div id="collapse4" className="accordion-collapse collapse" aria-labelledby="heading4" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Sadece lisans anahtarınız ve kayıt sırasında verdiğiniz telefon numarası, şirket adı ve OSGB bilgileri güvenli şekilde saklanır. Kişisel verileriniz, KVKK kapsamında korunur ve üçüncü kişilerle paylaşılmaz.
+                Sadece lisans anahtarınız ve kayıt sırasında sizden istemiş olduğumuz bilgileriniz güvenli şekilde saklanır. Bu verileriniz, KVKK kapsamında korunur ve üçüncü kişilerle paylaşılmaz.
               </div>
             </div>
           </div>
