@@ -54,7 +54,7 @@ function FAQPage() {
             </h2>
             <div id="collapse4" className="accordion-collapse collapse" aria-labelledby="heading4" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Sadece lisans anahtarınız ve kayıt sırasında sizden istemiş olduğumuz bilgileriniz güvenli şekilde saklanır. Bu verileriniz, KVKK kapsamında korunur ve üçüncü kişilerle paylaşılmaz.
+                Sadece lisans anahtarınız ve websitemize kayıt sırasında sizden istemiş olduğumuz bilgileriniz güvenli şekilde saklanır. Bu verileriniz, KVKK kapsamında korunur ve üçüncü kişilerle paylaşılmaz.
               </div>
             </div>
           </div>
@@ -85,12 +85,12 @@ function FAQPage() {
           <div className="accordion-item">
             <h2 className="accordion-header" id="heading7">
               <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
-                Uzantı güvenli mi?
+                Katip Otomasyounu uzantısı güvenli mi?
               </button>
             </h2>
             <div id="collapse7" className="accordion-collapse collapse" aria-labelledby="heading7" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Evet. Uygulamamız Google Web Mağazası'nda yayınlandığı için düzenli olarak kod denetimlerinden geçmektedir. Güvenli olmadığı durumda Google uygulamanın mağazada yayınlanmasına izin vermez ve yayından kaldırır.
+                Evet. Uygulamamız Google Web Mağazası'nda yayınlandığı için düzenli olarak kod denetimlerinden geçmektedir. Güvenli olmadığı durumda Google uygulamanın mağazada yayınlanmasına izin vermez ve yayından kaldırır. Katip Otomasyonu resmi İSG-KATİP platformunun yerine geçmez, yalnızca kullanıcı işlemlerini kolaylaştırır. Tüm işlemler yine İSG-KATİP üzerinden gerçekleşmektedir.
               </div>
             </div>
           </div>
@@ -102,7 +102,7 @@ function FAQPage() {
             </h2>
             <div id="collapse8" className="accordion-collapse collapse" aria-labelledby="heading8" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Her türlü soru ve destek talepleriniz için <a href="mailto:info@katipotomasyonu.com">info@katipotomasyonu.com</a> adresine e-posta gönderebilirsiniz.
+                Her türlü soru ve destek talepleriniz için <a href="mailto:info@katipotomasyonu.com">info@katipotomasyonu.com</a> adresine e-posta gönderebilirsiniz. Ayrıca hafta içi 10:00 - 19:00 saatleri arasında 501 544 8 544 numarasından bize WhatsApp veya telefon ile ulaşabilirsiniz.
               </div>
             </div>
           </div>
@@ -114,7 +114,34 @@ function FAQPage() {
             </h2>
             <div id="collapse9" className="accordion-collapse collapse" aria-labelledby="heading9" data-bs-parent="#faqAccordion">
               <div className="accordion-body">
-                Tüm müşterilerimize satın alımlarından sonra fatura kesmekteyiz, kayıt esnasında fatura bilgilerinizi doğru şekilde paylaştığınızdan emin olunuz. Kayıt sırasında vergi bilgilerinizi hatalı girdiyseniz bizden e-posta, Whatsapp ya da telefon yoluyla destek isteyerek bilgilerinizi güncelleyebilirsiniz.
+                Tüm müşterilerimize satın alımlarından sonra fatura kesmekteyiz, kayıt esnasında fatura bilgilerinizi doğru şekilde paylaştığınızdan emin olunuz. Kayıt sırasında vergi bilgilerinizi hatalı girdiyseniz bizden e-posta, Whatsapp ya da telefon yoluyla destek isteyerek bilgilerinizi güncelleyebilirsiniz. KDV oranımız %20'dir.
+              </div>
+            </div>
+          </div>
+          <div className="accordion-item">
+            <h2 className="accordion-header" id="heading10">
+              <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
+                Katip Otomasyonu kullanırken 6331 sayılı İş Sağlığı ve Güvenliği Kanunu kapsamındaki sorumluluklarımızda bir değişiklik olur mu?
+              </button>
+            </h2>
+            <div id="collapse10" className="accordion-collapse collapse" aria-labelledby="heading10" data-bs-parent="#faqAccordion">
+              <div className="accordion-body">
+                    Katip Otomasyonu, sizin yerinize sorumluluk üstlenmez; yalnızca İSG-KATİP üzerindeki günlük işlemlerinizi hızlandıran ve kolaylaştıran bir yardımcı araçtır. 
+    6331 sayılı İş Sağlığı ve Güvenliği Kanunu kapsamındaki yasal yükümlülükleriniz geçerliliğini korur. 
+    Uygulamamız resmi kayıtlarınızı sizin adınıza üstlenmez; sadece süreci daha pratik, hızlı ve hatasız hale getirmenize destek olur.
+
+              </div>
+            </div>
+          </div>
+          <div className="accordion-item">
+            <h2 className="accordion-header" id="heading11">
+              <button className="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse11" aria-expanded="false" aria-controls="collapse11">
+                Birden fazla OSGB şirketim varsa neden her biri için ayrı lisans ve kayıt yapmam gerekiyor?
+              </button>
+            </h2>
+            <div id="collapse11" className="accordion-collapse collapse" aria-labelledby="heading11" data-bs-parent="#faqAccordion">
+              <div className="accordion-body">
+                Her OSGB, İSG-KATİP'te ayrı bir kurumsal kayda sahiptir. Bu yüzden Katip Otomasyonu da her şirket için ayrı lisans ve kayıt ile çalışır. Böylece işlemler birbirine karışmaz, her kurum kendi yetki alanında güvenle işlem yapar. Bu hem güvenlik hem de mevzuata uyum açısından sizin yararınıza bir uygulamadır.
               </div>
             </div>
           </div>
