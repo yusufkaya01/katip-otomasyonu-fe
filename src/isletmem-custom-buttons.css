@@ -1,0 +1,11 @@
+/*
+ * This file has been replaced by src/pages/styles/IsletmemPage.module.css
+ * You can safely delete this file after confirming the new styles work.
+ */
+
+.btn-bankabilgi { background: #1976d2; color: #fff; border: none; }
+.btn-bankabilgi:hover { background: #2196f3; color: #fff; }
+.btn-kartileode { background: #43a047; color: #fff; border: none; }
+.btn-kartileode:hover { background: #66bb6a; color: #fff; }
+.btn-lisansuzat { background: #43a047; color: #fff; border: none; }
+.btn-lisansuzat:hover { background: #66bb6a; color: #fff; }

@@ -1,0 +1,32 @@
+.btn-pastel-blue {
+  background: #279bfa;
+  color: #fff;
+  border: none;
+  transition: background 0.2s;
+}
+.btn-pastel-blue:hover, .btn-pastel-blue:focus {
+  background: #67bef8;
+  color: #fff;
+}
+
+.btn-pastel-green {
+  background: #51cf66;
+  color: #fff;
+  border: none;
+  transition: background 0.2s;
+}
+.btn-pastel-green:hover, .btn-pastel-green:focus {
+  background: #69f0ae;
+  color: #fff;
+}
+
+.btn-pastel-extend {
+  background: #6cb2eb;
+  color: #fff;
+  border: none;
+  transition: background 0.2s;
+}
+.btn-pastel-extend:hover, .btn-pastel-extend:focus {
+  background: #69f0ae;
+  color: #fff;
+}
