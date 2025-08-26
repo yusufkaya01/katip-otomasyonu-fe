@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AdminNavbar from './AdminNavbar';
 import AdminPagination from '../components/AdminPagination';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
+import { useAdminSearch, AdminSearchInput } from '../hooks/useAdminSearch';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 const ADMIN_API_KEY = process.env.REACT_APP_ADMIN_API_KEY || '';
@@ -24,9 +25,17 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
   const [discountError, setDiscountError] = useState('');
   const [discountLoading, setDiscountLoading] = useState(false);
   const [discountSuccess, setDiscountSuccess] = useState('');
+  const [lowAmountConfirmation, setLowAmountConfirmation] = useState(false);
+  const [pendingPaymentData, setPendingPaymentData] = useState(null);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-  const [total, setTotal] = useState(0);
+
+  // Search functionality
+  const { filteredData: filteredOrders, searchProps } = useAdminSearch({
+    data: orders,
+    searchFields: ['order_id', 'customer_id', 'company_name', 'customer_email'],
+    onSearchChange: () => setPage(1) // Reset page when search changes
+  });
 
   useEffect(() => {
     fetchOrders();
@@ -47,7 +56,6 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
       const data = await res.json();
       if (res.ok && (data.orders || data.items)) {
         const allOrders = data.orders || data.items || [];
-        setTotal(allOrders.length);
         setOrders(allOrders);
       } else {
         setError(data.error || 'Siparişler alınamadı.');
@@ -57,6 +65,18 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
     }
     setLoading(false);
   }
+
+  // Reset page when search changes
+  const [prevSearchTerm, setPrevSearchTerm] = useState('');
+  useEffect(() => {
+    if (searchProps.value !== prevSearchTerm) {
+      setPage(1);
+      setPrevSearchTerm(searchProps.value);
+    }
+  }, [searchProps.value, prevSearchTerm]);
+
+  const total = filteredOrders.length;
+  const paginatedOrders = filteredOrders.slice((page - 1) * perPage, page * perPage);
 
   const openPayModal = (order) => {
     setSelectedOrder(order);
@@ -88,6 +108,19 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
       setPayError('Ödeme tarihi ve saati zorunludur.');
       return;
     }
+
+    // Check if amount is less than 1000 and show confirmation
+    if (Number(paymentAmount) < 1000) {
+      setPendingPaymentData({ paymentAmount, paidAt });
+      setLowAmountConfirmation(true);
+      return;
+    }
+
+    // Process payment directly if amount >= 1000
+    await processPayment(paymentAmount, paidAt);
+  };
+
+  const processPayment = async (amount, date) => {
     setPayLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/admin/orders/${selectedOrder.order_id}/payment`, {
@@ -97,7 +130,7 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
           'x-admin-api-key': ADMIN_API_KEY,
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ paymentAmount: Number(paymentAmount), paidAt }),
+        body: JSON.stringify({ paymentAmount: Number(amount), paidAt: date }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -113,6 +146,19 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
       setPayError('Sunucuya ulaşılamadı.');
     }
     setPayLoading(false);
+  };
+
+  const confirmLowAmountPayment = () => {
+    if (pendingPaymentData) {
+      processPayment(pendingPaymentData.paymentAmount, pendingPaymentData.paidAt);
+      setLowAmountConfirmation(false);
+      setPendingPaymentData(null);
+    }
+  };
+
+  const cancelLowAmountPayment = () => {
+    setLowAmountConfirmation(false);
+    setPendingPaymentData(null);
   };
 
   const openDiscountModal = (order) => {
@@ -168,17 +214,21 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
     setDiscountLoading(false);
   };
 
-  // Slice the orders array to get only the items for the current page
-  const paginatedOrders = orders.slice((page - 1) * perPage, page * perPage);
-
   return (
     <div className="container-fluid px-0">
       <PageLoadingSpinner show={loading} fullscreen />
       <AdminNavbar onLogout={onLogout} />
       <div className="container py-4">
         <h4 className="mb-3">Ödeme Bekleyen Siparişler</h4>
+        
+        {/* Search Input */}
+        <AdminSearchInput 
+          searchProps={searchProps}
+          placeholder="Sipariş no, müşteri no, şirket adı veya email'e göre ara..."
+        />
+        
         {error && <div className="alert alert-danger">{error}</div>}
-        {orders.length > 0 && (
+        {filteredOrders.length > 0 && (
           <table className="table table-bordered">
             <thead>
               <tr>
@@ -211,9 +261,16 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
             </tbody>
           </table>
         )}
-        {(!loading && orders.length === 0 && !error) && <div className="alert alert-success">Ödeme bekleyen sipariş yok.</div>}
+        
+        {/* No search results message */}
+        {searchProps.searchTerm && filteredOrders.length === 0 && !loading && !error && (
+          <div className="alert alert-info">"{searchProps.searchTerm}" araması için sonuç bulunamadı.</div>
+        )}
+        
+        {/* No data message when not searching */}
+        {(!loading && !searchProps.searchTerm && orders.length === 0 && !error) && <div className="alert alert-success">Ödeme bekleyen sipariş yok.</div>}
       </div>
-      {orders.length > 0 && (
+      {filteredOrders.length > 0 && (
         <AdminPagination
           page={page}
           perPage={perPage}
@@ -228,7 +285,10 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Ödeme Bilgisi Gir</h5>
+                <h5 className="modal-title">
+                  Ödeme Bilgisi Gir<br />
+                  <small className="text-muted">{selectedOrder?.company_name || selectedOrder?.customer_name || `Sipariş #${selectedOrder?.order_id}`}</small>
+                </h5>
                 <button type="button" className="btn-close" onClick={closePayModal}></button>
               </div>
               <form onSubmit={handlePaySubmit}>
@@ -259,7 +319,10 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">İndirim Bilgisi</h5>
+                <h5 className="modal-title">
+                  İndirim Bilgisi<br />
+                  <small className="text-muted">{discountOrder?.company_name || discountOrder?.customer_name || `Sipariş #${discountOrder?.order_id}`}</small>
+                </h5>
                 <button type="button" className="btn-close" onClick={closeDiscountModal}></button>
               </div>
               <form onSubmit={handleDiscountSubmit}>
@@ -308,6 +371,34 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
                   <button type="submit" className="btn btn-primary" disabled={discountLoading}>{discountLoading ? 'Kaydediliyor...' : 'Kaydet'}</button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Low Amount Confirmation Modal */}
+      {lowAmountConfirmation && (
+        <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.3)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Düşük Tutar Onayı</h5>
+                <button type="button" className="btn-close" onClick={cancelLowAmountPayment}></button>
+              </div>
+              <div className="modal-body">
+                <p>
+                  <strong>{pendingPaymentData?.paymentAmount} TL</strong> tutarı 1000 TL'den düşüktür. 
+                  Bu tutarla ödeme kaydını oluşturmak istediğinizden emin misiniz?
+                </p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={cancelLowAmountPayment}>
+                  Hayır
+                </button>
+                <button type="button" className="btn btn-warning" onClick={confirmLowAmountPayment}>
+                  Evet
+                </button>
+              </div>
             </div>
           </div>
         </div>

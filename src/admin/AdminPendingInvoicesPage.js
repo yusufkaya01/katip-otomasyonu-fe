@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AdminNavbar from './AdminNavbar';
 import AdminPagination from '../components/AdminPagination';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
+import { useAdminSearch, AdminSearchInput } from '../hooks/useAdminSearch';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 const ADMIN_API_KEY = process.env.REACT_APP_ADMIN_API_KEY || '';
@@ -20,7 +21,16 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
   const [modalSuccess, setModalSuccess] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-  const [total, setTotal] = useState(0);
+  
+  // Search functionality
+  const { filteredData: filteredOrders, searchProps } = useAdminSearch({
+    data: orders,
+    searchFields: ['order_id', 'customer_id', 'company_name', 'customer_email'],
+    onSearchChange: () => setPage(1) // Reset page when search changes
+  });
+  
+  const total = filteredOrders.length;
+  const paginatedOrders = filteredOrders.slice((page - 1) * perPage, page * perPage);
 
   useEffect(() => {
     fetchOrders();
@@ -41,7 +51,6 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
       const data = await res.json();
       if (res.ok && (data.orders || data.items)) {
         const allOrders = data.orders || data.items || [];
-        setTotal(allOrders.length);
         setOrders(allOrders);
       } else {
         setError(data.error || 'Siparişler alınamadı.');
@@ -105,9 +114,6 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
     setModalLoading(false);
   };
 
-  // Slice orders for current page
-  const paginatedOrders = orders.slice((page - 1) * perPage, page * perPage);
-
   // Fallback copy using a hidden textarea (works on non-secure contexts)
   const copyTextFallback = (text) => {
     try {
@@ -168,8 +174,15 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
       <AdminNavbar onLogout={onLogout} />
       <div className="container py-4">
         <h4 className="mb-3">Fatura Bekleyen Siparişler</h4>
+        
+        {/* Search Input */}
+        <AdminSearchInput 
+          searchProps={searchProps}
+          placeholder="Sipariş no, müşteri no, şirket adı veya email'e göre ara..."
+        />
+        
         {error && <div className="alert alert-danger">{error}</div>}
-        {orders.length > 0 && (
+        {filteredOrders.length > 0 && (
           <table className="table table-bordered">
             <thead>
               <tr>
@@ -255,8 +268,16 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
             </tbody>
           </table>
         )}
-        {(!loading && orders.length === 0 && !error) && <div className="alert alert-success">Fatura bekleyen sipariş yok.</div>}
-        {orders.length > 0 && (
+        
+        {/* No search results message */}
+        {searchProps.searchTerm && filteredOrders.length === 0 && !loading && !error && (
+          <div className="alert alert-info">"{searchProps.searchTerm}" araması için sonuç bulunamadı.</div>
+        )}
+        
+        {/* No data message when not searching */}
+        {(!loading && !searchProps.searchTerm && orders.length === 0 && !error) && <div className="alert alert-success">Fatura bekleyen sipariş yok.</div>}
+        
+        {filteredOrders.length > 0 && (
           <AdminPagination
             page={page}
             perPage={perPage}
@@ -272,7 +293,9 @@ export default function AdminPendingInvoicesPage({ onLogout, token }) {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Fatura Bilgisi Gir</h5>
+                <h5 className="modal-title">
+                  Fatura Bilgisi Gir - {selectedOrder?.company_name || selectedOrder?.customer_name || `Sipariş #${selectedOrder?.order_id}`}
+                </h5>
                 <button type="button" className="btn-close" onClick={closeModal}></button>
               </div>
               <form onSubmit={handleInvoiceSubmit}>

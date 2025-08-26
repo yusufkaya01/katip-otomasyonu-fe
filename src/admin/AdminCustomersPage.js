@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AdminNavbar from './AdminNavbar';
 import AdminPagination from '../components/AdminPagination';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
+import { useAdminSearch, AdminSearchInput } from '../hooks/useAdminSearch';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 const ADMIN_API_KEY = process.env.REACT_APP_ADMIN_API_KEY || '';
@@ -12,7 +13,13 @@ export default function AdminCustomersPage({ token, onLogout }) {
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
-  const [total, setTotal] = useState(0);
+
+  // Search functionality
+  const { filteredData: filteredCustomers, searchProps } = useAdminSearch({
+    data: customers,
+    searchFields: ['customer_id', 'company_name', 'osgb_id', 'license_code'],
+    onSearchChange: () => setPage(1) // Reset page when search changes
+  });
 
   useEffect(() => {
     async function fetchCustomers() {
@@ -29,7 +36,6 @@ export default function AdminCustomersPage({ token, onLogout }) {
         const data = await res.json();
         if (res.ok && (data.customers || data.items)) {
           const allCustomers = data.customers || data.items || [];
-          setTotal(allCustomers.length);
           setCustomers(allCustomers);
         } else {
           setError(data.error || 'Müşteriler alınamadı.');
@@ -42,7 +48,17 @@ export default function AdminCustomersPage({ token, onLogout }) {
     fetchCustomers();
   }, [token]); // Only fetch once, FE paginates
 
-  const paginatedCustomers = customers.slice((page - 1) * perPage, page * perPage);
+  // Reset page when search changes
+  const [prevSearchTerm, setPrevSearchTerm] = useState('');
+  useEffect(() => {
+    if (searchProps.value !== prevSearchTerm) {
+      setPage(1);
+      setPrevSearchTerm(searchProps.value);
+    }
+  }, [searchProps.value, prevSearchTerm]);
+
+  const total = filteredCustomers.length;
+  const paginatedCustomers = filteredCustomers.slice((page - 1) * perPage, page * perPage);
 
   return (
     <div className="container-fluid px-0">
@@ -50,8 +66,15 @@ export default function AdminCustomersPage({ token, onLogout }) {
       <AdminNavbar onLogout={onLogout} />
       <div className="container py-4">
         <h3 className="mb-4">Tüm Müşteriler</h3>
+        
+        {/* Search Input */}
+        <AdminSearchInput 
+          searchProps={searchProps}
+          placeholder="Müşteri no, şirket adı, OSGB ID veya lisans koduna göre ara..."
+        />
+        
         {error && <div className="alert alert-danger">{error}</div>}
-        {customers.length > 0 && (
+        {filteredCustomers.length > 0 && (
           <div style={{overflowX:'auto'}}>
             <table className="table table-bordered table-sm">
               <thead>
@@ -83,7 +106,7 @@ export default function AdminCustomersPage({ token, onLogout }) {
             </table>
           </div>
         )}
-        {customers.length > 0 && (
+        {filteredCustomers.length > 0 && (
           <AdminPagination
             page={page}
             perPage={perPage}
@@ -93,6 +116,11 @@ export default function AdminCustomersPage({ token, onLogout }) {
           />
         )}
         {(!loading && customers.length === 0 && !error) && <div className="alert alert-warning">Hiç müşteri bulunamadı.</div>}
+        {(!loading && customers.length > 0 && filteredCustomers.length === 0 && searchProps.value) && (
+          <div className="alert alert-info">
+            Arama kriterinize uygun müşteri bulunamadı. <strong>"{searchProps.value}"</strong> için sonuç yok.
+          </div>
+        )}
       </div>
     </div>
   );
