@@ -845,12 +845,12 @@ function IsletmemPage() {
               <button className="btn btn-primary btn-sm" onClick={() => setShowPendingBankDetails(true)}>
                 Banka Bilgilerini Göster
               </button>
-              {pendingOrders.some(order => !order.is_paid && order.status !== 'cancelled' && order.status !== 'failed' && (!order.paid_amount || order.paid_amount === 0) && (!order.remaining_balance || order.remaining_balance >= 12800)) && (
+              {pendingOrders.some(order => !order.is_paid && order.status !== 'cancelled' && order.status !== 'failed' && (!order.paid_amount || order.paid_amount === 0) && (!order.remaining_balance || order.remaining_balance >= 12700)) && (
                 <button
                   className="btn btn-success btn-sm"
                   style={{whiteSpace:'nowrap'}}
                   onClick={async () => {
-                    const order = pendingOrders.find(o => !o.is_paid && o.status !== 'cancelled' && o.status !== 'failed' && (!o.paid_amount || o.paid_amount === 0) && (!o.remaining_balance || o.remaining_balance >= 12800));
+                    const order = pendingOrders.find(o => !o.is_paid && o.status !== 'cancelled' && o.status !== 'failed' && (!o.paid_amount || o.paid_amount === 0) && (!o.remaining_balance || o.remaining_balance >= 12700));
                     if (!order) return;
                     setPendingCardError(''); // Clear previous errors
                     try {
