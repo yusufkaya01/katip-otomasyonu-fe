@@ -67,22 +67,31 @@ function HomePage() {
         return null;
       }).filter(Boolean);
     };
+    // Shuffle function to randomize array order
+    const shuffle = (array) => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
   async function load() {
       try {
         const res = await fetch('/references/manifest.json', { cache: 'no-cache' });
         if (res.ok) {
           const list = await res.json();
           if (!cancelled && Array.isArray(list) && list.length > 0) {
-            setReferences(normalizeList(list)); 
+            // Only shuffle if we don't have references yet (initial load)
+            const normalized = normalizeList(list);
+            setReferences(prev => prev.length === 0 ? shuffle(normalized) : prev); 
             return;
           }
         }
       } catch (_) { /* ignore */ }
       if (!cancelled) {
-        setReferences([
-          'AFYONKARAHİSAR_BİLGE ORTAK İŞ SAĞLIĞI VE GÜVENLİĞİ BİRİMİ.svg',
-          'İSTANBUL_ZİNCİR ORTAK SAĞLIK GÜVENLİK BİRİMİ.png',
-        ].map((f) => parseFromUrl(encodeRefUrl(f))));
+        // No hardcoded fallback - only show references from manifest.json
+        setReferences(prev => prev.length === 0 ? [] : prev);
       }
     }
   load();
