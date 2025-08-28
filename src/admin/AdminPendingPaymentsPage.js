@@ -331,7 +331,7 @@ export default function AdminPendingPaymentsPage({ onLogout, token }) {
                     <div className="mb-3 p-3 bg-light rounded">
                       <div className="row">
                         <div className="col-6">
-                          <strong>Orijinal Tutar:</strong><br />
+                          <strong>İndirimsiz Tutar:</strong><br />
                           <span className="text-muted">{discountOrder.amount || discountOrder.remaining_balance || '18.000'} TL</span>
                         </div>
                         <div className="col-6">
