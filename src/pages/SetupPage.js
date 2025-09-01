@@ -195,8 +195,29 @@ function SetupPage() {
             </button> 
           </li>
         </ol>
-        <div className="alert alert-info" style={{ maxWidth: 700, margin: '0 auto' }}>
+        
+        <div className="alert alert-info" style={{ maxWidth: 700, margin: '0 auto 20px auto' }}>
           <b>Ek Bilgi:</b> Uzantıyı sabitlemek (raptiye simgesiyle) uzantıya hızlı erişim sağlar ve her zaman tarayıcıda görünür olmasını kolaylaştırır.
+        </div>
+        
+        <div className="alert alert-primary" style={{ maxWidth: 700, margin: '0 auto' }}>
+          <h5 className="mb-3">
+            <i className="bi bi-play-circle me-2"></i>
+            Kullanım ve Kurulum Videoları
+          </h5>
+          <p className="mb-2">
+            Katip Otomasyonu'nun kurulumu, lisans anahtarı ile aktive edilmesi ve kullanımına dair detaylı videolar için YouTube kanalımızı ziyaret edebilirsiniz:
+          </p>
+          <a 
+            href="https://youtube.com/@katipotomasyonu" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="btn btn-danger btn-lg"
+            style={{ textDecoration: 'none' }}
+          >
+            <i className="bi bi-youtube me-2"></i>
+            YouTube Kanalımız
+          </a>
         </div>
       </div>
     </>

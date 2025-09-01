@@ -44,6 +44,32 @@ function FeaturesPage() {
               Tüm işlemler tek tıkla, kullanıcıdan ekstra dosya yüklemesi veya manuel işlem gerektirmeden otomatik olarak gerçekleştirilir. Kullanıcı dostu arayüz ile hızlı ve pratik kullanım sağlar.
             </li>
           </ul>
+          
+          {/* YouTube Channel Link */}
+          <div className="text-center mt-4">
+            <a 
+              href="https://youtube.com/@katipotomasyonu" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-decoration-none"
+              title="YouTube Kanalımız"
+            >
+              <div className="btn btn-danger btn-lg rounded-circle p-3 mb-2"
+                   style={{ 
+                     width: '100px', 
+                     height: '100px', 
+                     display: 'inline-flex', 
+                     alignItems: 'center', 
+                     justifyContent: 'center',
+                     fontSize: '48px'
+                   }}>
+                <i className="bi bi-youtube"></i>
+              </div>
+              <div style={{ color: '#dc3545', fontWeight: '500', fontSize: '16px' }}>
+                YouTube Kanalımız
+              </div>
+            </a>
+          </div>
         </div>
       </div>
     </>
