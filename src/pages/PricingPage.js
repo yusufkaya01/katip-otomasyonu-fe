@@ -3,8 +3,8 @@ import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
 // Single pricing tier
 const PRICING = {
-  originalPrice: '20.000₺',
-  discountedPrice: '16.000₺',
+  originalPrice: '2.500₺',
+  discountedPrice: '2.000₺',
   description: 'Sınırsız Kullanım'
 };
 
@@ -24,58 +24,6 @@ function PricingPage() {
   return (
     <>
       <PageLoadingSpinner show={loading} fullscreen />
-      {/* Animated sticky catch phrase for installment info */}
-      <div style={{
-        position: 'fixed',
-        top: isMobile ? 'auto' : 80,
-        bottom: isMobile ? 20 : 'auto',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        background: 'linear-gradient(90deg, #e6ffed 0%, #b6f0c2 100%)',
-        color: '#146c43',
-        borderRadius: isMobile ? 20 : 32,
-        boxShadow: '0 4px 24px rgba(22,160,133,0.12)',
-        padding: isMobile ? '10px 16px' : '14px 36px',
-        fontWeight: 700,
-        fontSize: isMobile ? 14 : 20,
-        zIndex: 9999,
-        animation: 'bounce 1.2s infinite',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: isMobile ? 'column' : 'row',
-        gap: isMobile ? 4 : 12,
-        maxWidth: isMobile ? '90%' : 'auto',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          display: 'flex', 
-          alignItems: 'center', 
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: isMobile ? 6 : 12
-        }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width={isMobile ? "20" : "28"} height={isMobile ? "20" : "28"} fill="#146c43" viewBox="0 0 16 16">
-            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 8 1.5a6.5 6.5 0 0 1 0 13zm0-10a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4.5zm1 7.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75V7.75c0-.414.336-.75.75-.75s.75.336.75.75v4z"/>
-          </svg>
-          {isMobile ? (
-            <div style={{textAlign: 'center', lineHeight: 1.3}}>
-              <div>Kredi Kartına 3 taksite kadar</div>
-              <div style={{color:'#198754', fontWeight: 'bold'}}>vade farkı yok!</div>
-            </div>
-          ) : (
-            <>Kredi Kartına 3 taksite kadar <span style={{color:'#198754'}}>vade farkı yok!</span></>
-          )}
-        </div>
-        <style>{`
-          @keyframes bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            20% { transform: translateX(-50%) translateY(-10px); }
-            40% { transform: translateX(-50%) translateY(-20px); }
-            60% { transform: translateX(-50%) translateY(-10px); }
-            80% { transform: translateX(-50%) translateY(0); }
-          }
-        `}</style>
-      </div>
       
       {/* Demo GIF fixed to right center, responsive and clickable */}
       <img
@@ -157,7 +105,7 @@ function PricingPage() {
                       %20 İNDİRİMLİ ÖZEL FİYAT DÖNEMİ
                     </div>
                     <div style={{fontSize: '0.9rem', fontWeight: '600'}}>
-                      30 Eylül 2025 tarihine kadar geçerlidir
+                      31 Aralık 2025 tarihine kadar geçerlidir
                     </div>
                   </div>
                 </div>
@@ -167,7 +115,7 @@ function PricingPage() {
                     100% { left: 100%; }
                   }
                 `}</style>
-                <div className="text-danger mb-2" style={{fontSize: '2rem', fontWeight: '600'}}>Yıllık Ücret</div>
+                <div className="text-danger mb-2" style={{fontSize: '2rem', fontWeight: '600'}}>Aylık Ücret</div>
                 
                 {/* Pricing with discount */}
                 <div className="mb-3">
@@ -203,7 +151,7 @@ function PricingPage() {
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#fd7e14" viewBox="0 0 16 16" className="me-2">
                     <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 8 1.5a6.5 6.5 0 0 1 0 13zm0-10a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4.5zm1 7.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75V7.75c0-.414.336-.75.75-.75s.75.336.75.75v4z"/>
                   </svg>
-                  Satın alımdan itibaren 366 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır.
+                  Satın alımdan itibaren 32 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır.
                 </p>
                 <div className="list-unstyled text-start">
                   <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
@@ -224,11 +172,17 @@ function PricingPage() {
                     </svg>
                     <span>Personel dakika takibi ve Excel raporu</span>
                   </div>
-                  <div className="d-flex align-items-center" style={{fontSize: '0.9rem'}}>
+                  <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
                       <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
                     </svg>
                     <span>Renklendirilmiş durum takibi ve raporlama</span>
+                  </div>
+                  <div className="d-flex align-items-center" style={{fontSize: '0.9rem'}}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
+                      <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                    <span>Hızlı ve çoklu şekilde atama yapabilme</span>
                   </div>
                 </div>
               </div>
@@ -239,7 +193,7 @@ function PricingPage() {
           Demo paketi 7 gün boyunca ücretsizdir. Demo süresi sona erdikten sonra, lisansınızın süresini sitemize kayıt olarak uzatabilirsiniz.
         </div>
         <div className="alert alert-warning mt-4 text-center" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
-          <b>Yıllık lisans:</b> Satın alımdan itibaren 366 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır.
+          <b>Aylık lisans:</b> Satın alımdan itibaren 32 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır.
         </div>
         
         {/* Payment logos section for iyzico requirements */}
