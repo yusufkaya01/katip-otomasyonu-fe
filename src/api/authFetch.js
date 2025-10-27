@@ -27,6 +27,7 @@ export default async function authFetch(url, options = {}, auth) {
       },
       body: JSON.stringify({ refreshToken: auth.refreshToken })
     });
+    
     if (refreshRes.ok) {
       const data = await refreshRes.json();
       if (data.accessToken) {
@@ -40,9 +41,10 @@ export default async function authFetch(url, options = {}, auth) {
         response = await fetch(url, { ...options, headers: retryHeaders });
       }
     } else {
-      // Refresh failed - DON'T automatically logout here, let the calling code decide
-      // This makes it more resilient like admin pages
-      // Return the original 401 response so calling code can handle appropriately
+      // Refresh failed - logout the user
+      console.warn('Token refresh failed, logging out user');
+      auth.logout();
+      // Return the original 401 response
     }
   }
   return response;
