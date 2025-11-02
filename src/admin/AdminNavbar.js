@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 export default function AdminNavbar({ onLogout }) {
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-danger mb-4 border-bottom">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-danger mb-4 border-bottom sticky-top">
       <div className="container">
         <NavLink className="navbar-brand fw-bold d-flex align-items-center gap-2" to="/admin">
           <img src="/icon-128px-trasnparent-white.png" alt="Admin Logo" style={{ width: 36, height: 36 }} />

@@ -46,7 +46,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-danger">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-danger sticky-top">
       <div className="container">
         <Link className="navbar-brand fw-bold d-flex align-items-center gap-2" to="/" onClick={handleNavLinkClick}>
           <img src="/icon-128px-trasnparent-white.png" alt="Katip Otomasyonu Logo" style={{ width: 36, height: 36 }} />

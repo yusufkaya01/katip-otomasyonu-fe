@@ -27,6 +27,7 @@ function IsletmemPage() {
   const [resendMessage, setResendMessage] = useState('');
   const [showExtendModal, setShowExtendModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [extensionType, setExtensionType] = useState('monthly'); // monthly or yearly
   const [orderStep, setOrderStep] = useState(1); // 1: select, 2: confirm
   const [orderLoading, setOrderLoading] = useState(false);
   const [orderError, setOrderError] = useState('');
@@ -302,7 +303,7 @@ function IsletmemPage() {
     setDsaLoading(true);
     setDsaError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/osgb/dsa`, {
+      const res = await fetch(`${API_BASE_URL}/osgb/dsa?extension_type=${extensionType}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -378,7 +379,10 @@ function IsletmemPage() {
     setPaymentIframeUrl('');
     try {
       // Build returnUrl for card payments
-      let body = { payment_method: paymentMethod };
+      let body = { 
+        payment_method: paymentMethod,
+        extension_type: extensionType
+      };
       if (paymentMethod === 'card') {
         // Use a dedicated payment result page, or fallback to /isletmem
         const baseUrl = getFrontendBaseUrl();
@@ -1045,7 +1049,16 @@ function IsletmemPage() {
             onMouseUp={(e) => {
               e.target.style.transform = 'translateY(-3px) scale(1.02)';
             }}
-            onClick={() => { setShowExtendModal(true); setOrderStep(1); setOrderError(''); setEmailVerificationError(''); setOrderResult(null); setPaymentMethod('card'); setDsaAccepted(false); }} 
+            onClick={() => { 
+              setShowExtendModal(true); 
+              setOrderStep(1); 
+              setOrderError(''); 
+              setEmailVerificationError(''); 
+              setOrderResult(null); 
+              setPaymentMethod('card'); 
+              setExtensionType('monthly'); 
+              setDsaAccepted(false); 
+            }} 
             disabled={pendingOrders.length > 0}
           >
             <span style={{
@@ -1126,9 +1139,67 @@ function IsletmemPage() {
                 <div className="modal-body">
                   {orderStep === 1 && (
                     <>
+                      {/* License Type Selection */}
+                      <div className="mb-4">
+                        <label className="form-label fw-bold">Lisans Türü</label>
+                        <div className="row g-3">
+                          <div className="col-md-6">
+                            <div className={`card h-100 ${extensionType === 'monthly' ? 'border-primary bg-light' : 'border-secondary'}`} style={{cursor: 'pointer'}} onClick={() => setExtensionType('monthly')}>
+                              <div className="card-body text-center p-3">
+                                <div className="form-check d-flex justify-content-center mb-2">
+                                  <input className="form-check-input" type="radio" name="extensionType" value="monthly" checked={extensionType === 'monthly'} onChange={() => setExtensionType('monthly')} />
+                                </div>
+                                <h6 className="card-title text-primary">Aylık Lisans</h6>
+                                <div className="text-center mb-1">
+                                  <span className="badge bg-success small">KDV DAHİL</span>
+                                </div>
+                                <div className="h5 text-primary fw-bold">2000₺</div>
+                                <div className="small text-muted">32 gün kullanım</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="col-md-6">
+                            <div className={`card h-100 position-relative ${extensionType === 'yearly' ? 'border-danger bg-light' : 'border-secondary'}`} style={{cursor: 'pointer'}} onClick={() => setExtensionType('yearly')}>
+                              <div className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 small" style={{borderRadius: '0 0 0 10px', fontSize: '0.7rem'}}>
+                                EN POPÜLER
+                              </div>
+                              <div className="card-body text-center p-3">
+                                <div className="form-check d-flex justify-content-center mb-2">
+                                  <input className="form-check-input" type="radio" name="extensionType" value="yearly" checked={extensionType === 'yearly'} onChange={() => setExtensionType('yearly')} />
+                                </div>
+                                <h6 className="card-title text-danger">Yıllık Lisans</h6>
+                                <div className="text-center mb-1">
+                                  <div className="text-muted mb-1" style={{
+                                    fontSize: '1rem',
+                                    textDecoration: 'line-through',
+                                    fontWeight: '500'
+                                  }}>
+                                    24000₺
+                                  </div>
+                                  <span className="badge bg-success">%34 İndirim</span>
+                                  <span className="badge bg-success small ms-1">KDV DAHİL</span>
+                                </div>
+                                <div className="h5 text-danger fw-bold">16000₺</div>
+                                <div className="small text-muted">366 gün kullanım</div>
+                                <div className="mt-1">
+                                  <span className="badge bg-success">6'ya varan taksit</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
                       <div className="mb-3 text-center">
-                        <div className="fw-bold mb-2">Lisansınız <span className="text-danger">2.000 TL</span> karşılığında <span className="text-danger">32 gün</span> daha uzatılacaktır.</div>
-                        <div className="text-muted" style={{fontSize:'0.95em'}}>Sipariş sonrası lisansınız otomatik olarak uzatılır.</div>
+                        <div className="fw-bold mb-2">
+                          Lisansınız <span className="text-danger">{extensionType === 'yearly' ? '16000₺' : '2000₺'}</span> karşılığında 
+                          <span className="text-danger"> {extensionType === 'yearly' ? '366 gün' : '32 gün'}</span> daha uzatılacaktır.
+                        </div>
+                        <div className="text-muted" style={{fontSize:'0.95em'}}>Ödemeniz sonrası lisansınız otomatik olarak uzatılır.</div>
+                        <div className="text-success small mt-1">
+                          <i className="bi bi-info-circle me-1"></i>
+                          Yıllık lisansta kredi kartı ile 6'ya varan taksit imkanı
+                        </div>
                       </div>
                       <div className="mb-3">
                         <label className="form-label">Ödeme Yöntemi</label>
@@ -1178,13 +1249,19 @@ function IsletmemPage() {
                         <div className="fw-bold mb-2">Sipariş Özeti</div>
                         <ul className="list-group mb-3">
                           <li className="list-group-item d-flex justify-content-between align-items-center">
-                            <span>Lisans Uzatma</span>
-                            <span>2.000 TL / 32 gün</span>
+                            <span>Lisans Uzatma ({extensionType === 'yearly' ? 'Yıllık' : 'Aylık'})</span>
+                            <span>{extensionType === 'yearly' ? '16000₺ / 366 gün' : '2000₺ / 32 gün'}</span>
                           </li>
                           <li className="list-group-item d-flex justify-content-between align-items-center">
                             <span>Ödeme Yöntemi</span>
                             <span>{paymentMethod === 'cash' ? 'EFT/Havale' : 'Kredi Kartı'}</span>
                           </li>
+                          {extensionType === 'yearly' && paymentMethod === 'card' && (
+                            <li className="list-group-item d-flex justify-content-between align-items-center text-success">
+                              <span>Taksit İmkanı</span>
+                              <span>6'ya varan taksit</span>
+                            </li>
+                          )}
                         </ul>
                         
                         {/* DSA Contract Acceptance */}

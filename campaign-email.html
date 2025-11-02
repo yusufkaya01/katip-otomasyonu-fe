@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katip Otomasyonu - Yeni Lisans Seçenekleri</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #dc3545;
+            font-weight: 600;
+        }
+        .announcement {
+            background: linear-gradient(135deg, #e7f1ff 0%, #cce7ff 100%);
+            border-left: 4px solid #0066cc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            color: #333333;
+        }
+        .announcement h2 {
+            color: #0066cc;
+            margin: 0 0 10px 0;
+            font-size: 20px;
+        }
+        .announcement p {
+            color: #333333;
+        }
+        .pricing-options {
+            width: 100%;
+            margin: 20px 0;
+        }
+        .pricing-card {
+            width: 100%;
+            max-width: 280px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 0 auto 15px auto;
+            display: block;
+            box-sizing: border-box;
+        }
+        .pricing-card.popular {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+        }
+        .pricing-card h3 {
+            color: #dc3545;
+            margin: 0 0 10px 0;
+        }
+        .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc3545;
+            margin: 10px 0;
+        }
+        .features {
+            margin: 25px 0;
+        }
+        .feature-item {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .feature-item::before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .trial-section {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 25px 0;
+            color: #333333;
+        }
+        .trial-section h3 {
+            color: #856404;
+            margin: 0 0 10px 0;
+        }
+        .trial-section p {
+            color: #333333;
+        }
+        .license-key {
+            background: #e9ecef;
+            border: 2px dashed #6c757d;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .links-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .links-section h3 {
+            color: #dc3545;
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
+        .link-item {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .link-item strong {
+            color: #dc3545;
+            display: inline-block;
+            width: 120px;
+        }
+        .link-item a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .link-item a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            background: #343a40;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+        }
+        .unsubscribe {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #495057;
+            font-size: 11px;
+            color: #adb5bd;
+        }
+        .unsubscribe a {
+            color: #ffc107;
+            text-decoration: none;
+        }
+        .unsubscribe a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 Katip Otomasyonu'nda Yeni Dönem!</h1>
+            <p>Artık Aylık ve Yıllık Lisans Seçenekleri ile Daha Esnek!</p>
+        </div>
+
+        <div class="content">
+            <div class="greeting">
+                Sayın $[UD:COMPANY_NAME||]$
+            </div>
+
+            <div class="announcement">
+                <h2>📢 Müjdeli Haber!</h2>
+                <p>Katip Otomasyonu artık hem <strong>aylık (32 gün)</strong> hem de <strong>yıllık (366 gün)</strong> lisans seçenekleri sunuyor! İhtiyacınıza en uygun planı seçebilir, yıllık lisansta <strong>6'ya varan taksit</strong> imkanından faydalanabilirsiniz.</p>
+            </div>
+
+            <div class="features">
+                <h3 style="color: #dc3545; text-align: center;">Katip Otomasyonu ile Neler Yapabilirsiniz?</h3>
+                
+                <div class="feature-item">
+                    <strong>Sicil numaraları ile çoklu şekilde tehlike sınıfı ve çalışan sayılarını</strong> öğrenebilir, atamalarınızı zahmetsice çoklu şekilde gerçekleştirebilirsiniz
+                </div>
+                
+                <div class="feature-item">
+                    <strong>Katip Otomasyonu ile sözleşme süre güncellemelerini</strong> yalnızca sorumlu müdürden değil işverenden de yapabilirsiniz
+                </div>
+                
+                <div class="feature-item">
+                    <strong>Personellerinizin blokeli kaç dakikası olduğunu, atanabilir dakikalarınızı ve birçok detayı</strong> kolayca görüntüleyebilirsiniz
+                </div>
+                
+                <div class="feature-item">
+                    <strong>Onaylanmadığı için düşen atamalarınızı</strong> görüntüleyip atama özelliklerimiz ile çok daha hızlı yeniden atama yapabilirsiniz
+                </div>
+                
+                <div class="feature-item">
+                    <strong>Çalışan sayısı 0'a düşen firmalarınızı</strong> kolayca görüntüleyebilirsiniz
+                </div>
+                
+                <div class="feature-item">
+                    <strong>Firmalarınızdaki atamaların durumunu ve eksik atamalarınızı</strong> detaylı şekilde görüntüleyebilirsiniz
+                </div>
+                
+                <div class="feature-item">
+                    <strong>Çoklu şekilde hizmet sözleşmelerini</strong> tek seferde indirebilirsiniz
+                </div>
+            </div>
+
+            <div class="trial-section">
+                <h3>🎁 Ücretsiz Deneme Fırsatı!</h3>
+                <p><strong>Hala Katip Otomasyonu'nu denemediyseniz 7 gün boyunca ücretsiz deneyebilirsiniz!</strong></p>
+                <p>Hiçbir ödeme bilgisi gerekmez, hemen başlayın!</p>
+            </div>
+
+            <div class="license-key">
+                <strong>Size Özel Lisans Anahtarınız:</strong><br>
+                $[UD:LISANS_ANAHTARI||]$
+                <br><br>
+                <strong>📹 Kullanım Videosu:</strong> 
+                <a href="https://youtu.be/0dJB06ggDm8?si=3ffi6MShCDabeCPP" target="_blank" style="color: #0066cc;">YouTube'da İzleyin</a>
+            </div>
+
+            <div class="pricing-options">
+                <div class="pricing-card">
+                    <h3>📅 Aylık Lisans</h3>
+                    <div class="price">2.000₺</div>
+                    <p><strong>32 gün</strong> kesintisiz kullanım</p>
+                    <p><small>KDV Dahil</small></p>
+                </div>
+                <div class="pricing-card popular">
+                    <h3>🏆 Yıllık Lisans</h3>
+                    <div class="price">16.000₺</div>
+                    <p><strong>366 gün</strong> kesintisiz kullanım</p>
+                    <p><small>KDV Dahil • 6'ya varan taksit</small></p>
+                </div>
+            </div>
+
+            <div class="links-section">
+                <h3>🔗 Faydalı Bağlantılar</h3>
+                
+                <div class="link-item">
+                    <strong>🔧 Uygulama:</strong> 
+                    <a href="https://chromewebstore.google.com/detail/fclcdignmmaofcbgmjcdielmohplopem?utm_source=item-share-cb" target="_blank">Chrome Web Store'dan İndirin</a>
+                </div>
+                
+                <div class="link-item">
+                    <strong>🌐 Web Sitesi:</strong> 
+                    <a href="https://www.katipotomasyonu.com/" target="_blank">katipotomasyonu.com</a>
+                </div>
+                
+                <div class="link-item">
+                    <strong>📧 E-posta:</strong> 
+                    <a href="mailto:info@katipotomasyonu.com">info@katipotomasyonu.com</a>
+                </div>
+                
+                <div class="link-item">
+                    <strong>📞 Telefon:</strong> 
+                    <a href="tel:+905015448544">+90 501 544 85 44</a>
+                </div>
+                
+                <div class="link-item">
+                    <strong>💬 WhatsApp:</strong> 
+                    <a href="https://wa.me/905015448544" target="_blank">+90 501 544 85 44</a>
+                </div>
+                
+                <div class="link-item">
+                    <strong>📺 YouTube:</strong> 
+                    <a href="https://www.youtube.com/@KatipOtomasyonu" target="_blank">@KatipOtomasyonu</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Arkaya Arge Yazılım İnşaat Ticaret Limited Şirketi</strong></p>
+            <p>İş sağlığı ve güvenliği süreçlerinizin dijital dönüşüm ortağı</p>
+            <p><a href="https://arkaya.com.tr/" target="_blank" style="color: #ffc107;">Arkaya Web Sitesi</a></p>
+            <p style="margin-top: 10px; font-size: 11px; color: #adb5bd;">Katip Otomasyonu by Arkaya AR-GE © 2025</p>
+            <p style="margin-top: 8px; font-size: 11px; color: #adb5bd;">Bu e-posta size özel olarak hazırlanmıştır.</p>
+            <div class="unsubscribe">
+                <p>Want to change how you receive these emails?</p>
+                <p>You can <a href="$[LI:UNSUBSCRIBE]$">Unsubscribe</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,15 +1,74 @@
 import React, { useState } from 'react';
 import PageLoadingSpinner from '../components/PageLoadingSpinner';
 
-// Single pricing tier
+// Pricing options for both monthly and yearly
 const PRICING = {
-  originalPrice: '2.500₺',
-  discountedPrice: '2.000₺',
-  description: 'Sınırsız Kullanım'
+  monthly: {
+    price: '2000₺',
+    description: 'Aylık Lisans',
+    days: 32,
+    popular: false
+  },
+  yearly: {
+    originalPrice: '24000₺',
+    discountedPrice: '16000₺',
+    description: 'Yıllık Lisans',
+    days: 366,
+    popular: true,
+    discount: '34'
+  }
 };
 
 function PricingPage() {
   const [loading] = useState(false);
+
+  // Feature list component
+  const renderFeatureList = () => (
+    <div className="list-unstyled text-start">
+      <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+        </svg>
+        <span>Tek tuşla sözleşme güncellemeleri</span>
+      </div>
+      <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+        </svg>
+        <span>Asgari süre kontrolü ve otomatik güncelleme</span>
+      </div>
+      <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+        </svg>
+        <span>Personel dakika takibi ve Excel raporu</span>
+      </div>
+      <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+        </svg>
+        <span>Renklendirilmiş durum takibi ve raporlama</span>
+      </div>
+      <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+        </svg>
+        <span>Hızlı ve çoklu şekilde atama yapabilme</span>
+      </div>
+      <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+        </svg>
+        <span>Onaylanmadığı için düşen atamaları görüntüleme</span>
+      </div>
+      <div className="d-flex align-items-center" style={{fontSize: '0.9rem'}}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+        </svg>
+        <span>Çoklu hizmet sözleşmesi indirme</span>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -46,84 +105,93 @@ function PricingPage() {
       <div className="container py-5">
         <h2 className="mb-4 text-center">Fiyatlandırma</h2>
         
-        {/* Main pricing card */}
+        {/* License type selection notice */}
+        <div className="alert alert-info text-center mb-4" style={{background: '#e7f1ff', color: '#084298', borderColor: '#b6d4fe'}}>
+          <strong>İki farklı lisans seçeneği:</strong> Aylık veya yıllık lisans seçebilirsiniz. Yıllık lisansta taksit imkanı vardır.
+        </div>
+        
+        {/* Pricing cards */}
         <div className="row justify-content-center mb-4">
-          <div className="col-md-5 col-lg-4">
-            <div className="card border-0 shadow-lg text-center" style={{
+          {/* Monthly Plan */}
+          <div className="col-md-5 col-lg-4 mb-4">
+            <div className="card border-0 shadow text-center" style={{
               background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
               borderRadius: 20,
               overflow: 'hidden'
             }}>
-              <div className="card-header bg-danger text-white py-3" style={{borderRadius: '20px 20px 0 0'}}>
-                <h4 className="mb-0 fw-bold">Katip Otomasyonu Lisansı</h4>
-                <p className="mb-0 text-white" style={{fontSize: '1rem'}}>
-                  <i className="bi bi-box-arrow-up-right me-1" style={{fontSize: '14px'}}></i>
-                  <a 
-                    href="https://chromewebstore.google.com/detail/fclcdignmmaofcbgmjcdielmohplopem?utm_source=item-share-cb" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-white text-decoration-none"
-                    style={{borderBottom: '1px dotted rgba(255,255,255,0.7)', fontSize: '1.2rem', fontWeight: '600'}}
-                  >
-                    Chrome uzantısı
-                  </a> lisans uzatma<br />
-                  <span style={{fontSize: '0.85rem'}}>Sınırsız kullanım ile tam kontrol</span>
+              <div className="card-header bg-primary text-white py-3" style={{borderRadius: '20px 20px 0 0'}}>
+                <h4 className="mb-0 fw-bold">{PRICING.monthly.description}</h4>
+                <p className="mb-0 text-white" style={{fontSize: '0.9rem'}}>
+                  {PRICING.monthly.days} gün kullanım
                 </p>
               </div>
               <div className="card-body py-4">
-                {/* Limited time pricing notice - business elegant */}
-                <div className="mb-3 p-3 rounded-2" style={{
-                  background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
-                  color: '#1565c0',
-                  border: '1px solid #90caf9',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
-                  {/* Glowing effect overlay */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '-100%',
-                    width: '100%',
-                    height: '100%',
-                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)',
-                    animation: 'glowSweep 3s ease-in-out infinite',
-                    zIndex: 1
-                  }}></div>
-                  <div className="text-center" style={{position: 'relative', zIndex: 2}}>
-                    <div style={{fontSize: '0.75rem', fontWeight: '500', letterSpacing: '0.5px', opacity: 0.9, marginBottom: '4px'}}>
-                      %20 İNDİRİMLİ ÖZEL FİYAT DÖNEMİ
+                <div className="mb-3">
+                  <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
+                    <div className="badge bg-success px-2 py-1" style={{
+                      borderRadius: '15px',
+                      fontWeight: '600',
+                      fontSize: '0.75rem'
+                    }}>
+                      KDV DAHİL
                     </div>
-                    <div style={{fontSize: '0.9rem', fontWeight: '600'}}>
-                      31 Aralık 2025 tarihine kadar geçerlidir
+                    <div className="text-primary" style={{fontSize: '2.5rem', fontWeight: '700'}}>
+                      {PRICING.monthly.price}
                     </div>
                   </div>
                 </div>
-                <style>{`
-                  @keyframes glowSweep {
-                    0% { left: -100%; }
-                    100% { left: 100%; }
-                  }
-                `}</style>
-                <div className="text-danger mb-2" style={{fontSize: '2rem', fontWeight: '600'}}>Aylık Ücret</div>
-                
-                {/* Pricing with discount */}
+                <p className="text-muted mb-3" style={{fontSize: '0.9rem'}}>
+                  32 günlük lisans
+                </p>
+                {renderFeatureList()}
+              </div>
+            </div>
+          </div>
+
+          {/* Yearly Plan */}
+          <div className="col-md-5 col-lg-4 mb-4">
+            <div className="card border-0 shadow text-center position-relative" style={{
+              background: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
+              borderRadius: 20,
+              overflow: 'hidden',
+              border: '3px solid #dc3545'
+            }}>
+              {/* Popular badge */}
+              <div className="position-absolute top-0 end-0 bg-danger text-white px-3 py-1" style={{
+                borderRadius: '0 20px 0 15px',
+                fontSize: '0.8rem',
+                fontWeight: 'bold',
+                zIndex: 1
+              }}>
+                EN POPÜLER
+              </div>
+              
+              <div className="card-header bg-danger text-white py-3" style={{borderRadius: '20px 20px 0 0'}}>
+                <h4 className="mb-0 fw-bold">{PRICING.yearly.description}</h4>
+                <p className="mb-0 text-white" style={{fontSize: '0.9rem'}}>
+                  {PRICING.yearly.days} gün kullanım
+                </p>
+              </div>
+              <div className="card-body py-4">
                 <div className="mb-3">
-                  {/* Original price crossed out with discount badge */}
                   <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
-                    <div className="text-muted" style={{fontSize: '1.2rem', textDecoration: 'line-through', opacity: 0.7}}>
-                      {PRICING.originalPrice}
+                    <div className="text-muted" style={{
+                      fontSize: '1.5rem',
+                      textDecoration: 'line-through',
+                      fontWeight: '500'
+                    }}>
+                      24000₺
                     </div>
+                  </div>
+                  <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
                     <div className="badge bg-success fs-6 px-3 py-2" style={{
                       borderRadius: '20px',
                       fontWeight: '600',
                       fontSize: '0.9rem !important'
                     }}>
-                      20% İNDİRİM
+                      %34 İNDİRİM
                     </div>
                   </div>
-                  
-                  {/* Current discounted price */}
                   <div className="d-flex align-items-center justify-content-center gap-3 mb-2">
                     <div className="badge bg-success px-2 py-1" style={{
                       borderRadius: '15px',
@@ -133,57 +201,36 @@ function PricingPage() {
                       KDV DAHİL
                     </div>
                     <div className="text-danger" style={{fontSize: '2.5rem', fontWeight: '700'}}>
-                      {PRICING.discountedPrice}
+                      {PRICING.yearly.discountedPrice}
                     </div>
                   </div>
                 </div>
+                
                 <p className="text-muted mb-3" style={{fontSize: '0.9rem'}}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#fd7e14" viewBox="0 0 16 16" className="me-2">
-                    <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5A6.5 6.5 0 1 1 8 1.5a6.5 6.5 0 0 1 0 13zm0-10a.75.75 0 1 1 0 1.5A.75.75 0 0 1 8 4.5zm1 7.25c0 .414-.336.75-.75.75s-.75-.336-.75-.75V7.75c0-.414.336-.75.75-.75s.75.336.75.75v4z"/>
-                  </svg>
-                  Satın alımdan itibaren 32 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır.
+                  <span className="text-success fw-bold">6'ya varan taksit seçeneği</span><br />
+                  366 günlük lisans
                 </p>
-                <div className="list-unstyled text-start">
-                  <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
-                      <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                    </svg>
-                    <span>Tek tuşla sözleşme güncellemeleri</span>
-                  </div>
-                  <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
-                      <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                    </svg>
-                    <span>Asgari süre kontrolü ve otomatik güncelleme</span>
-                  </div>
-                  <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
-                      <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                    </svg>
-                    <span>Personel dakika takibi ve Excel raporu</span>
-                  </div>
-                  <div className="d-flex align-items-center mb-2" style={{fontSize: '0.9rem'}}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
-                      <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                    </svg>
-                    <span>Renklendirilmiş durum takibi ve raporlama</span>
-                  </div>
-                  <div className="d-flex align-items-center" style={{fontSize: '0.9rem'}}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="#198754" viewBox="0 0 16 16" className="me-3">
-                      <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                    </svg>
-                    <span>Hızlı ve çoklu şekilde atama yapabilme</span>
-                  </div>
-                </div>
+                {renderFeatureList()}
               </div>
             </div>
           </div>
         </div>
+        
+        {/* Information sections */}
         <div className="alert alert-info text-center my-3" style={{background: '#e7f1ff', color: '#084298', borderColor: '#b6d4fe'}}>
           Demo paketi 7 gün boyunca ücretsizdir. Demo süresi sona erdikten sonra, lisansınızın süresini sitemize kayıt olarak uzatabilirsiniz.
         </div>
+        
         <div className="alert alert-warning mt-4 text-center" style={{background: '#fffbe6', color: '#664d03', borderColor: '#ffe066'}}>
-          <b>Aylık lisans:</b> Satın alımdan itibaren 32 gün kullanım sunar. Süre bitiminde lisansın süresi uzatılmalıdır.
+          <div className="row">
+            <div className="col-md-6">
+              <b>Aylık lisans:</b> Satın alımdan itibaren 32 gün kullanım sunar.
+            </div>
+            <div className="col-md-6">
+              <b>Yıllık lisans:</b> Satın alımdan itibaren 366 gün kullanım sunar.
+            </div>
+          </div>
+          <small className="d-block mt-2">Süre bitiminde lisansın süresi uzatılmalıdır.</small>
         </div>
         
         {/* Payment logos section for iyzico requirements */}
