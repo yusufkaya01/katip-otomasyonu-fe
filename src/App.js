@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import setupJWTErrorHandler from './utils/jwtErrorHandler';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -22,6 +23,9 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import WhatsappFloatButton from './WhatsappFloatButton';
 import AdminRoutes from './admin/AdminRoutes';
 import './App.css';
+
+// Initialize JWT error handler globally
+setupJWTErrorHandler();
 
 function LoadingSpinner() {
   return (

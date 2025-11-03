@@ -201,7 +201,88 @@ Content-Type: application/json
 
 ---
 
-## 💻 **Frontend JWT Token Handling**
+## � **JWT "Invalid Token" Error Handling Implementation**
+
+### **Automatic Error Detection and Logout**
+
+The application now includes automatic handling of "Invalid token" responses from the backend. When any API call receives this specific error, the system will automatically:
+
+1. **Detect the error**: Check response body for `{"error":"Invalid token"}`
+2. **Call logout API**: Send refresh token to logout endpoint
+3. **Clear local storage**: Remove all authentication tokens
+4. **Redirect user**: Navigate to appropriate login page
+
+### **Implementation Details**
+
+**1. Global Fetch Interceptor (Applied to ALL fetch calls):**
+```javascript
+// Located in: src/utils/jwtErrorHandler.js
+// Automatically initialized in App.js
+
+// For user APIs - redirects to: http://192.168.1.115:3001/giris
+// For admin APIs - redirects to: http://192.168.1.115:3001/admin/login
+```
+
+**2. Enhanced authFetch for User APIs:**
+```javascript
+// Located in: src/api/authFetch.js
+// Used by components that import authFetch utility
+
+// Automatically calls: POST /api/osgb/logout
+// With refresh token in request body
+// Then redirects to login page
+```
+
+**3. Admin API Support:**
+```javascript
+// Located in: src/api/adminAuthFetch.js
+// Available for admin components (optional usage)
+
+// Clears admin tokens and redirects to admin login
+```
+
+### **How It Works**
+
+```javascript
+// Example API response that triggers the handler:
+{
+  "error": "Invalid token"
+}
+
+// Automatic sequence:
+1. Error detected in fetch response
+2. Determine if user or admin API
+3. Call appropriate logout endpoint with refresh token
+4. Clear localStorage tokens
+5. Redirect to login page using relative URLs
+```
+
+### **Configuration**
+
+The error handler is configured to redirect to relative URLs that work in all environments:
+- **User login**: `/giris` (adapts to current domain/port)
+- **Admin login**: `/admin/login` (adapts to current domain/port)
+
+This ensures the redirects work correctly in:
+- Local development (e.g., `http://localhost:3000/giris`)
+- Production (e.g., `https://yourdomain.com/giris`)
+- Any custom domain or port configuration
+
+To change these URLs, update the handler files:
+- `src/utils/jwtErrorHandler.js`
+- `src/api/authFetch.js`
+- `src/api/adminAuthFetch.js`
+
+### **Testing the Implementation**
+
+You can test this functionality by:
+1. Making an API call with an invalid/expired token
+2. Server should respond with `{"error":"Invalid token"}`
+3. Verify automatic logout and redirect occurs
+
+---
+
+## �💻 **Frontend JWT Token Handling**
 
 ### **1. Token Storage Strategy**
 
