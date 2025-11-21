@@ -8,13 +8,17 @@ function AboutPage() {
     <>
       <PageLoadingSpinner show={loading} fullscreen />
       <div className="container py-5">
-        <h2 className="mb-4">Hakkımızda</h2>
-        <p>
-          <b>Katip Otomasyonu</b>, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından Isparta'da kurulmuş ve geliştirilmektedir. Şirketimiz, iş sağlığı ve güvenliği alanında dijitalleşmeyi ve otomasyonu destekleyen yenilikçi SaaS (Software as a Service) çözümler üretmeye odaklanmıştır.
-        </p>
-        <p>
-          Amacımız, İSG-Katip kullanıcılarının iş süreçlerini kolaylaştırmak, zamandan tasarruf etmelerini sağlamak ve mevzuata tam uyumlu, güvenli, hızlı ve kullanıcı dostu yazılımlar sunmaktır. Katip Otomasyonu, işyeri hekimi, iş güvenliği uzmanı ve diğer sağlık personeli atamaları, sözleşme yönetimi ve raporlama gibi süreçleri otomatikleştirerek kurumların verimliliğini artırır.
-        </p>
+        <div className="row justify-content-center">
+          <div className="col-12 col-md-8 col-lg-6">
+            <h2 className="mb-4 text-center">Hakkımızda</h2>
+            <p>
+              <b>Katip Otomasyonu</b>, Arkaya Arge Yazılım İnşaat Ticaret Ltd.Şti. tarafından Isparta'da kurulmuş ve geliştirilmektedir. Şirketimiz, iş sağlığı ve güvenliği alanında dijitalleşmeyi ve otomasyonu destekleyen yenilikçi SaaS (Software as a Service) çözümler üretmeye odaklanmıştır.
+            </p>
+            <p>
+              Amacımız, İSG-Katip kullanıcılarının iş süreçlerini kolaylaştırmak, zamandan tasarruf etmelerini sağlamak ve mevzuata tam uyumlu, güvenli, hızlı ve kullanıcı dostu yazılımlar sunmaktır. Katip Otomasyonu, işyeri hekimi, iş güvenliği uzmanı ve diğer sağlık personeli atamaları, sözleşme yönetimi ve raporlama gibi süreçleri otomatikleştirerek kurumların verimliliğini artırır.
+            </p>
+          </div>
+        </div>
         <div className="row g-4 mb-4 justify-content-center">
           <div className="col-md-6">
             <div className="card h-100 shadow-sm">
