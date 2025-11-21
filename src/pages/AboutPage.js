@@ -19,7 +19,7 @@ function AboutPage() {
           <div className="col-md-6">
             <div className="card h-100 shadow-sm">
               <div className="card-body d-flex flex-column align-items-center text-center">
-                <img src="https://media.licdn.com/dms/image/v2/D4E03AQHOn7ZA7qk13A/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1729455741506?e=1758758400&v=beta&t=RY7Lk0Lj5ywHFJJn4ofDJs26N-_S-bqsijJ0yuCo-n4" alt="Yusuf Kaya" className="rounded-circle mb-3" style={{ width: 80, height: 80, objectFit: 'cover' }} />
+                <img src="/yusuf_kaya.png" alt="Yusuf Kaya" className="rounded-circle mb-3" style={{ width: 80, height: 80, objectFit: 'cover' }} />
                 <h5 className="card-title mb-1">Yusuf Kaya</h5>
                 <p className="mb-1">Founder | DevOps & Cloud Engineer</p>
                 <div className="d-flex justify-content-center align-items-center gap-3 mb-2">
