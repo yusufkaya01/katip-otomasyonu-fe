@@ -311,7 +311,7 @@ function HomePage() {
         {/* Demo GIF - simplified */}
         <img
           src="/gifs/demo-promotion.gif"
-          alt="3 Gün Ücretsiz Deneyin Demo"
+          alt="7 Gün Ücretsiz Deneyin Demo"
           style={{
             position: 'fixed',
             top: '50%',
