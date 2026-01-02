@@ -47,7 +47,7 @@ function formatTime(timeString) {
     const [hours, minutes] = timeString.split(':').map(Number);
     
     // Add 4 hours for Turkey timezone
-    let adjustedHours = hours + 2;
+    let adjustedHours = hours + 3;
     
     // Handle day overflow
     if (adjustedHours >= 24) {
