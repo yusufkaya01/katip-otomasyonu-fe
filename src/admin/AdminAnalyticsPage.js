@@ -223,7 +223,7 @@ function MostActiveLicenses({ token }) {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [limit]);
+  }, [limit, currentPage]);
 
   if (loading) return <div className="text-center p-4">Yükleniyor...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
@@ -400,7 +400,7 @@ function DailyUsageSummary({ token }) {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [days, limit]);
+  }, [days, limit, currentPage]);
 
   if (loading) return <div className="text-center p-4">Yükleniyor...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
@@ -561,7 +561,7 @@ function InactiveLicenses({ token }) {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [inactiveDays, limit]);
+  }, [inactiveDays, limit, currentPage]);
 
   if (loading) return <div className="text-center p-4">Yükleniyor...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
@@ -731,7 +731,7 @@ function RenewalCandidates({ token }) {
     if (currentPage > 1) {
       setCurrentPage(1);
     }
-  }, [minAttempts, renewalDays, limit]);
+  }, [minAttempts, renewalDays, limit, currentPage]);
 
   if (loading) return <div className="text-center p-4">Yükleniyor...</div>;
   if (error) return <div className="alert alert-danger">{error}</div>;
