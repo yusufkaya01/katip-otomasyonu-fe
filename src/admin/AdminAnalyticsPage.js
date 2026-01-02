@@ -18,7 +18,7 @@ function formatDate(dateString) {
     
     // Create date object and add 2 hours for Turkey timezone
     const date = new Date(dateString);
-    const adjustedDate = new Date(date.getTime() + (4 * 60 * 60 * 1000));
+    const adjustedDate = new Date(date.getTime() + (2 * 60 * 60 * 1000));
     
     // Ensure we get a proper date object
     if (isNaN(adjustedDate.getTime())) {
@@ -46,7 +46,7 @@ function formatTime(timeString) {
     // Parse the time string (HH:MM format)
     const [hours, minutes] = timeString.split(':').map(Number);
     
-    // Add 2 hours for Turkey timezone
+    // Add 4 hours for Turkey timezone
     let adjustedHours = hours + 2;
     
     // Handle day overflow
