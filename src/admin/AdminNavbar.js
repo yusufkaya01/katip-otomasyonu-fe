@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 export default function AdminNavbar({ onLogout }) {
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-danger mb-4 border-bottom sticky-top">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-danger mb-4 border-bottom sticky-top" style={{fontSize: '0.9em'}}>
       <div className="container">
         <NavLink className="navbar-brand fw-bold d-flex align-items-center gap-2" to="/admin">
           <img src="/icon-128px-trasnparent-white.png" alt="Admin Logo" style={{ width: 36, height: 36 }} />
@@ -37,6 +37,11 @@ export default function AdminNavbar({ onLogout }) {
             <li className="nav-item">
               <NavLink to="/admin/customers" className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
                 Tüm Müşteriler
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/admin/analytics" className={({isActive}) => 'nav-link' + (isActive ? ' active fw-bold text-light' : '')}>
+                İstatistikler
               </NavLink>
             </li>
             <li className="nav-item">

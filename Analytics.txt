@@ -1,0 +1,625 @@
+# License Analytics API - Frontend Developer Documentation
+
+## Overview
+The License Analytics API provides comprehensive insights into license validation patterns, usage statistics, and customer behavior analytics. This documentation covers all available endpoints for building admin dashboards and analytics interfaces.
+
+## Base URL
+```
+https://your-api-domain.com/api/admin/analytics
+```
+
+## Authentication
+All analytics endpoints require admin authentication:
+
+```javascript
+// Required headers for all requests
+const headers = {
+  'Authorization': 'Bearer <admin-jwt-token>',
+  'x-admin-api-key': '<admin-api-key>',
+  'Content-Type': 'application/json'
+};
+```
+
+## API Endpoints
+
+### 1. Today's Most Active Licenses
+
+**Endpoint:** `GET /licenses/most-active-today`
+
+Get the most active licenses for today, ranked by total validation attempts.
+
+**Query Parameters:**
+- `limit` (optional, number): Number of results to return (default: 20, max: 100)
+
+**Example Request:**
+```javascript
+const response = await fetch('/api/admin/analytics/licenses/most-active-today?limit=10', {
+  headers: {
+    'Authorization': 'Bearer <admin-jwt>',
+    'x-admin-api-key': '<admin-api-key>'
+  }
+});
+
+const data = await response.json();
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "license_code": "LIC456",
+      "company_name": "ABC Manufacturing",
+      "osgb_id": "OSGB-1234",
+      "total_attempts": 87,
+      "successful_validations": 84,
+      "expired_attempts": 3,
+      "first_time": "07:30",
+      "last_time": "18:45",
+      "expiration_date": "2026-03-15T00:00:00.000Z",
+      "is_expired": 0
+    },
+    {
+      "license_code": "LIC123",
+      "company_name": "XYZ Solutions",
+      "osgb_id": "OSGB-5678",
+      "total_attempts": 45,
+      "successful_validations": 45,
+      "expired_attempts": 0,
+      "first_time": "08:15",
+      "last_time": "17:22",
+      "expiration_date": "2026-02-28T00:00:00.000Z",
+      "is_expired": 0
+    }
+  ],
+  "meta": {
+    "count": 2,
+    "limit": 10,
+    "date": "2026-01-02"
+  }
+}
+```
+
+**Frontend Implementation:**
+```javascript
+// React component example
+function MostActiveLicenses() {
+  const [licenses, setLicenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMostActive() {
+      try {
+        const response = await fetch('/api/admin/analytics/licenses/most-active-today?limit=10', {
+          headers: getAuthHeaders()
+        });
+        const data = await response.json();
+        setLicenses(data.data);
+      } catch (error) {
+        console.error('Failed to fetch most active licenses:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchMostActive();
+  }, []);
+
+  return (
+    <div className="most-active-licenses">
+      <h3>Today's Most Active Licenses</h3>
+      {loading ? <div>Loading...</div> : (
+        <table>
+          <thead>
+            <tr>
+              <th>License Code</th>
+              <th>Company</th>
+              <th>Total Attempts</th>
+              <th>Success Rate</th>
+              <th>Active Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            {licenses.map(license => (
+              <tr key={license.license_code}>
+                <td>{license.license_code}</td>
+                <td>{license.company_name}</td>
+                <td>{license.total_attempts}</td>
+                <td>
+                  {((license.successful_validations / license.total_attempts) * 100).toFixed(1)}%
+                </td>
+                <td>{license.first_time} → {license.last_time}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### 2. License Usage Trend
+
+**Endpoint:** `GET /licenses/:licenseCode/trend`
+
+Get historical usage trend for a specific license over the past N days.
+
+**Path Parameters:**
+- `licenseCode` (required, string): The license code to analyze
+
+**Query Parameters:**
+- `days` (optional, number): Number of days to look back (default: 7, max: 90)
+
+**Example Request:**
+```javascript
+const licenseCode = 'LIC123';
+const response = await fetch(`/api/admin/analytics/licenses/${licenseCode}/trend?days=14`, {
+  headers: getAuthHeaders()
+});
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "date": "2026-01-02",
+      "total_attempts": 45,
+      "successful_validations": 45,
+      "expired_attempts": 0,
+      "first_time": "08:15",
+      "last_time": "17:22",
+      "day_name": "Thursday"
+    },
+    {
+      "date": "2026-01-01",
+      "total_attempts": 0,
+      "successful_validations": 0,
+      "expired_attempts": 0,
+      "first_time": null,
+      "last_time": null,
+      "day_name": "Wednesday"
+    }
+  ],
+  "meta": {
+    "license_code": "LIC123",
+    "days_analyzed": 14,
+    "data_points": 2
+  }
+}
+```
+
+**Chart Implementation:**
+```javascript
+// Using Chart.js or similar library
+function LicenseUsageTrendChart({ licenseCode }) {
+  const [trendData, setTrendData] = useState(null);
+
+  useEffect(() => {
+    async function fetchTrend() {
+      const response = await fetch(`/api/admin/analytics/licenses/${licenseCode}/trend?days=30`, {
+        headers: getAuthHeaders()
+      });
+      const data = await response.json();
+      
+      // Format for Chart.js
+      const chartData = {
+        labels: data.data.map(d => d.date),
+        datasets: [
+          {
+            label: 'Total Attempts',
+            data: data.data.map(d => d.total_attempts),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          },
+          {
+            label: 'Successful Validations',
+            data: data.data.map(d => d.successful_validations),
+            borderColor: 'rgb(54, 162, 235)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          },
+          {
+            label: 'Expired Attempts',
+            data: data.data.map(d => d.expired_attempts),
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          }
+        ]
+      };
+      
+      setTrendData(chartData);
+    }
+    
+    fetchTrend();
+  }, [licenseCode]);
+
+  return trendData ? <Line data={trendData} /> : <div>Loading chart...</div>;
+}
+```
+
+---
+
+### 3. Inactive Licenses
+
+**Endpoint:** `GET /licenses/inactive`
+
+Get licenses that haven't been used in the specified number of days.
+
+**Query Parameters:**
+- `days` (optional, number): Days of inactivity threshold (default: 7)
+- `limit` (optional, number): Number of results to return (default: 50)
+
+**Example Request:**
+```javascript
+const response = await fetch('/api/admin/analytics/licenses/inactive?days=14&limit=25', {
+  headers: getAuthHeaders()
+});
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "license_code": "LIC999",
+      "company_name": "Dormant Corp",
+      "osgb_id": "OSGB-9999",
+      "last_validated_at": "2025-12-15T14:30:00.000Z",
+      "expiration_date": "2026-06-30T00:00:00.000Z",
+      "is_expired": 0,
+      "days_inactive": 18
+    }
+  ],
+  "meta": {
+    "inactive_days_threshold": 14,
+    "count": 1,
+    "limit": 25
+  }
+}
+```
+
+---
+
+### 4. Daily Usage Summary
+
+**Endpoint:** `GET /usage/daily-summary`
+
+Get aggregated daily usage statistics across all licenses.
+
+**Query Parameters:**
+- `days` (optional, number): Number of days to analyze (default: 30)
+
+**Example Request:**
+```javascript
+const response = await fetch('/api/admin/analytics/usage/daily-summary?days=7', {
+  headers: getAuthHeaders()
+});
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "date": "2026-01-02",
+      "active_licenses": 245,
+      "total_attempts": 3420,
+      "successful_validations": 3156,
+      "expired_attempts": 264,
+      "avg_attempts_per_license": 13.96,
+      "peak_license_attempts": 87,
+      "day_name": "Thursday"
+    },
+    {
+      "date": "2026-01-01",
+      "active_licenses": 12,
+      "total_attempts": 89,
+      "successful_validations": 89,
+      "expired_attempts": 0,
+      "avg_attempts_per_license": 7.42,
+      "peak_license_attempts": 15,
+      "day_name": "Wednesday"
+    }
+  ],
+  "meta": {
+    "days_analyzed": 7,
+    "data_points": 2
+  }
+}
+```
+
+---
+
+### 5. Renewal Candidates
+
+**Endpoint:** `GET /licenses/renewal-candidates`
+
+Get expired licenses that still have recent validation attempts (potential renewals).
+
+**Query Parameters:**
+- `days` (optional, number): Days to check for activity (default: 7)
+- `min_attempts` (optional, number): Minimum attempts threshold (default: 1)
+
+**Example Request:**
+```javascript
+const response = await fetch('/api/admin/analytics/licenses/renewal-candidates?days=7&min_attempts=5', {
+  headers: getAuthHeaders()
+});
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "license_code": "LIC789",
+      "company_name": "Renewal Candidate Inc",
+      "osgb_id": "OSGB-7890",
+      "expiration_date": "2025-12-25T00:00:00.000Z",
+      "total_expired_attempts": 47,
+      "active_days": 5,
+      "last_attempt_date": "2026-01-02",
+      "days_since_expiry": 8
+    }
+  ],
+  "meta": {
+    "activity_days_checked": 7,
+    "min_attempts_threshold": 5,
+    "candidates_found": 1
+  }
+}
+```
+
+**Sales Alert Component:**
+```javascript
+function RenewalAlerts() {
+  const [candidates, setCandidates] = useState([]);
+
+  useEffect(() => {
+    async function fetchCandidates() {
+      const response = await fetch('/api/admin/analytics/licenses/renewal-candidates?min_attempts=10', {
+        headers: getAuthHeaders()
+      });
+      const data = await response.json();
+      setCandidates(data.data);
+    }
+    
+    fetchCandidates();
+  }, []);
+
+  return (
+    <div className="renewal-alerts">
+      <h3>🔔 High-Priority Renewal Candidates</h3>
+      {candidates.map(candidate => (
+        <div key={candidate.license_code} className="alert-card urgent">
+          <div className="alert-header">
+            <strong>{candidate.company_name}</strong>
+            <span className="license-code">{candidate.license_code}</span>
+          </div>
+          <div className="alert-body">
+            <p>📈 <strong>{candidate.total_expired_attempts}</strong> attempts in last {candidate.active_days} days</p>
+            <p>⏰ Expired {candidate.days_since_expiry} days ago</p>
+            <p>🎯 Last attempt: {candidate.last_attempt_date}</p>
+          </div>
+          <div className="alert-actions">
+            <button onClick={() => contactCustomer(candidate.osgb_id)}>
+              📞 Contact Customer
+            </button>
+            <button onClick={() => generateQuote(candidate.license_code)}>
+              💰 Generate Quote
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+### 6. Usage by Date Range
+
+**Endpoint:** `GET /usage/date-range`
+
+Get detailed usage data for a specific date range with optional license filtering.
+
+**Query Parameters:**
+- `start_date` (required, string): Start date in YYYY-MM-DD format
+- `end_date` (required, string): End date in YYYY-MM-DD format  
+- `license_code` (optional, string): Filter by specific license code
+
+**Example Request:**
+```javascript
+const response = await fetch('/api/admin/analytics/usage/date-range?start_date=2025-12-01&end_date=2025-12-31&license_code=LIC123', {
+  headers: getAuthHeaders()
+});
+```
+
+---
+
+### 7. Hourly Usage Pattern
+
+**Endpoint:** `GET /usage/hourly-pattern`
+
+Analyze usage patterns throughout the day for a specific date.
+
+**Query Parameters:**
+- `date` (required, string): Date to analyze in YYYY-MM-DD format
+- `license_code` (optional, string): Filter by specific license code
+
+**Example Request:**
+```javascript
+const response = await fetch('/api/admin/analytics/usage/hourly-pattern?date=2026-01-02', {
+  headers: getAuthHeaders()
+});
+```
+
+---
+
+## Error Handling
+
+All endpoints return standardized error responses:
+
+```json
+{
+  "success": false,
+  "error": "Error message describing what went wrong"
+}
+```
+
+**Common HTTP Status Codes:**
+- `200` - Success
+- `400` - Bad Request (missing required parameters)
+- `401` - Unauthorized (invalid/missing admin token)
+- `403` - Forbidden (invalid admin API key)
+- `500` - Internal Server Error
+
+**Error Handling Example:**
+```javascript
+async function fetchAnalytics(endpoint) {
+  try {
+    const response = await fetch(`/api/admin/analytics/${endpoint}`, {
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error);
+    }
+    
+    return data.data;
+  } catch (error) {
+    console.error('Analytics API error:', error);
+    // Show user-friendly error message
+    showToast('Failed to load analytics data. Please try again.', 'error');
+    throw error;
+  }
+}
+```
+
+## Utility Functions
+
+**Authentication Helper:**
+```javascript
+function getAuthHeaders() {
+  const token = localStorage.getItem('admin_token');
+  const apiKey = process.env.REACT_APP_ADMIN_API_KEY;
+  
+  return {
+    'Authorization': `Bearer ${token}`,
+    'x-admin-api-key': apiKey,
+    'Content-Type': 'application/json'
+  };
+}
+```
+
+**Date Formatting:**
+```javascript
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleDateString('tr-TR', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+function formatTime(timeString) {
+  return timeString ? timeString.substring(0, 5) : '-';
+}
+```
+
+**Usage Statistics Calculations:**
+```javascript
+function calculateSuccessRate(successful, total) {
+  return total > 0 ? ((successful / total) * 100).toFixed(1) + '%' : '0%';
+}
+
+function getUsageCategory(attempts) {
+  if (attempts >= 50) return 'Heavy User';
+  if (attempts >= 10) return 'Regular User';
+  if (attempts >= 1) return 'Light User';
+  return 'Inactive';
+}
+
+function formatUsageSpan(firstTime, lastTime) {
+  if (!firstTime || !lastTime) return '-';
+  return `${formatTime(firstTime)} → ${formatTime(lastTime)}`;
+}
+```
+
+## Dashboard Implementation Examples
+
+**Complete Analytics Dashboard:**
+```javascript
+function AnalyticsDashboard() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [dateRange, setDateRange] = useState({
+    start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    end: new Date().toISOString().split('T')[0]
+  });
+
+  return (
+    <div className="analytics-dashboard">
+      <div className="dashboard-header">
+        <h1>License Analytics Dashboard</h1>
+        <div className="date-range-picker">
+          <input
+            type="date"
+            value={dateRange.start}
+            onChange={(e) => setDateRange({...dateRange, start: e.target.value})}
+          />
+          <span>to</span>
+          <input
+            type="date"
+            value={dateRange.end}
+            onChange={(e) => setDateRange({...dateRange, end: e.target.value})}
+          />
+        </div>
+      </div>
+
+      <div className="dashboard-tabs">
+        <button
+          className={activeTab === 'overview' ? 'active' : ''}
+          onClick={() => setActiveTab('overview')}
+        >
+          📊 Overview
+        </button>
+        <button
+          className={activeTab === 'licenses' ? 'active' : ''}
+          onClick={() => setActiveTab('licenses')}
+        >
+          🎫 License Details
+        </button>
+        <button
+          className={activeTab === 'renewals' ? 'active' : ''}
+          onClick={() => setActiveTab('renewals')}
+        >
+          🔔 Renewal Alerts
+        </button>
+      </div>
+
+      <div className="dashboard-content">
+        {activeTab === 'overview' && <OverviewTab dateRange={dateRange} />}
+        {activeTab === 'licenses' && <LicenseDetailsTab />}
+        {activeTab === 'renewals' && <RenewalAlertsTab />}
+      </div>
+    </div>
+  );
+}
+```
+
+This comprehensive API enables building rich analytics dashboards with real-time license usage insights, customer behavior analysis, and proactive renewal management!
