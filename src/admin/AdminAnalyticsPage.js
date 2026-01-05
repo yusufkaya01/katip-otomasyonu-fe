@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminNavbar from './AdminNavbar';
+import LicensesOverview from './LicensesOverview';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 function getAuthHeaders(token) {
@@ -837,6 +838,7 @@ function RenewalCandidates({ token }) {
 
 export default function AdminAnalyticsPage({ token, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div>
@@ -850,6 +852,19 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
                 <div>
                   <h1 className="h2 mb-0">İstatistikler</h1>
                   <small className="text-muted">Lisans kullanım analiz ve raporları</small>
+                </div>
+              </div>
+              <div className="d-flex align-items-center gap-3">
+                <div className="position-relative">
+                  <i className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                  <input
+                    type="text"
+                    className="form-control ps-5"
+                    placeholder="Lisans, şirket veya OSGB ID ara..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{ width: '300px' }}
+                  />
                 </div>
               </div>
             </div>
@@ -920,6 +935,22 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
                   Yenileme Adayları
                 </button>
               </li>
+              <li className="nav-item" role="presentation">
+                <button
+                  className={`nav-link ${activeTab === 'overview-usage' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('overview-usage')}
+                  type="button"
+                  style={{
+                    color: activeTab === 'overview-usage' ? '#495057' : '#6c757d',
+                    backgroundColor: activeTab === 'overview-usage' ? '#fff' : 'transparent',
+                    borderColor: activeTab === 'overview-usage' ? '#dee2e6 #dee2e6 #fff' : '#dee2e6',
+                    fontWeight: '600'
+                  }}
+                >
+                  <i className="bi bi-clipboard-data me-2"></i>
+                  Lisans Genel Bakışı
+                </button>
+              </li>
             </ul>
 
             {/* Tab Content */}
@@ -935,7 +966,7 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
               {activeTab === 'active' && (
                 <div className="row">
                   <div className="col-12">
-                    <MostActiveLicenses token={token} />
+                    <MostActiveLicenses token={token} searchQuery={searchQuery} />
                   </div>
                 </div>
               )}
@@ -943,7 +974,7 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
               {activeTab === 'inactive' && (
                 <div className="row">
                   <div className="col-12">
-                    <InactiveLicenses token={token} />
+                    <InactiveLicenses token={token} searchQuery={searchQuery} />
                   </div>
                 </div>
               )}
@@ -951,7 +982,15 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
               {activeTab === 'renewals' && (
                 <div className="row">
                   <div className="col-12">
-                    <RenewalCandidates token={token} />
+                    <RenewalCandidates token={token} searchQuery={searchQuery} />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'overview-usage' && (
+                <div className="row">
+                  <div className="col-12">
+                    <LicensesOverview token={token} searchQuery={searchQuery} />
                   </div>
                 </div>
               )}
