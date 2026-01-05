@@ -253,15 +253,34 @@ export default function LicensesOverview({ token, searchQuery = '' }) {
   const currentPage = Math.floor((meta.offset || 0) / (meta.limit || 20)) + 1;
   const totalPages = Math.ceil((meta.total || 0) / (meta.limit || 20));
 
+  // Turkish character normalization function
+  const normalizeTurkish = (text) => {
+    return text
+      .toLowerCase()
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/İ/g, 'i')
+      .replace(/Ğ/g, 'g')
+      .replace(/Ü/g, 'u')
+      .replace(/Ş/g, 's')
+      .replace(/I/g, 'i')
+      .replace(/Ö/g, 'o')
+      .replace(/Ç/g, 'c');
+  };
+
   // Filter licenses based on search query
   const filteredLicenses = licenses.filter(license => {
     if (!searchQuery) return true;
     
-    const query = searchQuery.toLowerCase();
+    const normalizedQuery = normalizeTurkish(searchQuery);
     return (
-      license.license_code.toLowerCase().includes(query) ||
-      license.osgb_id.toLowerCase().includes(query) ||
-      license.company_name.toLowerCase().includes(query)
+      normalizeTurkish(license.license_code).includes(normalizedQuery) ||
+      normalizeTurkish(license.osgb_id).includes(normalizedQuery) ||
+      normalizeTurkish(license.company_name).includes(normalizedQuery)
     );
   });
 
