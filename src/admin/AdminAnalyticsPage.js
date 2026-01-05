@@ -838,7 +838,6 @@ function RenewalCandidates({ token }) {
 
 export default function AdminAnalyticsPage({ token, onLogout }) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <div>
@@ -852,19 +851,6 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
                 <div>
                   <h1 className="h2 mb-0">İstatistikler</h1>
                   <small className="text-muted">Lisans kullanım analiz ve raporları</small>
-                </div>
-              </div>
-              <div className="d-flex align-items-center gap-3">
-                <div className="position-relative">
-                  <i className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
-                  <input
-                    type="text"
-                    className="form-control ps-5"
-                    placeholder="Lisans, şirket veya OSGB ID ara..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ width: '300px' }}
-                  />
                 </div>
               </div>
             </div>
@@ -966,7 +952,7 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
               {activeTab === 'active' && (
                 <div className="row">
                   <div className="col-12">
-                    <MostActiveLicenses token={token} searchQuery={searchQuery} />
+                    <MostActiveLicenses token={token} />
                   </div>
                 </div>
               )}
@@ -974,7 +960,7 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
               {activeTab === 'inactive' && (
                 <div className="row">
                   <div className="col-12">
-                    <InactiveLicenses token={token} searchQuery={searchQuery} />
+                    <InactiveLicenses token={token} />
                   </div>
                 </div>
               )}
@@ -982,7 +968,7 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
               {activeTab === 'renewals' && (
                 <div className="row">
                   <div className="col-12">
-                    <RenewalCandidates token={token} searchQuery={searchQuery} />
+                    <RenewalCandidates token={token} />
                   </div>
                 </div>
               )}
@@ -990,7 +976,7 @@ export default function AdminAnalyticsPage({ token, onLogout }) {
               {activeTab === 'overview-usage' && (
                 <div className="row">
                   <div className="col-12">
-                    <LicensesOverview token={token} searchQuery={searchQuery} />
+                    <LicensesOverview token={token} />
                   </div>
                 </div>
               )}

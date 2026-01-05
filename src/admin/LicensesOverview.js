@@ -212,7 +212,7 @@ const useLicensesOverview = (token) => {
   };
 };
 
-export default function LicensesOverview({ token, searchQuery = '' }) {
+export default function LicensesOverview({ token }) {
   const [filters, setFilters] = useState({
     days: 30,
     include_inactive: false,
@@ -220,6 +220,7 @@ export default function LicensesOverview({ token, searchQuery = '' }) {
   });
   
   const [selectedLicenseOsgbId, setSelectedLicenseOsgbId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const {
     licenses,
@@ -253,34 +254,36 @@ export default function LicensesOverview({ token, searchQuery = '' }) {
   const currentPage = Math.floor((meta.offset || 0) / (meta.limit || 20)) + 1;
   const totalPages = Math.ceil((meta.total || 0) / (meta.limit || 20));
 
-  // Turkish character normalization function
-  const normalizeTurkish = (text) => {
-    return text
-      .toLowerCase()
-      .replace(/ğ/g, 'g')
-      .replace(/ü/g, 'u')
-      .replace(/ş/g, 's')
-      .replace(/ı/g, 'i')
-      .replace(/ö/g, 'o')
-      .replace(/ç/g, 'c')
-      .replace(/İ/g, 'i')
-      .replace(/Ğ/g, 'g')
-      .replace(/Ü/g, 'u')
-      .replace(/Ş/g, 's')
-      .replace(/I/g, 'i')
-      .replace(/Ö/g, 'o')
-      .replace(/Ç/g, 'c');
+  // Simplified Turkish-aware search function
+  const turkishSearch = (text, query) => {
+    if (!text || !query) return false;
+    
+    // Use Turkish locale for proper case conversion
+    const normalizedText = text.toLocaleLowerCase('tr-TR');
+    const normalizedQuery = query.toLocaleLowerCase('tr-TR');
+    
+    return normalizedText.includes(normalizedQuery);
   };
 
   // Filter licenses based on search query
   const filteredLicenses = licenses.filter(license => {
     if (!searchQuery) return true;
     
-    const normalizedQuery = normalizeTurkish(searchQuery);
+    // Enhanced debug logging
+    if (searchQuery.toLowerCase().includes('vita')) {
+      console.log('Turkish Search Debug:', {
+        searchQuery: searchQuery,
+        companyOriginal: license.company_name,
+        searchResult: turkishSearch(license.company_name, searchQuery),
+        companyLowerTR: license.company_name.toLocaleLowerCase('tr-TR'),
+        queryLowerTR: searchQuery.toLocaleLowerCase('tr-TR')
+      });
+    }
+    
     return (
-      normalizeTurkish(license.license_code).includes(normalizedQuery) ||
-      normalizeTurkish(license.osgb_id).includes(normalizedQuery) ||
-      normalizeTurkish(license.company_name).includes(normalizedQuery)
+      turkishSearch(license.license_code, searchQuery) ||
+      turkishSearch(license.osgb_id, searchQuery) ||
+      turkishSearch(license.company_name, searchQuery)
     );
   });
 
@@ -337,6 +340,37 @@ export default function LicensesOverview({ token, searchQuery = '' }) {
         )}
       </div>
 
+      {/* Search Bar */}
+      <div className="card-body border-bottom">
+        <div className="row align-items-center">
+          <div className="col-md-6">
+            <div className="position-relative">
+              <i className="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+              <input
+                type="text"
+                className="form-control ps-5"
+                placeholder="Lisans kodu, şirket adı veya OSGB ID ile ara..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+          {searchQuery && (
+            <div className="col-md-6 text-end">
+              <small className="text-muted">
+                {filteredLicenses.length} sonuç bulundu
+                <button 
+                  className="btn btn-sm btn-outline-secondary ms-2"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <i className="bi bi-x"></i> Temizle
+                </button>
+              </small>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="card-body">
         {error && (
           <div className="alert alert-danger mb-3">
@@ -365,7 +399,8 @@ export default function LicensesOverview({ token, searchQuery = '' }) {
                   <th>Lisans Kodu</th>
                   <th>OSGB ID</th>
                   <th>Şirket Adı</th>
-                  <th>Bitiş Tarihi</th>
+                  <th>Lisans Bitiş Tarihi</th>
+                  <th>Toplam Lisans Kullanımı</th>
                   <th>Toplam Kullanım</th>
                   <th>Aktif Gün</th>
                   <th>Günlük Ort.</th>
@@ -393,7 +428,10 @@ export default function LicensesOverview({ token, searchQuery = '' }) {
                       </div>
                     </td>
                     <td>
-                      <small>{formatDate(license.expires_at)}</small>
+                      <small>{formatDate(license.expiration_date)}</small>
+                    </td>
+                    <td>
+                      <span className="badge bg-warning">{license.total_validation_requests?.toLocaleString() || '0'}</span>
                     </td>
                     <td>
                       <span className="badge bg-info">{license.total_usage_count}</span>
@@ -405,6 +443,8 @@ export default function LicensesOverview({ token, searchQuery = '' }) {
                       <span className="badge bg-primary">
                         {license.avg_daily_usage && typeof license.avg_daily_usage === 'number' 
                           ? license.avg_daily_usage.toFixed(1) 
+                          : typeof license.avg_daily_usage === 'string' && license.avg_daily_usage !== '' 
+                          ? parseFloat(license.avg_daily_usage).toFixed(1)
                           : '0.0'}
                       </span>
                     </td>
