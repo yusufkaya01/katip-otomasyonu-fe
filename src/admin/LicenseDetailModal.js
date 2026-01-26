@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './LicenseDetailModal.css';
 
 function getAuthHeaders(token) {
   return {
@@ -54,17 +55,21 @@ const fetchLicenseDailyUsage = async (token, osgbId, days = 30) => {
       return {
         success: true,
         license: {
+          id: license.id,
           osgb_id: license.osgb_id,
           company_name: license.company_name,
           license_code: license.license_code,
           status: license.status,
           created_at: license.created_at,
-          expires_at: license.expires_at,
+          expiration_date: license.expiration_date,
+          is_expired: license.is_expired,
           
           // Usage Summary
           total_usage_count: parseInt(license.total_usage_count) || 0,
           days_used: license.days_used || 0,
           avg_daily_usage: parseFloat(license.avg_daily_usage) || 0,
+          successful_validations: parseInt(license.successful_validations) || 0,
+          expired_attempts: parseInt(license.expired_attempts) || 0,
           first_used: license.first_used,
           last_used: license.last_used,
           usage_streak: license.usage_streak || 0
@@ -170,8 +175,8 @@ export default function LicenseDetailModal({ token, osgbId, onClose }) {
 
   const calculateSuccessRate = (license) => {
     if (!license || license.total_usage_count === 0) return '0.0';
-    // For now, assume all usage is successful since we don't have failure data in this API
-    return '100.0';
+    const successRate = (license.successful_validations / license.total_usage_count) * 100;
+    return successRate.toFixed(1);
   };
 
   if (loading) {
@@ -269,32 +274,54 @@ export default function LicenseDetailModal({ token, osgbId, onClose }) {
                       </span>
                     </div>
                     
-                    <div className="row text-center">
+                    <div className="row text-center g-0">
                       <div className="col-3">
-                        <div className="border-end">
+                        <div className="border-end px-2">
                           <div className="h4 text-primary mb-0">{licenseData.total_usage_count.toLocaleString()}</div>
-                          <small className="text-muted">Toplam Kullanım</small>
+                          <small className="text-muted d-block">Toplam Kullanım</small>
                         </div>
                       </div>
                       <div className="col-3">
-                        <div className="border-end">
-                          <div className="h4 text-success mb-0">{licenseData.days_used}</div>
-                          <small className="text-muted">Aktif Gün</small>
+                        <div className="border-end px-2">
+                          <div className="h4 text-success mb-0">{licenseData.successful_validations.toLocaleString()}</div>
+                          <small className="text-muted d-block">Başarılı</small>
                         </div>
                       </div>
                       <div className="col-3">
-                        <div className="border-end">
-                          <div className="h4 text-info mb-0">
+                        <div className="border-end px-2">
+                          <div className="h4 text-danger mb-0">{licenseData.expired_attempts.toLocaleString()}</div>
+                          <small className="text-muted d-block">Başarısız</small>
+                        </div>
+                      </div>
+                      <div className="col-3">
+                        <div className="px-2">
+                          <div className="h4 text-warning mb-0">{calculateSuccessRate(licenseData)}%</div>
+                          <small className="text-muted d-block">Başarı Oranı</small>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="row text-center g-0 mt-3 pt-3 border-top">
+                      <div className="col-4">
+                        <div className="border-end px-2">
+                          <div className="h5 text-info mb-0">{licenseData.days_used}</div>
+                          <small className="text-muted d-block">Aktif Gün</small>
+                        </div>
+                      </div>
+                      <div className="col-4">
+                        <div className="border-end px-2">
+                          <div className="h5 text-info mb-0">
                             {licenseData.avg_daily_usage && typeof licenseData.avg_daily_usage === 'number' 
                               ? licenseData.avg_daily_usage.toFixed(1) 
                               : '0.0'}
                           </div>
-                          <small className="text-muted">Günlük Ortalama</small>
+                          <small className="text-muted d-block">Günlük Ortalama</small>
                         </div>
                       </div>
-                      <div className="col-3">
-                        <div className="h4 text-warning mb-0">{calculateSuccessRate(licenseData)}%</div>
-                        <small className="text-muted">Başarı Oranı</small>
+                      <div className="col-4">
+                        <div className="px-2">
+                          <div className="h5 text-secondary mb-0">{licenseData.usage_streak || 0}</div>
+                          <small className="text-muted d-block">Kullanım Serisi</small>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -307,7 +334,7 @@ export default function LicenseDetailModal({ token, osgbId, onClose }) {
                       </div>
                       <div className="mb-2">
                         <small className="text-muted d-block">Bitiş Tarihi:</small>
-                        <strong>{formatDate(licenseData.expires_at)}</strong>
+                        <strong>{formatDate(licenseData.expiration_date)}</strong>
                       </div>
                       <div className="mb-2">
                         <small className="text-muted d-block">İlk Kullanım:</small>

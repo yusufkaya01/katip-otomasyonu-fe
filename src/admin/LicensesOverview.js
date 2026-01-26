@@ -122,10 +122,12 @@ function PaginationControls({ currentPage, totalPages, totalCount, onPageChange,
 
 // Custom hook for licenses overview
 const useLicensesOverview = (token) => {
-  const [licenses, setLicenses] = useState([]);
+  const [allLicenses, setAllLicenses] = useState([]); // Full dataset
   const [meta, setMeta] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
   
   const fetchLicenses = useCallback(async (filters = {}) => {
     setLoading(true);
@@ -133,8 +135,7 @@ const useLicensesOverview = (token) => {
     
     try {
       const defaultFilters = {
-        limit: 20,
-        offset: 0,
+        limit: 'all',
         days: 30,
         include_inactive: false
       };
@@ -146,14 +147,13 @@ const useLicensesOverview = (token) => {
         params.append(key, String(value));
       });
       
-      console.log('API call with params:', params.toString()); // Debug log
+      const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/admin/licenses/usage-overview?${params.toString()}`;
+      console.log('API call URL:', apiUrl); // Debug log
+      console.log('API call params:', params.toString()); // Debug log
       
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/admin/licenses/usage-overview?${params.toString()}`,
-        {
-          headers: getAuthHeaders(token)
-        }
-      );
+      const response = await fetch(apiUrl, {
+        headers: getAuthHeaders(token)
+      });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -171,12 +171,15 @@ const useLicensesOverview = (token) => {
       
       const data = await response.json();
       
+      console.log('API Response meta:', data.meta); // Debug log to see what backend returns
+      
       if (!data.success) {
         throw new Error(data.message || 'Request failed');
       }
       
-      setLicenses(data.data);
+      setAllLicenses(data.data);
       setMeta(data.meta);
+      setCurrentPage(1); // Reset to page 1 when data changes
       
     } catch (err) {
       setError(err.message);
@@ -185,16 +188,17 @@ const useLicensesOverview = (token) => {
     }
   }, [token]);
   
-  const refresh = () => fetchLicenses();
+  const refresh = (currentFilters = {}) => {
+    fetchLicenses(currentFilters);
+  };
   
   const changePage = (page) => {
-    const offset = (page - 1) * (meta.limit || 20);
-    fetchLicenses({ offset });
+    setCurrentPage(page);
   };
   
   const applyFilters = (newFilters) => {
     console.log('Applying filters:', newFilters); // Debug log
-    fetchLicenses({ offset: 0, ...newFilters });
+    fetchLicenses(newFilters);
   };
   
   useEffect(() => {
@@ -202,10 +206,12 @@ const useLicensesOverview = (token) => {
   }, [fetchLicenses]);
   
   return {
-    licenses,
+    allLicenses,
     meta,
     loading,
     error,
+    currentPage,
+    itemsPerPage,
     refresh,
     changePage,
     applyFilters
@@ -223,10 +229,12 @@ export default function LicensesOverview({ token }) {
   const [searchQuery, setSearchQuery] = useState('');
   
   const {
-    licenses,
+    allLicenses,
     meta,
     loading,
     error,
+    currentPage,
+    itemsPerPage,
     changePage,
     applyFilters
   } = useLicensesOverview(token);
@@ -247,47 +255,80 @@ export default function LicensesOverview({ token }) {
     setSelectedLicenseOsgbId(osgbId);
   };
 
+  // Handle page change with client-side pagination
+  const handlePageChange = (page) => {
+    // Don't paginate when searching
+    if (searchQuery) return;
+    changePage(page);
+  };
+
   const handleModalClose = () => {
     setSelectedLicenseOsgbId(null);
   };
-
-  const currentPage = Math.floor((meta.offset || 0) / (meta.limit || 20)) + 1;
-  const totalPages = Math.ceil((meta.total || 0) / (meta.limit || 20));
 
   // Simplified Turkish-aware search function
   const turkishSearch = (text, query) => {
     if (!text || !query) return false;
     
+    // Convert to string and trim whitespace
+    const textStr = String(text).trim();
+    const queryStr = String(query).trim();
+    
     // Use Turkish locale for proper case conversion
-    const normalizedText = text.toLocaleLowerCase('tr-TR');
-    const normalizedQuery = query.toLocaleLowerCase('tr-TR');
+    const normalizedText = textStr.toLocaleLowerCase('tr-TR');
+    const normalizedQuery = queryStr.toLocaleLowerCase('tr-TR');
     
     return normalizedText.includes(normalizedQuery);
   };
 
-  // Filter licenses based on search query
-  const filteredLicenses = licenses.filter(license => {
+  // Filter licenses based on search query (from full dataset)
+  const filteredLicenses = allLicenses.filter(license => {
     if (!searchQuery) return true;
     
-    // Enhanced debug logging
-    if (searchQuery.toLowerCase().includes('vita')) {
-      console.log('Turkish Search Debug:', {
-        searchQuery: searchQuery,
-        companyOriginal: license.company_name,
-        searchResult: turkishSearch(license.company_name, searchQuery),
-        companyLowerTR: license.company_name.toLocaleLowerCase('tr-TR'),
-        queryLowerTR: searchQuery.toLocaleLowerCase('tr-TR')
+    const query = searchQuery.trim();
+    if (!query) return true;
+    
+    const matches = (
+      turkishSearch(license.license_code, query) ||
+      turkishSearch(license.osgb_id, query) ||
+      turkishSearch(license.company_name, query)
+    );
+    
+    // Debug logging for first few matches when searching
+    if (searchQuery && allLicenses.indexOf(license) < 3) {
+      console.log('Search Debug:', {
+        query: query,
+        license_code: license.license_code,
+        osgb_id: license.osgb_id,
+        company_name: license.company_name,
+        matches: matches
       });
     }
     
-    return (
-      turkishSearch(license.license_code, searchQuery) ||
-      turkishSearch(license.osgb_id, searchQuery) ||
-      turkishSearch(license.company_name, searchQuery)
-    );
+    return matches;
   });
 
-  if (loading && licenses.length === 0) {
+  // Calculate pagination for filtered results
+  const totalFilteredCount = filteredLicenses.length;
+  const totalPages = Math.ceil(totalFilteredCount / itemsPerPage);
+  
+  // Debug: Log dataset size
+  console.log('Dataset Info:', {
+    allLicensesCount: allLicenses.length,
+    searchQuery: searchQuery,
+    filteredCount: totalFilteredCount,
+    metaTotal: meta.total,
+    isFullDataset: meta.is_full_dataset
+  });
+  
+  // Get current page's licenses (client-side pagination)
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLicenses = searchQuery 
+    ? filteredLicenses // Show all search results without pagination
+    : filteredLicenses.slice(startIndex, endIndex); // Paginate when not searching
+
+  if (loading && allLicenses.length === 0) {
     return <div className="text-center p-4">Yükleniyor...</div>;
   }
 
@@ -331,17 +372,38 @@ export default function LicensesOverview({ token }) {
         </div>
         
         {meta.analysis_period && (
-          <div className="mt-2">
+          <div className="mt-2 d-flex justify-content-between align-items-center">
             <small className="text-muted">
               <i className="bi bi-calendar-range me-1"></i>
               Analiz Dönemi: {formatDate(meta.analysis_period.start_date)} - {formatDate(meta.analysis_period.end_date)}
             </small>
+            {meta.is_full_dataset && (
+              <small className="badge bg-success-subtle text-success">
+                <i className="bi bi-check-circle me-1"></i>
+                Tüm veri yüklendi ({meta.total?.toLocaleString()} lisans)
+              </small>
+            )}
+            {!meta.is_full_dataset && meta.total > (meta.count || 0) && (
+              <small className="badge bg-warning-subtle text-warning">
+                <i className="bi bi-exclamation-triangle me-1"></i>
+                Kısmi veri ({meta.count || 0}/{meta.total?.toLocaleString()}) - Arama sınırlı
+              </small>
+            )}
           </div>
         )}
       </div>
 
       {/* Search Bar */}
       <div className="card-body border-bottom">
+        {/* Warning when full dataset is not loaded */}
+        {!meta.is_full_dataset && meta.total > (meta.count || 0) && (
+          <div className="alert alert-warning mb-3" role="alert">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Uyarı:</strong> Sadece {meta.count || 0} lisans yüklendi (Toplam: {meta.total?.toLocaleString()}). 
+            Arama ve filtreleme tüm kayıtlarda çalışmayacak. Backend API <code>limit=all</code> parametresini desteklemiyor.
+          </div>
+        )}
+        
         <div className="row align-items-center">
           <div className="col-md-6">
             <div className="position-relative">
@@ -379,7 +441,7 @@ export default function LicensesOverview({ token }) {
           </div>
         )}
 
-        {filteredLicenses.length === 0 && !loading ? (
+        {paginatedLicenses.length === 0 && !loading ? (
           <div className="text-center text-muted py-4">
             <i className="bi bi-inbox display-4 mb-3"></i>
             {searchQuery ? (
@@ -408,7 +470,7 @@ export default function LicensesOverview({ token }) {
                 </tr>
               </thead>
               <tbody>
-                {filteredLicenses.map((license) => (
+                {paginatedLicenses.map((license) => (
                   <tr 
                     key={license.license_code} 
                     style={{ cursor: 'pointer' }}
@@ -475,7 +537,7 @@ export default function LicensesOverview({ token }) {
           </div>
         )}
 
-        {loading && licenses.length > 0 && (
+        {loading && allLicenses.length > 0 && (
           <div className="text-center py-2">
             <div className="spinner-border spinner-border-sm text-primary" role="status">
               <span className="visually-hidden">Yükleniyor...</span>
@@ -488,8 +550,8 @@ export default function LicensesOverview({ token }) {
         <PaginationControls
           currentPage={currentPage}
           totalPages={totalPages}
-          totalCount={meta.total || 0}
-          onPageChange={changePage}
+          totalCount={totalFilteredCount}
+          onPageChange={handlePageChange}
           itemName="lisans"
         />
       )}
