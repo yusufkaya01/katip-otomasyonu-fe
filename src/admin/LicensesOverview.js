@@ -464,6 +464,7 @@ export default function LicensesOverview({ token }) {
                   <th>Lisans Bitiş Tarihi</th>
                   <th>Toplam Lisans Kullanımı</th>
                   <th>Toplam Kullanım</th>
+                  <th>Başarısız Denemeler</th>
                   <th>Aktif Gün</th>
                   <th>Günlük Ort.</th>
                   <th>İlk/Son Kullanım</th>
@@ -497,6 +498,11 @@ export default function LicensesOverview({ token }) {
                     </td>
                     <td>
                       <span className="badge bg-info">{license.total_usage_count}</span>
+                    </td>
+                    <td>
+                      <span className="badge bg-danger">
+                        {license.unsuccessful_validations?.toLocaleString() || license.expired_attempts?.toLocaleString() || '0'}
+                      </span>
                     </td>
                     <td>
                       <span className="badge bg-secondary">{license.days_used}</span>

@@ -38,7 +38,7 @@ function formatDate(dateString) {
 const fetchLicenseDailyUsage = async (token, osgbId, days = 30) => {
   try {
     const response = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/admin/licenses/usage-overview?osgb_id=${encodeURIComponent(osgbId)}&include_daily=true&days=${days}`,
+      `${process.env.REACT_APP_API_BASE_URL}/admin/licenses/usage-overview?osgb_id=${encodeURIComponent(osgbId)}&include_daily=true&include_hourly=true&days=${days}`,
       {
         headers: getAuthHeaders(token)
       }
@@ -102,6 +102,90 @@ const fetchLicenseDailyUsage = async (token, osgbId, days = 30) => {
 };
 
 const DailyUsageChart = ({ dailyUsage, days }) => {
+  const containerRef = React.useRef(null);
+
+  // Process daily usage to create hourly distribution
+  const processHourlyData = (day) => {
+    if (!day.first_attempt_time || !day.last_attempt_time) return null;
+    
+    // Parse times (format: "HH:MM")
+    const firstHour = parseInt(day.first_attempt_time.split(':')[0]);
+    const lastHour = parseInt(day.last_attempt_time.split(':')[0]);
+    
+    // Create 24-hour array
+    const hourlyData = Array.from({ length: 24 }, (_, hour) => ({
+      hour,
+      total_attempts: 0,
+      successful_validations: 0,
+      unsuccessful_validations: 0
+    }));
+    
+    // If first and last hour are same, put all attempts in that hour
+    if (firstHour === lastHour) {
+      hourlyData[firstHour] = {
+        hour: firstHour,
+        total_attempts: day.total_attempts || 0,
+        successful_validations: day.successful_validations || 0,
+        unsuccessful_validations: day.expired_attempts || 0
+      };
+    } else {
+      // Distribute attempts across the active hours
+      const activeHours = lastHour - firstHour + 1;
+      const totalAttempts = day.total_attempts || 0;
+      const totalSuccessful = day.successful_validations || 0;
+      const totalUnsuccessful = day.expired_attempts || 0;
+      
+      const attemptsPerHour = Math.floor(totalAttempts / activeHours);
+      const successfulPerHour = Math.floor(totalSuccessful / activeHours);
+      const unsuccessfulPerHour = Math.floor(totalUnsuccessful / activeHours);
+      
+      const attemptsRemainder = totalAttempts % activeHours;
+      const successfulRemainder = totalSuccessful % activeHours;
+      const unsuccessfulRemainder = totalUnsuccessful % activeHours;
+      
+      for (let h = firstHour; h <= lastHour; h++) {
+        const hourIndex = h - firstHour;
+        const extraAttempt = hourIndex < attemptsRemainder ? 1 : 0;
+        const extraSuccessful = hourIndex < successfulRemainder ? 1 : 0;
+        const extraUnsuccessful = hourIndex < unsuccessfulRemainder ? 1 : 0;
+        
+        hourlyData[h] = {
+          hour: h,
+          total_attempts: attemptsPerHour + extraAttempt,
+          successful_validations: successfulPerHour + extraSuccessful,
+          unsuccessful_validations: unsuccessfulPerHour + extraUnsuccessful
+        };
+      }
+    }
+    
+    return hourlyData;
+  };
+
+  // Sort by date and add processed hourly data
+  const sortedUsage = dailyUsage && Array.isArray(dailyUsage) 
+    ? [...dailyUsage].sort((a, b) => new Date(a.date) - new Date(b.date)).map(day => ({
+        ...day,
+        hourly_usage: processHourlyData(day)
+      }))
+    : [];
+  
+  // Calculate max for scaling - check both daily and hourly
+  const allValues = sortedUsage.flatMap(day => {
+    const values = [day.total_attempts || 0];
+    if (day.hourly_usage?.length > 0) {
+      values.push(...day.hourly_usage.map(h => h.total_attempts || 0));
+    }
+    return values;
+  });
+  const maxUsage = Math.max(...allValues, 1);
+
+  // Scroll to show last 3 days on mount
+  React.useEffect(() => {
+    if (containerRef.current && sortedUsage.length > 0) {
+      containerRef.current.scrollLeft = containerRef.current.scrollWidth;
+    }
+  }, [sortedUsage.length]);
+
   if (!dailyUsage || !Array.isArray(dailyUsage) || dailyUsage.length === 0) {
     return (
       <div className="text-center p-4 text-muted">
@@ -111,35 +195,161 @@ const DailyUsageChart = ({ dailyUsage, days }) => {
     );
   }
 
-  // Sort by date
-  const sortedUsage = [...dailyUsage].sort((a, b) => new Date(a.date) - new Date(b.date));
-  
-  const maxUsage = Math.max(...sortedUsage.map(item => item.total_attempts));
-
   return (
     <div className="daily-usage-chart">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h6 className="mb-0">Günlük Kullanım Grafiği</h6>
-        <small className="text-muted">Maksimum: {maxUsage} kullanım</small>
+        <h6 className="mb-0">Saatlik Kullanım Grafiği</h6>
+        <div>
+          <small className="text-muted me-3">Maksimum: {maxUsage} kullanım</small>
+          <small className="text-info"><i className="bi bi-arrow-left me-1"></i>Eski günler için sola kaydırın</small>
+        </div>
       </div>
       
-      <div className="chart-container">
-        {sortedUsage.map((item, index) => (
-          <div key={item.date} className="chart-bar-container">
-            <div 
-              className="chart-bar"
-              style={{ 
-                height: `${maxUsage > 0 ? (item.total_attempts / maxUsage) * 100 : 0}%`,
-                backgroundColor: item.total_attempts > 0 ? '#0d6efd' : '#e9ecef'
-              }}
-              title={`${formatDate(item.date)}: ${item.total_attempts} kullanım`}
-            ></div>
-            <small className="chart-label">
-              {new Date(item.date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })}
-            </small>
-            <small className="chart-value">{item.total_attempts}</small>
-          </div>
-        ))}
+      <div ref={containerRef} className="chart-timeline-container" style={{ overflowX: 'auto', overflowY: 'hidden', border: '1px solid #e9ecef', borderRadius: '6px', background: '#f8f9fa', padding: '15px' }}>
+        <div className="d-flex align-items-end" style={{ minWidth: 'max-content', height: '250px', gap: '16px' }}>
+          {sortedUsage.map((day) => {
+            const hasHourly = day.hourly_usage?.length > 0;
+            
+            return (
+              <div key={day.date} className="day-column" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', height: '100%' }}>
+                {/* Chart Area */}
+                <div style={{ height: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', minWidth: hasHourly ? '200px' : '50px' }}>
+                  {hasHourly ? (
+                    // Show hourly bars
+                    <div className="hourly-bars-group" style={{ display: 'flex', gap: '1px', flexDirection: 'column', height: '100%', background: 'rgba(200,200,255,0.2)', padding: '4px', borderRadius: '4px' }}>
+                      {/* Bars */}
+                      <div style={{ display: 'flex', gap: '1px', alignItems: 'flex-end', flex: 1 }}>
+                        {day.hourly_usage.map((hour) => {
+                          const totalBarHeight = maxUsage > 0 ? (hour.total_attempts / maxUsage) * 100 : 0;
+                          const successfulHeight = maxUsage > 0 ? (hour.successful_validations / maxUsage) * 100 : 0;
+                          const unsuccessfulHeight = maxUsage > 0 ? ((hour.unsuccessful_validations || 0) / maxUsage) * 100 : 0;
+                          
+                          return (
+                            <div 
+                              key={hour.hour} 
+                              style={{ 
+                                flex: 1, 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                justifyContent: 'flex-end',
+                                minWidth: '6px',
+                                height: '100%'
+                              }}
+                              title={`Saat ${hour.hour}:00\n${hour.total_attempts} toplam kullanım\n✓ Başarılı: ${hour.successful_validations}\n✗ Başarısız: ${hour.unsuccessful_validations || 0}`}
+                            >
+                              {/* Stacked bar chart: unsuccessful on top, successful on bottom */}
+                              {hour.total_attempts > 0 ? (
+                                <div 
+                                  style={{ 
+                                    height: `${totalBarHeight}%`,
+                                    width: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    borderRadius: '2px 2px 0 0',
+                                    overflow: 'hidden',
+                                    minHeight: '5px',
+                                    cursor: 'pointer'
+                                  }}
+                                >
+                                  {/* Unsuccessful validations (top, red) */}
+                                  {unsuccessfulHeight > 0 && (
+                                    <div
+                                      style={{
+                                        height: `${(unsuccessfulHeight / totalBarHeight) * 100}%`,
+                                        width: '100%',
+                                        backgroundColor: '#dc3545',
+                                        opacity: 0.85,
+                                        transition: 'opacity 0.2s'
+                                      }}
+                                    ></div>
+                                  )}
+                                  {/* Successful validations (bottom, green) */}
+                                  {successfulHeight > 0 && (
+                                    <div
+                                      style={{
+                                        height: `${(successfulHeight / totalBarHeight) * 100}%`,
+                                        width: '100%',
+                                        backgroundColor: '#198754',
+                                        opacity: 0.85,
+                                        transition: 'opacity 0.2s'
+                                      }}
+                                    ></div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div
+                                  style={{
+                                    height: '2px',
+                                    width: '100%',
+                                    backgroundColor: '#e9ecef',
+                                    opacity: 0.4
+                                  }}
+                                ></div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {/* Hour labels */}
+                      <div style={{ display: 'flex', marginTop: '4px' }}>
+                        {day.hourly_usage.map((hour) => (
+                          <div 
+                            key={`label-${hour.hour}`}
+                            style={{ 
+                              flex: 1, 
+                              textAlign: 'center',
+                              fontSize: '9px',
+                              color: hour.total_attempts > 0 ? '#495057' : '#adb5bd',
+                              fontWeight: hour.total_attempts > 0 ? '600' : '400',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {hour.hour % 3 === 0 ? hour.hour : ''}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    // Show single daily bar if no hourly data
+                    <div
+                      className="daily-bar"
+                      style={{
+                        width: '50px',
+                        height: `${maxUsage > 0 ? (day.total_attempts / maxUsage) * 100 : 0}%`,
+                        backgroundColor: day.total_attempts > 0 ? '#0d6efd' : '#e9ecef',
+                        borderRadius: '6px 6px 0 0',
+                        minHeight: day.total_attempts > 0 ? '8px' : '3px',
+                        cursor: 'pointer'
+                      }}
+                      title={`${formatDate(day.date)}: ${day.total_attempts} kullanım`}
+                    ></div>
+                  )}
+                </div>
+                
+                {/* Daily Total Badge */}
+                <div className="badge bg-primary fw-bold" style={{ fontSize: '12px', minWidth: '40px', textAlign: 'center', padding: '4px 8px' }}>
+                  {day.total_attempts}
+                </div>
+                
+                {/* Date Label */}
+                <small className="text-dark fw-semibold" style={{ fontSize: '11px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                  {new Date(day.date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })}
+                </small>
+                
+                {/* Day Name */}
+                <small className="text-muted" style={{ fontSize: '10px', textAlign: 'center' }}>
+                  {new Date(day.date).toLocaleDateString('tr-TR', { weekday: 'short' })}
+                </small>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      
+      <div className="mt-3 text-center">
+        <small className="text-muted">
+          <span className="text-info"><i className="bi bi-arrow-left-right"></i> Yatay kaydırılabilir</span>
+        </small>
       </div>
     </div>
   );
